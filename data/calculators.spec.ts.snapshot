@@ -16362,6 +16362,50 @@ exports[`compute() snapshots > terminal-velocity-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > test-score-to-letter-grade-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "score": 85,
+      "aCutoff": 90,
+      "bCutoff": 80,
+      "cCutoff": 70,
+      "dCutoff": 60
+    },
+    "outputs": {
+      "letterGradeCode": 3,
+      "pointsToNextGrade": 5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "score": 127.5,
+      "aCutoff": 135,
+      "bCutoff": 120,
+      "cCutoff": 105,
+      "dCutoff": 90
+    },
+    "outputs": {
+      "letterGradeCode": 3,
+      "pointsToNextGrade": 7.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "score": 0,
+      "aCutoff": 0,
+      "bCutoff": 0,
+      "cCutoff": 0,
+      "dCutoff": 0
+    },
+    "outputs": {
+      "letterGradeCode": 4,
+      "pointsToNextGrade": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > theoretical-yield-calculator 1`] = `
 {
   "default": {

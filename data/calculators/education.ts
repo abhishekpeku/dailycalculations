@@ -510,5 +510,128 @@ export const educationCalculators: CalculatorConfig[] = [
       const totalWeeklyCommitment = recommendedWeeklyHours + classroomHours;
       return { recommendedWeeklyHours, dailyAverage, totalWeeklyCommitment };
     }
+  },
+  {
+    id: 'test-score-to-letter-grade-calculator',
+    category: 'education',
+    group: 'Grades & GPA',
+    glyph: 'A-F',
+    updatedAt: '2026-11-18',
+    aliases: ['percentage to letter grade calculator', 'what letter grade is this percentage', 'grade scale converter', 'test grade percentage calculator'],
+    related: ['grade-calculator', 'final-grade-calculator', 'gpa-calculator', 'percentage-calculator'],
+    title: 'Test Score to Letter Grade Calculator',
+    description: 'Convert a raw test score or percentage into a letter grade, on the common 90/80/70/60 US scale by default or your own school\'s cutoffs — and see exactly how many points separate you from the next grade up.',
+    example: 'An 85% score falls in the 80-89 range on the common scale: a B, five points below the 90% needed for an A.',
+    breakdown: {
+      headline: 'letterGradeCode',
+      headlineLabel: 'Letter grade',
+      outputs: [
+        { id: 'letterGradeCode', label: 'Letter grade', labels: [
+          { value: 0, label: 'F' },
+          { value: 1, label: 'D' },
+          { value: 2, label: 'C' },
+          { value: 3, label: 'B' },
+          { value: 4, label: 'A' }
+        ] },
+        { id: 'pointsToNextGrade', label: 'Points to the next grade up', format: 'number' }
+      ],
+      groups: [
+        { title: 'Your score', inputs: ['score'] },
+        { title: 'Cutoffs (edit for your own school\'s scale)', inputs: ['aCutoff', 'bCutoff', 'cCutoff', 'dCutoff'] }
+      ],
+      visual: {
+        type: 'rangeBar',
+        value: 'score',
+        bands: [
+          { label: 'F', min: 0, max: 60, color: '#ef4444' },
+          { label: 'D', min: 60, max: 70 },
+          { label: 'C', min: 70, max: 80 },
+          { label: 'B', min: 80, max: 90 },
+          { label: 'A', min: 90, max: 101 }
+        ],
+        title: 'Where your score falls on the scale'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'The common US percentage scale, and why it is a default, not a rule',
+        paragraphs: [
+          "The U.S. Department of Education's National Center for Education Statistics, in the methodology for its High School Transcript Study, converts numeric scores to letter grades as 90-100 = A, 80-89 = B, 70-79 = C, 60-69 = D, and below 60 = F — explicitly \"unless the school documents specify other letter grade equivalents for numeric grades.\" That caveat is the whole story: this is the most common scale, not a universal one.",
+          'Individual schools, colleges, and even individual instructors set their own cutoffs — some use plus/minus bands (a B+ at 87-89), some set the passing line higher for a specific program, and some shift every cutoff up or down. This calculator defaults to the common 90/80/70/60 scale but lets you replace any cutoff with your own syllabus\'s numbers, which is the only way to get a letter grade that matches your actual course.',
+          "This is a different conversion from a GPA scale. A percentage-to-letter scale translates one raw score (a test, an assignment, a final percentage) into a letter. The GPA calculator instead converts an already-assigned letter grade into grade points and averages those points across whole courses by credit hours — a separate step that happens after a letter grade like this one already exists."
+        ]
+      },
+      howTo: {
+        intro: 'Enter your score and, if your school uses different cutoffs than the common scale, replace the four cutoff values.',
+        steps: [
+          { name: 'Enter your score', text: 'The percentage or raw score (out of 100) you want to convert.' },
+          { name: "Check the cutoffs", text: 'The default cutoffs are the common 90/80/70/60 scale. Replace any of them with your own school\'s or instructor\'s cutoffs if they differ.' },
+          { name: 'Read your letter grade', text: 'The headline shows which letter grade your score falls into under the cutoffs entered.' },
+          { name: 'See how close you are to the next grade', text: 'The second figure is exactly how many points separate your score from the next letter grade up — 0 if you already have the top grade.' },
+          { name: 'Check the scale visually', text: "The bar shows where your score sits across all five bands at a glance." }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Your score is compared against four cutoffs, from highest to lowest, and assigned the first letter grade it qualifies for.',
+        expression: 'if score ≥ aCutoff: A\nelse if score ≥ bCutoff: B\nelse if score ≥ cCutoff: C\nelse if score ≥ dCutoff: D\nelse: F\npointsToNextGrade = (cutoff for the next letter up) − score',
+        terms: [
+          { symbol: 'score', meaning: 'Your raw score or percentage.' },
+          { symbol: 'aCutoff, bCutoff, cCutoff, dCutoff', meaning: 'The minimum score needed for an A, B, C, and D respectively — 90/80/70/60 by default.' }
+        ],
+        note: "Every cutoff here is inclusive of its lower bound (a score of exactly 90 is an A on the default scale) — check whether your own school rounds or treats boundary scores differently."
+      },
+      workedExample: {
+        intro: 'A score of 85%, using the default 90/80/70/60 cutoffs.',
+        rows: [
+          { label: 'Is 85 ≥ 90 (A cutoff)?', value: 'No' },
+          { label: 'Is 85 ≥ 80 (B cutoff)?', value: 'Yes → grade is B' },
+          { label: 'Points to the next grade up (90 − 85)', value: '5' }
+        ],
+        result: 'Letter grade = B, 5 points from an A',
+        explanation: "85 clears the 80-point B cutoff but falls short of the 90-point A cutoff, placing it squarely in the B range with 5 points of room below the next grade up."
+      },
+      watchOut: [
+        { title: 'This default scale is common, not universal', body: "NCES's own methodology notes it applies \"unless the school documents specify other letter grade equivalents\" — always check your own syllabus or school policy before trusting the default cutoffs." },
+        { title: "This isn't a GPA scale", body: 'This converts one raw score into a letter grade. A GPA additionally converts that letter into grade points and averages across whole courses by credit hours — see the GPA calculator for that separate step.' },
+        { title: 'Plus/minus grades are not modeled', body: "Many schools split each band further (B+ at 87-89, for example). Enter a plus/minus cutoff of your own in the relevant field if your school grades that way — this calculator only has one cutoff per letter." },
+        { title: 'Cutoffs assume a descending order', body: 'Enter the A cutoff as the highest number and D as the lowest — the calculator checks them from highest to lowest and does not reorder values for you.' }
+      ],
+      references: [
+        { label: 'National Center for Education Statistics, High School Transcript Study: Grade Point Average Calculation (grade conversion table)', url: 'https://nces.ed.gov/nationsreportcard/hsts/howgpa.aspx' }
+      ]
+    },
+    inputs: [
+      { id: 'score', label: 'Your score (%)', type: 'percent', placeholder: '85', defaultValue: 85, step: 0.1, min: 0 },
+      { id: 'aCutoff', label: 'A cutoff (minimum score for an A)', type: 'percent', placeholder: '90', defaultValue: 90, step: 1, min: 0 },
+      { id: 'bCutoff', label: 'B cutoff', type: 'percent', placeholder: '80', defaultValue: 80, step: 1, min: 0 },
+      { id: 'cCutoff', label: 'C cutoff', type: 'percent', placeholder: '70', defaultValue: 70, step: 1, min: 0 },
+      { id: 'dCutoff', label: 'D cutoff', type: 'percent', placeholder: '60', defaultValue: 60, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Test Score to Letter Grade Calculator',
+      description: 'Convert a score or percentage into a letter grade on the common 90/80/70/60 scale, or your own school\'s cutoffs, and see your points to the next grade up.',
+      faq: [
+        { question: 'What percentage is an A, B, C, or D?', answer: "On the common U.S. scale cited by the National Center for Education Statistics: 90-100 is an A, 80-89 a B, 70-79 a C, 60-69 a D, and below 60 an F — unless your school specifies different cutoffs." },
+        { question: 'Is the 90/80/70/60 scale universal?', answer: "No. It's the most common scale, but individual schools, colleges, and instructors set their own cutoffs. Replace the default cutoff fields with your own school's numbers for an accurate result." },
+        { question: 'How is this different from a GPA calculator?', answer: "This converts one raw score into a letter grade. A GPA calculator takes an already-assigned letter grade, converts it to grade points, and averages those points across whole courses by credit hours — a separate, later step." },
+        { question: "What does \"points to the next grade\" mean?", answer: "It's the gap between your score and the cutoff for the next letter grade up. An 85% is 5 points below the 90% needed for an A." },
+        { question: 'Does this handle plus/minus grades like B+?', answer: 'No — each letter has one cutoff. If your school grades with plus/minus bands, you would need to set a custom cutoff for each band separately and run the calculator again.' },
+        { question: 'Is a score of exactly 90 an A?', answer: 'Yes, on the default scale — each cutoff is inclusive of its lower bound. Check whether your own school treats a boundary score the same way.' }
+      ]
+    },
+    compute(values) {
+      const { score, aCutoff, bCutoff, cCutoff, dCutoff } = values;
+      let letterGradeCode: number;
+      let nextCutoff: number;
+      if (score >= aCutoff) { letterGradeCode = 4; nextCutoff = score; }
+      else if (score >= bCutoff) { letterGradeCode = 3; nextCutoff = aCutoff; }
+      else if (score >= cCutoff) { letterGradeCode = 2; nextCutoff = bCutoff; }
+      else if (score >= dCutoff) { letterGradeCode = 1; nextCutoff = cCutoff; }
+      else { letterGradeCode = 0; nextCutoff = dCutoff; }
+      const pointsToNextGrade = letterGradeCode === 4 ? 0 : nextCutoff - score;
+      return { letterGradeCode, pointsToNextGrade };
+    }
   }
 ];

@@ -16,6 +16,7 @@ const CUSTOM_TOOLS = [
 // Current behavior at the edge set (calculator id -> output keys that are not finite). Asserted exactly.
 const KNOWN_NON_FINITE: Record<string, string[]> = {
   'bmi-calculator': ['bmi'], // height 0 -> 0/0
+  'reading-speed-calculator': ['wpm'], // minutesElapsed and secondsElapsed both 0 -> divide by zero
   'percent-change-calculator': ['percentChange'], // old value 0 -> divide by zero
   'percent-difference-calculator': ['percentDifference'], // both values 0 -> average 0
   'ratio-calculator': ['d'], // a (the term being divided by) 0 -> divide by zero

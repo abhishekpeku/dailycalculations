@@ -585,7 +585,7 @@ export const insuranceCalculators: CalculatorConfig[] = [
       { id: 'outOfPocketMax', label: "Plan's out-of-pocket max", type: 'currency', placeholder: '10600', defaultValue: 10600, step: 100, min: 0 }
     ],
     seo: {
-      title: 'Out-of-Pocket Maximum Calculator – Track Deductible & Coinsurance',
+      title: 'Out-of-Pocket Maximum Calculator – Deductible Tracker',
       description: "Track deductible, copay and coinsurance spending against your health plan's out-of-pocket maximum, and see how much is left before it pays 100%.",
       faq: [
         { question: 'What counts toward my out-of-pocket maximum?', answer: 'Your deductible, copayments and coinsurance for in-network, covered care all count. Premiums, out-of-network care, and non-covered services do not, even though you pay for them.' },
@@ -828,8 +828,8 @@ export const insuranceCalculators: CalculatorConfig[] = [
       { id: 'existingMonthlyBenefit', label: 'Existing monthly disability benefit', type: 'currency', placeholder: '1200', defaultValue: 1200, step: 50, min: 0 }
     ],
     seo: {
-      title: 'Disability Insurance Needs Calculator – Income Replacement Gap',
-      description: 'Find the gap between a target income-replacement percentage and your existing disability coverage, using the 60-80% range cited by the Council for Disability Insurance Awareness.',
+      title: 'Disability Insurance Needs Calculator – Coverage Gap',
+      description: 'Find the gap between a target income-replacement percent and your existing disability coverage, using the 60-80% range insurers typically cite.',
       faq: [
         { question: 'How much disability insurance do I need?', answer: 'The Council for Disability Insurance Awareness states long-term disability coverage typically "covers between 60-80 percent of your income." Multiply your monthly income by a percentage in that range to get a target, then subtract any coverage you already have.' },
         { question: 'Why can\'t I buy disability insurance that replaces 100% of my income?', answer: 'Insurers cap benefits below 100% of income by design, so returning to work still pays more than staying on a disability claim. A 60-80% range is the commonly cited typical benefit level.' },

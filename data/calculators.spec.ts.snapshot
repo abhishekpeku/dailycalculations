@@ -6897,6 +6897,38 @@ exports[`compute() snapshots > gpa-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > gpa-scale-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "percentage": 76
+    },
+    "outputs": {
+      "gpa": 2,
+      "letterGradeCode": 2
+    }
+  },
+  "typical": {
+    "inputs": {
+      "percentage": 114
+    },
+    "outputs": {
+      "gpa": 4,
+      "letterGradeCode": 4
+    }
+  },
+  "edge": {
+    "inputs": {
+      "percentage": 0
+    },
+    "outputs": {
+      "gpa": 0,
+      "letterGradeCode": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > grade-calculator 1`] = `
 {
   "default": {

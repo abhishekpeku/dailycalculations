@@ -1074,5 +1074,122 @@ export const educationCalculators: CalculatorConfig[] = [
       const creditsUntilFullTime = Math.max(0, values.fullTimeThreshold - totalCredits);
       return { totalCredits, isFullTimeCode, creditsUntilFullTime };
     }
+  },
+  {
+    id: 'gpa-scale-converter',
+    category: 'education',
+    group: 'Grades & GPA',
+    glyph: 'GPA%',
+    updatedAt: '2026-11-18',
+    aliases: ['gpa to percentage calculator', 'percentage to gpa calculator', 'convert percentage to gpa', 'letter grade to gpa converter'],
+    related: ['gpa-calculator', 'cumulative-gpa-calculator', 'test-score-to-letter-grade-calculator', 'grade-calculator'],
+    title: 'GPA Scale Converter',
+    description: 'Convert a percentage or numeric grade into its 4.0-scale GPA and letter-grade equivalent, using the standard US conversion table published by the National Center for Education Statistics.',
+    example: 'A 76% falls in the 70-79 range: a C, which converts to 2.0 on the standard 4.0 GPA scale.',
+    breakdown: {
+      headline: 'gpa',
+      headlineLabel: '4.0-scale GPA',
+      outputs: [
+        { id: 'gpa', label: '4.0-scale GPA', format: 'number' },
+        { id: 'letterGradeCode', label: 'Letter grade', labels: [
+          { value: 0, label: 'F' },
+          { value: 1, label: 'D' },
+          { value: 2, label: 'C' },
+          { value: 3, label: 'B' },
+          { value: 4, label: 'A' }
+        ] }
+      ],
+      groups: [
+        { title: 'Your grade', inputs: ['percentage'] }
+      ],
+      visual: {
+        type: 'rangeBar',
+        value: 'percentage',
+        bands: [
+          { label: 'F (0.0)', min: 0, max: 60, color: '#ef4444' },
+          { label: 'D (1.0)', min: 60, max: 70 },
+          { label: 'C (2.0)', min: 70, max: 80 },
+          { label: 'B (3.0)', min: 80, max: 90 },
+          { label: 'A (4.0)', min: 90, max: 101 }
+        ],
+        title: 'Where your grade falls on the 4.0 scale'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Converting a percentage to a 4.0 GPA scale, and why other scales don\'t convert as cleanly',
+        paragraphs: [
+          'The U.S. Department of Education\'s National Center for Education Statistics (NCES), in the methodology for its High School Transcript Study, publishes a standard numeric-to-letter-to-GPA conversion: 90-100 is an A worth 4.0 grade points, 80-89 a B worth 3.0, 70-79 a C worth 2.0, 60-69 a D worth 1.0, and below 60 an F worth 0.0 — "unless the school documents specify other letter grade equivalents for numeric grades." That caveat matters: this is the most commonly used US conversion, not a universal rule, and plus/minus grades (a B+ worth 3.3, for example) sit between these whole-point values at individual schools\' own discretion.',
+          'A 10-point CGPA scale, used by many Indian universities, is also a commonly searched "other scale" — but unlike the NCES table, no single official formula for converting it to a percentage or to a 4.0 GPA could be confirmed from a primary, citable source for this calculator, so it is left out here rather than guessed. If your transcript uses a 10-point scale, check your own university\'s registrar for its specific conversion policy.',
+          'UK degree classifications (First, Upper Second/2:1, Lower Second/2:2, Third) are a different scale entirely, and not a continuation of the US percentage above: UK marking conventionally treats 70% and above as First-class work, while the same 70% on the US scale above is only a C. The two percentage scales are not calibrated the same way, so this calculator does not convert a US percentage into a UK classification — doing so would imply an equivalence that isn\'t real. If you need an official UK-to-US (or US-to-UK) grade equivalency for an application, use your institution\'s own credential-evaluation guidance rather than a raw percentage match.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your percentage or numeric grade (out of 100) to see its standard 4.0-scale GPA and letter-grade equivalent.',
+        steps: [
+          { name: 'Enter your percentage or numeric grade', text: 'Use the score out of 100 from your transcript, test, or course grade.' },
+          { name: 'Read your GPA equivalent', text: 'The headline shows the standard 4.0-scale grade point for that percentage range, per the NCES conversion table.' },
+          { name: 'Check the letter grade', text: 'The second figure shows the standard US letter grade (A through F) for your percentage.' },
+          { name: 'See where it falls on the scale', text: 'The bar shows your percentage across all five grade bands at a glance.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Your percentage is matched to the NCES conversion table\'s range, which fixes both the letter grade and its 4.0-scale GPA value.',
+        expression: 'if percentage ≥ 90: A, GPA = 4.0\nelse if percentage ≥ 80: B, GPA = 3.0\nelse if percentage ≥ 70: C, GPA = 2.0\nelse if percentage ≥ 60: D, GPA = 1.0\nelse: F, GPA = 0.0',
+        terms: [
+          { symbol: 'percentage', meaning: 'Your numeric grade or percentage score, out of 100.' }
+        ],
+        note: 'This is the standard table NCES uses "unless the school documents specify other letter grade equivalents" — check your own school\'s scale for plus/minus grades or different cutoffs.'
+      },
+      workedExample: {
+        intro: 'A grade of 76%.',
+        rows: [
+          { label: 'Is 76 ≥ 90 (A)?', value: 'No' },
+          { label: 'Is 76 ≥ 80 (B)?', value: 'No' },
+          { label: 'Is 76 ≥ 70 (C)?', value: 'Yes → letter grade is C' },
+          { label: '4.0-scale GPA for a C', value: '2.0' }
+        ],
+        result: 'Letter grade = C, GPA = 2.0',
+        explanation: '76 clears the 70-point C cutoff but falls short of the 80-point B cutoff, placing it in the C range, which the NCES table fixes at 2.0 grade points on the 4.0 scale.'
+      },
+      watchOut: [
+        { title: 'This is the common US scale, not a universal one', body: 'NCES\'s own methodology notes this table applies "unless the school documents specify other letter grade equivalents for numeric grades" — always check your own school\'s catalog or registrar before relying on it for an official record.' },
+        { title: 'Plus/minus grades are not modeled', body: 'Many schools split each band further (a B+ at 87-89, worth 3.3, for example). This calculator uses only the five whole-letter NCES bands — see the GPA Calculator\'s own notes on how plus/minus values vary by school.' },
+        { title: 'The 10-point CGPA scale is intentionally left out', body: 'No single official formula for converting a 10-point CGPA to a percentage or 4.0 GPA could be confirmed from a primary source for this calculator. Check your own university\'s registrar for its specific conversion policy rather than using an unverified formula.' },
+        { title: 'UK degree classifications are not a percentage match', body: 'UK First-class honours conventionally starts around 70%, while the same 70% on this calculator\'s US scale is only a C. The two percentage scales are not calibrated the same way, so no direct conversion to a UK classification is given here.' }
+      ],
+      references: [
+        { label: 'National Center for Education Statistics, High School Transcript Study: Grade Point Average Calculation (grade conversion table)', url: 'https://nces.ed.gov/nationsreportcard/hsts/howgpa.aspx' },
+        { label: 'Wikipedia, "British undergraduate degree classification" (conventional First/2:1/2:2/Third percentage bands)', url: 'https://en.wikipedia.org/wiki/British_undergraduate_degree_classification' }
+      ]
+    },
+    inputs: [
+      { id: 'percentage', label: 'Your percentage or numeric grade', type: 'percent', placeholder: '76', defaultValue: 76, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'GPA Scale Converter – Percentage to 4.0 GPA',
+      description: 'Convert a percentage or numeric grade into its 4.0-scale GPA and letter grade, using the standard NCES conversion table.',
+      faq: [
+        { question: 'How do I convert a percentage to a 4.0 GPA?', answer: 'Using the standard NCES table: 90-100% is a 4.0 (A), 80-89% is a 3.0 (B), 70-79% is a 2.0 (C), 60-69% is a 1.0 (D), and below 60% is a 0.0 (F) — unless your school specifies different cutoffs.' },
+        { question: 'What GPA is a 92%?', answer: '92% falls in the 90-100 range, which is an A worth 4.0 on the standard 4.0 GPA scale.' },
+        { question: 'What GPA is a 65%?', answer: '65% falls in the 60-69 range, which is a D worth 1.0 on the standard 4.0 GPA scale.' },
+        { question: 'Does this convert a 10-point CGPA scale?', answer: "No. No single official formula for converting a 10-point CGPA to a percentage or 4.0 GPA could be confirmed from a primary source, so it's intentionally left out rather than guessed. Check your own university's registrar for its conversion policy." },
+        { question: 'Does this convert to a UK degree classification?', answer: "No. UK marking conventions treat 70%+ as First-class work, while the same 70% on this calculator's US scale is only a C — the two percentage scales aren't calibrated the same way, so a direct conversion would be misleading." },
+        { question: 'Does this handle plus/minus grades like B+?', answer: 'No — this calculator uses the five whole-letter NCES bands only. Individual schools that grade with plus/minus bands (a B+ at 87-89, for example) set their own cutoffs; check your syllabus or registrar for those.' }
+      ]
+    },
+    compute(values) {
+      const { percentage } = values;
+      let gpa: number;
+      let letterGradeCode: number;
+      if (percentage >= 90) { gpa = 4.0; letterGradeCode = 4; }
+      else if (percentage >= 80) { gpa = 3.0; letterGradeCode = 3; }
+      else if (percentage >= 70) { gpa = 2.0; letterGradeCode = 2; }
+      else if (percentage >= 60) { gpa = 1.0; letterGradeCode = 1; }
+      else { gpa = 0.0; letterGradeCode = 0; }
+      return { gpa, letterGradeCode };
+    }
   }
 ];

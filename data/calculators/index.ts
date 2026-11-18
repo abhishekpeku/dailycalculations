@@ -74,6 +74,7 @@ export const calculatorOrder: string[] = [
   'class-attendance-calculator',
   'cumulative-gpa-calculator',
   'semester-credit-hours-calculator',
+  'gpa-scale-converter',
   'calorie-calculator',
   'paycheck-calculator',
   'investment-calculator',

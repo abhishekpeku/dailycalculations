@@ -1854,5 +1854,114 @@ export const funCalculators: CalculatorConfig[] = [
       const { weekdays, weekendDays } = weekdayWeekendCount(todayMid, shopEndMs);
       return { daysLeft, hoursLeft, minutesLeft, shoppingWeekdaysLeft: weekdays, shoppingWeekendDaysLeft: weekendDays };
     }
+  },
+  {
+    id: 'new-years-countdown-calculator',
+    category: 'fun',
+    glyph: 'Jan',
+    updatedAt: '2026-11-18',
+    timeDependent: true,
+    aliases: ['new years countdown calculator', 'days until new year calculator', 'countdown to midnight calculator', 'new year countdown timer', 'happy new year countdown'],
+    related: ['christmas-countdown-calculator', 'timezone-meeting-planner', 'date-difference-calculator', 'age-calculator'],
+    title: "New Year's Countdown Calculator",
+    description: "Count the days, hours and minutes until January 1, plus how many hours after Kiribati -- the first place on Earth to reach midnight -- your own New Year arrives.",
+    example: "Someone on US Eastern time (UTC-5) reaches New Year's midnight 19 hours after Kiribati's Line Islands, the first inhabited place on Earth to get there.",
+    breakdown: {
+      headline: 'daysLeft',
+      headlineLabel: "Days until New Year",
+      outputs: [
+        { id: 'daysLeft', label: "Days until New Year", format: 'integer' },
+        { id: 'hoursLeft', label: 'Plus hours', format: 'integer' },
+        { id: 'minutesLeft', label: 'Plus minutes', format: 'integer' },
+        { id: 'hoursBehindKiribati', label: "Hours after Kiribati's New Year", format: 'number' }
+      ],
+      groups: [
+        { title: 'Which New Year', inputs: ['targetYear'] },
+        { title: 'Your time zone', inputs: ['utcOffsetHours'] }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why "midnight" does not happen at the same moment everywhere',
+        paragraphs: [
+          'A time zone is just a fixed offset from UTC (Coordinated Universal Time), and "midnight on January 1" means a different real moment in every zone, because each zone reaches its own local midnight at a different point in UTC time. The zone with the largest offset reaches midnight first in absolute terms, and the zone with the smallest (most negative) offset reaches it last.',
+          "UTC+14:00 is the largest standard offset actually in use anywhere, and the Line Islands of Kiribati -- including the inhabited island of Kiritimati -- are the only populated place that uses it, which makes them the first inhabited place on Earth to reach any new calendar date, including January 1. Kiribati did not always sit at UTC+14: in 1995, the government unilaterally moved the international date line east to bring the Line Islands onto the same side as the rest of the country, partly so businesses across the country could share one business week, and partly so Kiribati would be the first country to see the dawn of the year 2000.",
+          'This calculator counts down to your own local January 1 midnight, the same way any countdown would, and separately works out how many hours after Kiribati\'s that moment is -- a genuinely different number for almost everyone else on Earth, since UTC+14 is the earliest zone there is.'
+        ]
+      },
+      howTo: {
+        intro: "Enter the year you're counting down to, and your own UTC offset.",
+        steps: [
+          { name: 'Enter the target year', text: 'The calendar year of the January 1 you are counting down to.' },
+          { name: 'Enter your UTC offset', text: 'How many hours your own time zone is from UTC -- for example -5 for US Eastern Standard Time, +5.5 for India, +9 for Japan.' },
+          { name: 'Read the countdown', text: 'Days, plus hours, plus minutes, until your own local midnight on January 1.' },
+          { name: "Read the Kiribati comparison", text: "How many hours after Kiribati's Line Islands (UTC+14, the earliest zone on Earth) your own New Year arrives." }
+        ],
+        outro: "Everything is calculated in your browser from your device's clock and the offset you type. Nothing you type is sent or stored."
+      },
+      formula: {
+        intro: 'The countdown is a timestamp subtraction against your own local midnight; the Kiribati comparison is a simple offset difference.',
+        expression:
+          'newYear = January 1, target year, 00:00 local time\ndiff = newYear - now\ndaysLeft = floor(diff / 86,400,000)\nhoursLeft = floor((diff mod 86,400,000) / 3,600,000)\nminutesLeft = floor((diff mod 3,600,000) / 60,000)\nhoursBehindKiribati = 14 - yourUtcOffsetHours',
+        terms: [
+          { symbol: '14', meaning: "Kiribati's Line Islands UTC offset, UTC+14:00 -- the largest standard offset in use anywhere, and so the earliest zone to reach any new date." },
+          { symbol: 'yourUtcOffsetHours', meaning: 'The UTC offset you entered for your own time zone -- negative for zones west of UTC (most of the Americas), positive for zones east of it.' }
+        ],
+        note: "hoursBehindKiribati assumes a whole-number or half-hour standard offset and does not itself account for daylight saving -- enter whichever offset actually applies to your location on January 1."
+      },
+      workedExample: {
+        intro: "Someone on US Eastern Standard Time (UTC-5, winter, no daylight saving) asks how far behind Kiribati they are.",
+        rows: [
+          { label: 'Your UTC offset', value: '-5' },
+          { label: "Kiribati's UTC offset", value: '+14' },
+          { label: 'hoursBehindKiribati = 14 - (-5)', value: '19' }
+        ],
+        result: "19 hours after Kiribati's New Year",
+        explanation: "Kiribati's Line Islands reach midnight 19 hours before US Eastern Standard Time does -- by the time an Eastern-time clock strikes midnight on January 1, Kiribati has already been in the new year for most of its first day."
+      },
+      watchOut: [
+        { title: 'This is standard-offset arithmetic, not a live world clock', body: "It compares fixed UTC offsets, not real-time clocks in both places at once. For a live comparison across specific cities, a dedicated time zone converter is the better tool." },
+        { title: 'Daylight saving is not applied automatically', body: 'Enter the UTC offset that actually applies to your location on January 1 itself (most places observing daylight saving are on standard time in winter) -- the calculator does not know your specific region\'s daylight-saving rules.' },
+        { title: "Kiribati's UTC+14 is a deliberate political choice, not a geographic accident", body: "The Line Islands moved to UTC+14 only in 1995, when Kiribati's government shifted the international date line east to unify the country's business week and -- deliberately -- to be first to the year 2000." },
+        { title: 'The countdown uses your device\'s clock and time zone', body: "The days/hours/minutes countdown itself (not the Kiribati comparison) is measured against your device's own clock, the same convention as every other live countdown on this site." },
+        { title: 'If the target year has already begun, every figure shows 0', body: 'Change the year field to the next January 1 you want to count down to.' }
+      ],
+      references: [
+        { label: 'Wikipedia, UTC+14:00 (Line Islands, earliest time zone on Earth)', url: 'https://en.wikipedia.org/wiki/UTC%2B14:00' },
+        { label: 'Wikipedia, Kiribati (1995 date line move)', url: 'https://en.wikipedia.org/wiki/Kiribati' }
+      ]
+    },
+    inputs: [
+      { id: 'targetYear', label: 'New Year (target year)', type: 'number', placeholder: '2027', defaultValue: 2027, step: 1, min: 1900 },
+      { id: 'utcOffsetHours', label: 'Your UTC offset (hours, e.g. -5 for US Eastern)', type: 'number', placeholder: '-5', defaultValue: -5, step: 0.5, min: -12 }
+    ],
+    seo: {
+      title: "New Year's Countdown Calculator – Days & Time Zones",
+      description: "Count the days, hours and minutes until January 1, plus how many hours after Kiribati -- the first place on Earth to reach midnight -- your own New Year arrives.",
+      faq: [
+        { question: "How many days until New Year's?", answer: "This calculator measures the exact gap from right now to your own local midnight on January 1, shown as days, hours and minutes." },
+        { question: 'What is the first place on Earth to reach the New Year?', answer: "The Line Islands of Kiribati, which use UTC+14:00 -- the largest standard time zone offset in use anywhere, making them the first inhabited place to reach any new calendar date, New Year's included." },
+        { question: 'Why does Kiribati use UTC+14?', answer: "Kiribati's government moved the international date line east in 1995 so the whole country, including the Line Islands, would share one side of the date line and one business week -- and, deliberately, so Kiribati would be first to the year 2000." },
+        { question: 'How many hours after Kiribati does US Eastern time reach the New Year?', answer: '19 hours -- US Eastern Standard Time is UTC-5, and 14 - (-5) = 19.' },
+        { question: 'Does this calculator account for daylight saving time?', answer: 'No -- enter the UTC offset that actually applies to your location on January 1 itself. Most daylight-saving regions are back on standard time by then.' },
+        { question: "Is this the same as a live world clock?", answer: 'No. It compares fixed UTC offsets rather than two live clocks side by side. For comparing specific cities in real time, use a dedicated time zone converter instead.' }
+      ]
+    },
+    compute(values) {
+      const targetYear = Math.round(values.targetYear);
+      const utcOffsetHours = values.utcOffsetHours;
+      if (!Number.isFinite(targetYear) || !Number.isFinite(utcOffsetHours)) {
+        return { daysLeft: NaN, hoursLeft: NaN, minutesLeft: NaN, hoursBehindKiribati: NaN };
+      }
+      const now = values.todayMs !== undefined ? new Date(values.todayMs) : new Date();
+      const newYearMs = new Date(targetYear, 0, 1, 0, 0, 0).getTime();
+      const diffMs = Math.max(0, newYearMs - now.getTime());
+      const daysLeft = Math.floor(diffMs / 86400000);
+      const hoursLeft = Math.floor((diffMs % 86400000) / 3600000);
+      const minutesLeft = Math.floor((diffMs % 3600000) / 60000);
+      const hoursBehindKiribati = 14 - utcOffsetHours;
+      return { daysLeft, hoursLeft, minutesLeft, hoursBehindKiribati };
+    }
   }
 ];

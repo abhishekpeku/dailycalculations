@@ -519,7 +519,8 @@ export const calculatorOrder: string[] = [
   'easter-date-calculator',
   'mayan-calendar-converter',
   'friday-the-13th-calculator',
-  'christmas-countdown-calculator'
+  'christmas-countdown-calculator',
+  'new-years-countdown-calculator'
 ];
 
 const rank = (id: string) => {

@@ -11517,6 +11517,47 @@ exports[`compute() snapshots > name-numerology-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > new-years-countdown-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "targetYear": 2027,
+      "utcOffsetHours": -5
+    },
+    "outputs": {
+      "daysLeft": 198,
+      "hoursLeft": 0,
+      "minutesLeft": 0,
+      "hoursBehindKiribati": 19
+    }
+  },
+  "typical": {
+    "inputs": {
+      "targetYear": 2028,
+      "utcOffsetHours": -7.5
+    },
+    "outputs": {
+      "daysLeft": 563,
+      "hoursLeft": 0,
+      "minutesLeft": 0,
+      "hoursBehindKiribati": 21.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "targetYear": 1900,
+      "utcOffsetHours": -12
+    },
+    "outputs": {
+      "daysLeft": 0,
+      "hoursLeft": 0,
+      "minutesLeft": 0,
+      "hoursBehindKiribati": 26
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > nfl-passer-rating-calculator 1`] = `
 {
   "default": {

@@ -692,5 +692,105 @@ export const textCalculators: CalculatorConfig[] = [
       const readingEase = 206.835 - 1.015 * asl - 84.6 * asw;
       return { gradeLevel, readingEase };
     }
+  },
+  {
+    id: 'word-to-page-count-calculator',
+    group: 'Word Count & Readability',
+    category: 'text',
+    glyph: 'pg',
+    updatedAt: '2026-11-18',
+    aliases: ['words to pages calculator', 'page count calculator', 'word count to pages', 'how many pages is my essay', 'pages to words calculator'],
+    related: ['readability-score-calculator', 'character-counter', 'typing-speed-calculator'],
+    title: 'Word to Page Count Calculator',
+    description: 'Estimate how many pages a word count fills, single- or double-spaced, using the standard manuscript-format estimate of 250 words per double-spaced page.',
+    example: 'A 1,250-word essay runs about 5 pages double-spaced, or 2.5 pages single-spaced.',
+    breakdown: {
+      headline: 'pages',
+      headlineLabel: 'Estimated pages',
+      outputs: [
+        { id: 'pages', format: 'number' },
+        { id: 'otherSpacingPages', label: 'Pages at the other spacing', format: 'number' }
+      ],
+      groups: [{ title: 'Your text', inputs: ['words', 'spacing'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'pages', label: 'At your spacing' }, { from: 'otherSpacingPages', label: 'At the other spacing' }],
+        title: 'Pages by spacing'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why 250 words is the standard double-spaced page estimate',
+        paragraphs: [
+          'This calculator uses the long-standing publishing-industry estimate for a double-spaced manuscript page: Wikipedia\'s "Standard manuscript format" article states that with margins set for about 25 lines per page and roughly 10 words per line, an editor can "easily count 250 words per page." That 25-lines-per-page, 10-words-per-line arithmetic is specific to a standard 12-point font, 1-inch margins and double-spaced lines — the same formatting most schools and style guides (MLA, APA) require for essays.',
+          'Single-spacing roughly doubles how many lines fit on the same page — about 50 instead of 25 — which is why this calculator estimates 500 words per single-spaced page: double the double-spaced figure, not a separately published number of its own.',
+          'Either figure is an estimate, not a measurement of your actual document. Font, font size, margins, headings, block quotes and images all change how many words actually fit on a page — this calculator answers "roughly how many pages," useful for planning before you have written the piece, not "exactly how many pages my finished, formatted document will be."'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your word count and choose single- or double-spacing.',
+        steps: [
+          { name: 'Get your word count', text: 'Use the word counter or character counter on this site, or your word processor\'s own count.' },
+          { name: 'Choose your spacing', text: 'Pick double-spaced (the common default for essays and manuscripts) or single-spaced.' },
+          { name: 'Read the page estimate', text: 'The headline is your estimated page count at the spacing you chose.' },
+          { name: 'Compare the other spacing', text: 'The second figure and chart show what the same word count would run to at the other spacing.' },
+          { name: 'Work backward from a page target', text: 'If an assignment asks for "5 pages," multiply 5 by 250 (double-spaced) or 500 (single-spaced) to get a target word count.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Pages are the word count divided by words-per-page, which depends on spacing.',
+        expression: 'pages = words ÷ 250   (double-spaced)\npages = words ÷ 500   (single-spaced)',
+        terms: [
+          { symbol: 'words', meaning: 'Total word count of the document.' },
+          { symbol: '250', meaning: 'Estimated words per double-spaced page, from standard manuscript formatting.' },
+          { symbol: '500', meaning: 'Estimated words per single-spaced page — roughly double, since single-spacing roughly doubles the lines per page.' }
+        ],
+        note: 'An estimate based on typical formatting (12-point font, 1-inch margins). Your actual page count will vary with font, font size, margins and how much of the page is headings, images or white space.'
+      },
+      workedExample: {
+        intro: 'A 1,250-word essay needs to be submitted double-spaced. How many pages is that, and how many would it be single-spaced instead?',
+        rows: [
+          { label: 'Double-spaced (1,250 ÷ 250)', value: '5 pages' },
+          { label: 'Single-spaced (1,250 ÷ 500)', value: '2.5 pages' }
+        ],
+        result: 'About 5 pages double-spaced · 2.5 pages single-spaced',
+        explanation: 'Single-spacing the same 1,250 words takes exactly half as many pages as double-spacing it (2.5 versus 5), because the words-per-page estimate for single-spacing is exactly double the double-spaced figure.'
+      },
+      watchOut: [
+        { title: 'This is an estimate, not your document\'s actual page count', body: 'Font choice, font size, margin width, headings, block quotes, images and citations all change how many words actually fit on a page. Treat this as a planning estimate, not a guarantee of your finished page count.' },
+        { title: 'The 250/500 figures assume standard formatting', body: 'These numbers assume roughly a 12-point font and 1-inch margins, the formatting most schools and style guides require. A larger font, wider margins or extra line spacing will fit fewer words per page than this estimate.' },
+        { title: 'A "page" means different things in different contexts', body: 'Fiction manuscripts, legal documents and academic papers can all use different standard formatting. This calculator uses the common double-spaced academic/manuscript convention, not every possible page format.' },
+        { title: 'Headings and white space take up page space too', body: 'A page with a large heading, a chart, or significant white space holds noticeably fewer words than a page of continuous text, so a document with many such breaks will run longer than this estimate predicts.' },
+        { title: 'Use it in both directions', body: 'This works just as well backward: to hit a "5-page" assignment target double-spaced, aim for about 5 × 250 = 1,250 words, then treat the actual page count in your word processor as the final word.' }
+      ],
+      references: [
+        { label: 'Wikipedia, Standard manuscript format', url: 'https://en.wikipedia.org/wiki/Standard_manuscript_format' }
+      ]
+    },
+    inputs: [
+      { id: 'words', label: 'Word count', type: 'number', placeholder: '1250', defaultValue: 1250, step: 1, min: 0 },
+      { id: 'spacing', label: 'Spacing', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0, options: [{ value: 0, label: 'Double-spaced' }, { value: 1, label: 'Single-spaced' }] }
+    ],
+    seo: {
+      title: 'Word to Page Count Calculator – Words to Pages',
+      description: 'Estimate how many pages a word count fills, single- or double-spaced, using the standard 250-words-per-double-spaced-page manuscript estimate.',
+      faq: [
+        { question: 'How many pages is 1,000 words?', answer: 'About 4 pages double-spaced (1,000 ÷ 250) or 2 pages single-spaced (1,000 ÷ 500), using the standard manuscript-formatting estimate.' },
+        { question: 'How many words is a 5-page paper?', answer: 'About 1,250 words double-spaced (5 × 250) or 2,500 words single-spaced (5 × 500).' },
+        { question: 'Where does the 250-words-per-page figure come from?', answer: 'It is the standard manuscript-format estimate: with margins set for about 25 lines per page and roughly 10 words per line, an editor can count about 250 words per double-spaced page.' },
+        { question: 'Why is single-spaced exactly double the double-spaced estimate?', answer: 'Because single-spacing roughly doubles how many lines fit on a page (about 50 instead of 25), the words-per-page estimate for single-spacing is modeled as double the double-spaced figure, not a separately measured number.' },
+        { question: 'Will my actual document match this estimate exactly?', answer: 'Not exactly. Font, font size, margins, headings, images and block quotes all change how many words fit per page. This is a planning estimate, not a substitute for checking your word processor\'s own page count.' },
+        { question: 'Does this work for single-spaced documents too?', answer: 'Yes — choose single-spaced, or just read the "pages at the other spacing" figure, which always shows the comparison for whichever spacing you did not select.' }
+      ]
+    },
+    compute(values) {
+      const wordsPerPage = values.spacing === 1 ? 500 : 250;
+      const otherWordsPerPage = values.spacing === 1 ? 250 : 500;
+      const pages = values.words / wordsPerPage;
+      const otherSpacingPages = values.words / otherWordsPerPage;
+      return { pages, otherSpacingPages };
+    }
   }
 ];

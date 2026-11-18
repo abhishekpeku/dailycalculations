@@ -18383,6 +18383,41 @@ exports[`compute() snapshots > womens-shoe-size-chart 1`] = `
 }
 `;
 
+exports[`compute() snapshots > word-to-page-count-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "words": 1250,
+      "spacing": 0
+    },
+    "outputs": {
+      "pages": 5,
+      "otherSpacingPages": 2.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "words": 1875,
+      "spacing": 0
+    },
+    "outputs": {
+      "pages": 7.5,
+      "otherSpacingPages": 3.75
+    }
+  },
+  "edge": {
+    "inputs": {
+      "words": 0,
+      "spacing": 0
+    },
+    "outputs": {
+      "pages": 0,
+      "otherSpacingPages": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > work-calculator 1`] = `
 {
   "default": {

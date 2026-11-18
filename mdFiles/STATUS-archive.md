@@ -2284,3 +2284,756 @@ certainly cross it; plan the visual-QA pass then. ~10 of the ~15 first-pass Spor
 (steps-to-miles+stride, baseball hitting stats, cricket bowling average/net run rate, NFL passer
 rating, winning percentage, Elo rating, cycling pace, golf handicap — still unconfirmed formula).
 Full writeup: `mdFiles/steps/59-wave-2-sports-run-1.md`.
+
+## Appended 2026-11-19 — steps 46-49/60/61 session-log entries trimmed from STATUS.md
+
+**2026-11-05 — Step 59, Wave 2 Sports run 2 (PR #60, merged) — Sports closed out, Wave 2 fully DONE**:
+added `steps-to-miles-calculator`, `baseball-batting-average-calculator` (AVG/OBP/SLG/OPS combined,
+MLB glossary formulas), `cricket-bowling-figures-calculator` (average/economy/strike-rate combined),
+`cricket-net-run-rate-calculator` (ICC clause 16.10.2, including the "bowled out → full overs" rule),
+`nfl-passer-rating-calculator` (NFL's 1973 formula, 0–2.375 clamp), `elo-rating-calculator` (FIDE's
+current K-factor table + 400-point cap), `golf-course-handicap-calculator` (WHS Rule 6.1 — scoped to
+the Handicap-Index-to-Course-Handicap conversion only; the full Handicap Index itself needs a 20-round
+scoring history, not a single formula, so that's explicitly out of scope) to `sports` (now **12
+calculators**, 194 total on the site). Parked winning-percentage (too generic) and cycling-pace (no
+distinct convention beyond running-pace-calculator/measurements). `npm test` caught a real edge case
+pre-ship: `cricket-bowling-figures-calculator`'s wicketless-bowler input correctly produced `NaN` for
+average/strike-rate, added to `KNOWN_NON_FINITE`. `npm test` 817/817, lint clean, `npm run build`
+224/224 static pages — re-confirmed by the main session before merging. **This closes out Wave 2 in
+full** (construction 165→27-in-home, food 17, sports 12). **Visual-QA checkpoint: 50 calculators
+since the last Chrome visual pass — exactly at the `CLAUDE.md` ~50 threshold. A visual-QA pass is
+now due** before starting whatever comes after Wave 2. Full writeup:
+`mdFiles/steps/59-wave-2-sports-run-2.md`.
+
+**2026-11-08 — Step 46, Wave 3 chemistry run 3 (PR #67, open, not yet merged)**: added
+`limiting-reagent-calculator` (type-B breakdown, two-reactant comparison), `theoretical-yield-calculator`
+(5-variable closed-form solver, cross-linked both ways with `percent-yield-calculator`),
+`empirical-formula-calculator` (breakdown, reuses `lib/atomicMasses.ts`'s `ELEMENT_OPTIONS`, up to 3
+elements, implements OpenStax's percent→moles→smallest-ratio→clear-the-fraction method as one
+`compute()` step), `stoichiometry-calculator` (4-variable mole-ratio solver, scoped to simple
+mole-ratio problems only — no equation balancing, confirmed not multi-step), and
+`solution-concentration-calculator` (3-variable mg/L solver, cross-linked with `molarity-calculator`/
+`mass-percent-calculator`). New `lib/units.ts` dimension `massConcentration` (base mg/L; ppm/ppb share
+mg/L's/µg/L's factors on EPA's own stated drinking-water convention, fetched directly — not a
+universal mass-fraction identity, caveated in content for anything denser than a dilute aqueous
+solution). All formulas verified against OpenStax Chemistry 2e (§3.2, §3.4, §4.3, §4.4) and EPA's
+National Primary Drinking Water Regulations page, fetched directly, not recalled from memory. `npm
+test` 989/989, lint clean, `npm run build` 260 static pages — all re-run by the build agent. Curl-
+checked all 5 pages plus `/categories/chemistry`. `chemistry` now 15 calculators, **229 total**.
+Found (not fixed, see Parked) two mismatched section-title/URL citations in chemistry run 1's already-
+shipped `mass-percent-calculator` and `dilution-calculator`. Full writeup:
+`mdFiles/steps/46-47-wave-3-physics-chemistry.md`.
+
+**2026-11-08 — Step 46, Wave 3 chemistry run 4 (PR #68, open, not yet merged)**: added
+`reaction-half-life-calculator` (t½ = ln2 ÷ k, first-order kinetics, 2-variable solver — explicitly
+distinct from physics' `radioactive-half-life-calculator`, cross-linked both ways), `rate-constant-
+calculator` (first-order integrated rate law, k = ln([A]₀÷[A])÷t, 4-variable solver, scoped tight to
+first order only per the task's instruction), `arrhenius-equation-calculator` (k = A·e^(−Ea/RT),
+4-variable solver, reuses `ideal-gas-law-calculator`'s exact R constant), `molality-calculator`
+(b = mol÷kg solvent, 3-variable solver, content contrasts its temperature-independence with
+molarity's), and `mole-fraction-calculator` (χ = mol component ÷ total mol, type-B breakdown widget,
+2-or-3-component). New `lib/units.ts` dimensions: `rateConstant` (base s⁻¹, alts min⁻¹/h⁻¹ — same
+physical unit as `frequency`'s Hz but chemistry-appropriate units), `molarEnergy` (base J/mol, alts
+kJ/mol/cal/mol/kcal/mol) and `molality` (base mol/kg). Sanity-checked the task's specific-heat
+question: confirmed physics' `heat-calculator` (Q = mcΔT) already adequately serves a chemistry
+audience, so no duplicate page was built — molality/mole-fraction filled those two run-4 slots
+instead, as planned. All formulas and worked-example numbers verified against OpenStax Chemistry 2e
+(§12.4, §12.5, §11.4, §9.3), fetched directly — the half-life and rate-constant calculators reuse the
+same real H₂O₂ decomposition data table (OpenStax Example 12.7/12.11) for internal consistency. `npm
+test` 1,012/1,012, lint clean, `npm run build` 265 static pages. A pre-existing `next dev` process was
+already running on port 3000 for this project (not started by this run); Next.js refuses a second dev
+server per project directory regardless of port, and killing that PID was correctly blocked as
+"interfere with workloads," so the 5 new pages were instead verified from the static HTML
+`next build` already produced (H1, JSON-LD, all 8 sections, category-page links) — no new dev server
+was left running. `chemistry` now 20 calculators, **234 total**. Full writeup:
+`mdFiles/steps/46-47-wave-3-physics-chemistry.md`.
+
+**2026-11-09 — Step 46, Wave 3 chemistry run 6 (PR #70) — DONE and merged**: added
+`density-of-solutions-calculator`, `serial-dilution-calculator`, `electron-configuration-calculator`,
+`buffer-capacity-calculator`, and `beer-lambert-law-calculator`. (Chemistry run 5, PR #69 — added
+`osmolarity-calculator`, `normality-calculator`, `titration-calculator`, `equilibrium-constant-
+calculator`, `gibbs-free-energy-calculator`, taking chemistry to 25/239 total — was merged between
+sessions without its own entry landing here; see the top summary line and the step file for its
+details.) New `lib/electronConfigurations.ts`: ground-state electron configurations for elements
+1-108, transcribed directly from NIST's Atomic Spectra Database (elements 109+ have no NIST data, so
+the calculator stops at 108). Resolved the Cr/Cu written-order question left open by the prior
+session's cutoff: NIST's own data prints 3d before 4s (increasing-n order), confirmed by a direct
+fetch, not Aufbau fill order. New `lib/units.ts` dimensions `absorbance` and `molarAbsorptivity`
+(IUPAC Gold Book, m²/mol base) for the Beer-Lambert calculator. Full writeup, including the scope
+decisions (density-of-solutions is deliberately not a duplicate of physics' density-calculator;
+serial-dilution is unit-agnostic; buffer-capacity is a type-B breakdown, not a solver) and the two
+citation gaps flagged (the IUPAC Gold Book and the 1922 Van Slyke paper both 403'd a direct fetch —
+the Van Slyke buffer-capacity formula was independently re-derived from scratch instead):
+`mdFiles/steps/46-47-wave-3-physics-chemistry.md`. `npm test` (1,057 tests), lint clean, `npm run
+build` (275 static pages). `chemistry` now 30 calculators, **244 total**.
+
+**2026-11-15 — Step 60, Wave 5a finance batch 1 (real estate/affordability, PR #75) — DONE, not yet merged**:
+added `home-affordability-calculator` (three-tier conservative/balanced/maximum PITI affordability
+with PMI below 20% down and a 28% front-end / 36-43-50% back-end DTI check, cited to CFPB Reg Z
+§1026.43, Fannie Mae Selling Guide B3-6-02 and Freddie Mac's PMI/insurance figures),
+`mortgage-refinance-calculator` (break-even = closing costs ÷ monthly savings, the Federal Reserve
+Board's own refinancing-guide formula, plus lifetime-interest comparison that catches the
+"resetting the clock" trap), `down-payment-savings-calculator` (solver, same future-value-with-
+contributions math as `compound-interest-calculator` but solved for time-to-goal),
+`closing-cost-estimator-calculator` (CFPB/Freddie Mac-cited 2-5% of price overall, 0.5-1% of loan
+for origination specifically; everything else is the remainder of the cited range, not invented
+per-category percentages), `rent-vs-buy-calculator` (net cost of renting vs. buying over N years,
+crediting the down payment's foregone investment growth to the renting side). `finance` 8 → **13**
+calculators. Every worked-example number re-verified in a scratch script (not committed) before
+each commit; every fetched figure (CFPB, Freddie Mac, Fannie Mae, Federal Reserve Board, BLS CPI,
+Redfin) came from a direct fetch, not recalled. `npm test` 1123/1123 (8 new `KNOWN_NON_FINITE`
+entries added for legitimate 0/0 edge cases), lint clean, `npm run build` 295 static pages.
+Branch `step/60-wave-5a-finance-run-1`, draft PR **#75**, not yet merged — main session reviews
+and merges next. Batches 2-7 (debt, retirement ×2, investment analysis, remaining items, income
+tax) are separate future runs.
+
+**2026-11-15 — Step 60, Wave 5a finance batch 2 (debt, 5, PR #92) — DONE, not yet merged**: added
+`debt-to-income-calculator` (front-end/back-end DTI, deliberately reusing home-affordability's own
+28%/36% convention and example numbers so the two pages agree exactly), `debt-payoff-calculator`
+(snowball vs. avalanche side by side on a 3-list-input debt set — balances/rates/minimum payments,
+a new 3-list pattern beyond statistics' existing 2-list `pairedLists` precedent — cited to a CFPB
+blog on the two strategies plus Gal & McShane's 2012 *Journal of Marketing Research* paper on why
+snowball works psychologically even when it costs more), `credit-card-minimum-payment-calculator`
+(minimum-only payoff timeline vs. a fixed payment, using the 1%-of-balance-plus-interest / $25-floor
+formula the CFPB's own 2015 Consumer Credit Card Market Report found "almost all" large issuers
+use — fetched directly via `pdftotext` after `WebFetch` couldn't parse the PDF), `balance-transfer-
+savings-calculator` (net savings = interest avoided minus the transfer fee, assuming payoff within
+the promo window; cites CFPB confirming a transfer fee can apply even to a 0% offer),
+`student-loan-calculator` (Standard/Graduated/Extended federal repayment plans; Graduated modeled
+with a from-scratch bisection-solved step-up schedule, explicitly caveated as simplified; cites two
+Department-of-Education loan servicers directly for the $30k Extended eligibility floor and the
+July 1, 2026 cutoff after which new loans use a Tiered Standard plan instead, not modeled here).
+`finance` 13 → **18** calculators, new `Debt` sub-group. Every worked-example number re-verified in
+standalone scratch scripts (not committed, no app imports) before each commit, including the
+debt-payoff snowball/avalanche simulation and the graduated-schedule bisection. Every fetched figure
+(CFPB 2015 report §5.2.5, CFPB balance-transfer-fee page, two studentaid.gov-affiliated servicer
+pages) came from a direct fetch — the CFPB 2015 report PDF needed `pdftotext -layout` since
+`WebFetch` returned "binary/encoded" for it. `npm test` 1128/1128 (2 new `KNOWN_NON_FINITE` entries
+for legitimate 0-income/0-balance edge cases), lint clean, `npm run build` 300 static pages. Branch
+`step/60-wave-5a-finance-run-2`, draft PR **#92**, not yet merged — main session reviews and merges
+next. Batches 3-7 (retirement ×2, investment analysis, remaining items, income tax) are separate
+future runs.
+
+**2026-11-15 — UX-09 third follow-up: CSV→Excel pivot, PDF + Print redesign — DONE, not yet
+merged**: continuing the same UX-09 session after a user screenshot confirmed a real bug in the
+first Excel draft (chart image overlapping the Inputs column; numbers written as pre-formatted
+text, triggering Excel's "number stored as text" warning). Consulted an Opus subagent twice (Excel
+design; then PDF + Print design) and rewrote all three against those specs rather than keep
+patching. `lib/export.ts`'s `ExportRow`/`ExportTable` now carry real typed `raw`+`kind` values
+alongside the display string; `SolverCalculator.tsx`/`BreakdownCalculator.tsx` populate them.
+`lib/exportExcel.ts` fully rewritten: two sheets (Summary with a KPI card, inputs, a colored legend
+table with a `SUM()` total row, and the chart image, columns B:C/E:H with a deliberately-blank
+column D between them; Schedule with a native `ws.addTable()`, frozen header, conditional-format
+zebra striping). `lib/exportPdf.ts` fully rewritten: top-down full-width blocks (tinted KPI band,
+2-column inputs, chart+legend-as-table, notes, schedule always on its own page) replacing the old
+inputs-beside-chart cards. `app/globals.css` + `CalculatorWidget.tsx` got real `@media print`
+handling (forces light mode on paper even if dark theme is active, `print-color-adjust: exact` on
+the result/chart so colors survive printing, hides the actions bar, flattens form-control borders).
+New dependency `exceljs` ^4.4.0, replacing the deleted `lib/exportCsv.ts` — audited, 2 new moderate
+findings assessed low-risk (same pattern as the original jsPDF audit). A real bug found and fixed
+during this work: the chart legend's label/value split was regexing the *last* number off the
+joined DOM text, which grabbed the share percentage ("52%") instead of the dollar amount in the
+middle for Donut's 3-part `[label, amount, share%]` legend rows — fixed by splitting on the
+legend's actual per-child DOM text nodes instead of the joined string, verified against the live
+DOM. `npm test` 1123/1123, lint clean, `npx tsc --noEmit` clean, `npm run build` passes.
+Live-verified in Chrome: captured the generated Excel blob directly (bypassing Chrome's
+repeated-auto-download block, which silently drops a page's 2nd+ programmatic download without an
+intervening trusted user gesture) and round-tripped it through `exceljs` to confirm real numbers,
+correct formats, the native table, and the legend fix. Deliberately not implemented from the Opus
+specs (time-boxed, documented as follow-ups in the step file): vector-drawn PDF donut, year-subtotal
+grouping in the PDF schedule, region-aware Letter/A4 paper size, and printed-static (vs. native)
+form-control values. Branch `ux/download-export-layout-v2`, not yet merged — see
+`mdFiles/steps/ux-09-download-export.md`'s "Third follow-up" section for full detail.
+
+**2026-11-15 — UX-09 fourth follow-up: dropped the Print option**: user's call — printing is
+redundant once PDF download exists (print the downloaded file instead). Removed the `Print`
+dropdown entry and its `window.print()` handler from `DownloadMenu`
+(`components/CalculatorWidget.tsx`); `DownloadFormat` is now `'pdf' | 'pdf-table' | 'excel'`. Kept
+the `@media print` CSS from the third follow-up — still useful for a native Ctrl+P regardless of
+whether the app exposes a button for it. `npm test` 1123/1123, lint clean, `npx tsc --noEmit`
+clean, build passes. Verified live: the dropdown now shows exactly PDF / PDF with table / Excel.
+
+**2026-11-16 — Step 61 batch 2, `work` (branch `step/61-deepen-work`, PR #95)**: added
+`overtime-pay-calculator`, `severance-pay-calculator`, `cost-of-living-comparison-calculator`,
+`remote-work-savings-calculator`, `job-offer-comparison-calculator`,
+`paid-sick-leave-accrual-calculator` — `work` now 10 (4→10, all 6 planned calculators built, none
+skipped). Dedupe check against the whole site found `overtime-pay-calculator`'s FLSA math
+overlapping `time`'s existing `work-hours-calculator`; kept it distinct by auto-splitting a weekly
+total at a threshold (vs. pre-split hours) and adding a double-time tier, with an explicit
+cross-reference in both directions in the copy rather than silently duplicating. Per the task's
+instruction, `remote-work-savings-calculator` reuses `auto`'s `commute-cost-calculator` per-day
+cost model exactly (same default scenario, same $26.38/day) rather than recomputing it, adding only
+a Census-cited time-saved figure the original deliberately omits. All cited figures fetched live
+this session: DOL (severance pay fact sheet, WARN Act, FLSA/overtime, EO 13706 sick leave FAQ), CA
+DIR (overtime + paid sick leave FAQs), BLS (CPI area-index FAQ, June 2026 ECEC benefits share),
+C2ER (cost-of-living index methodology + its own worked ratio example, used only to sanity-check
+the formula, not copied as our example), SHRM (citing a WorldatWork severance-formula survey), and
+the US Census Bureau (2019 ACS one-way commute time). Every worked-example number re-verified in a
+standalone Node scratch script before writing the copy, then cross-checked again against the
+actual `compute()` snapshot output — both matched exactly. `npm test` 1137/1137, lint clean,
+`npm run build` green. Next: batch 3 (`health`, 6→11) per the step file.
+
+**2026-11-16 — Step 60, Wave 5a finance batch 3 (retirement, part 1, 5, branch
+`step/60-wave-5a-finance-run-3`, PR #99) — DONE, not yet merged**: resumed after a previous run
+died from a rate limit having committed only 3 of 5 (`retirement-savings-calculator`,
+`401k-employer-match-calculator`, `roth-ira-growth-calculator`). Added the remaining 2:
+`traditional-ira-calculator` (same yearly-contribution/yearly-compounding growth math as
+`roth-ira-growth-calculator`, differentiated purely by tax treatment — an assumed tax rate drives
+both this year's estimated deduction savings and the tax owed on the pretax balance at withdrawal,
+so the Roth-vs-traditional "tax now vs. tax later" trade-off shows up as real dollars; cites the
+same shared 2026 IRS IRA limit Roth already uses, $7,500/$8,600 with the 50+ catch-up, from IRS
+Notice 2025-67 fetched directly, plus the deduction phase-out ranges from the same notice) and
+`rmd-calculator` (Required Minimum Distribution from the IRS's current Uniform Lifetime Table —
+fetched IRS Publication 590-B (2025) Appendix B Table III directly via its own tool-result PDF
+read, since the WebFetch tool's PDF text extraction failed on both the Notice and Pub 590-B PDFs;
+reproduced the full table, ages 72 through 120+, as a `content.referenceTable`, not an
+approximation). Both calculators were already correctly anticipated by `roth-ira-growth-calculator`'s
+existing cross-links and FAQ promise ("the same example numbers") — verified at the end, no edits
+needed to Roth. Every worked-example number (including the "RMD at 90 is ~101.6% higher than at 75"
+and the 22%-vs-32%-withdrawal-tax comparison) independently re-verified in a standalone Node
+scratch script before committing. A pre-existing, already-committed stale snapshot (from the
+earlier interrupted run) had placeholder entries for both new ids under different field names —
+resolved by treating them as orphaned/stale per the skill's own protocol and running
+`npm run test:update`, confirming via `git diff` that the regenerated snapshot touched only the
+two intended ids each time. `npm test` 1180/1180, lint clean,
+`npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` clean,
+`npm run build` 331/331 pages. `finance` 18 → 23; site-wide total (grepped, not estimated) 301.
+**This closes out batch 3 (5/5).** Next: batch 4 (retirement pt. 2 + goal investing, 5) per the
+step file — not started by this run.
+
+**2026-11-16 — Step 60, Wave 5a finance batch 5 (investment analysis + simple-interest cluster, 5,
+branch `step/60-wave-5a-finance-run-5`, PR #101) — DONE, not yet merged**: added
+`irr-calculator` (Internal Rate of Return from a cash-flow `list` input; reused `lib/solve.ts`'s
+`findRoot` for the rate, which has no closed form — no new solver added to that file), `npv-calculator`
+(Net Present Value from the same cash-flow-series shape plus a discount rate, closed form; cross-linked
+both ways with `irr-calculator` as the two sides of the same series — NPV at the worked example's own
+IRR of 17.77% comes out to $0, checked directly), `cd-calculator` (maturity value from a stated APY,
+applied as `FV = P × (1 + APY)^(months/12)` — differentiated from `compound-interest-calculator` by
+having no contribution field at all, matching how a real CD works, since APY already includes
+compounding; early-withdrawal-penalty content cited to the CFPB and OCC's helpwithmybank.gov),
+`simple-interest-calculator` (`I = P × r × t`, with the compound-interest contrast computed directly
+into the copy rather than left abstract — same $4,000/5.5%/4-year inputs, compounding earns 8.56% more),
+and `mutual-fund-calculator` (lump sum + monthly contribution, expense ratio subtracted from the gross
+return before compounding — the one thing `investment-calculator` doesn't model — with the fee's
+dollar cost broken out as its own `feeDrag` output, $11,717.80 on the worked example rather than an
+abstract percentage). Every worked-example number (IRR, NPV, CD maturity/back-solves, simple vs.
+compound interest, mutual-fund fee drag) independently re-verified in a standalone Node scratch script
+before committing — caught and fixed one wrong invented comparison figure (a hand-waved "0.1% expense
+ratio" alternative) during that pass. Citations fetched directly: OpenStax *Principles of Finance*
+§16.2/16.3 (NPV/IRR), OpenStax *Contemporary Mathematics* §6.3 (simple interest), CFPB and
+helpwithmybank.gov (CD penalties), SEC Investor.gov (expense ratio) — the two Investor.gov URLs
+returned HTTP 403 to the fetch tool directly but are the same already-cited-elsewhere SEC glossary
+domain used by `compound-interest-calculator`/`investment-calculator`, corroborated via search-result
+snippets of the same pages. `npm test` 1208/1208 (one new `KNOWN_NON_FINITE` entry,
+`irr-calculator`'s `[0, 0]` edge-case cash-flow list has no sign change), lint clean, `npm run build`
+green throughout (one build run per calculator as it was added). `finance` 28 → 33; site-wide total
+**310**, verified via a temporary script importing `data/calculators/index.ts` directly (per-file grep
+of top-level `id:` lines over-counted by 1 — `statistics` is 25, not 26 — so the import-based count is
+the authoritative one, not the grep). Dev-server check: curled all 5 new pages (200s, correct H1/TOC/
+FAQ/JSON-LD), using port 3002 since port 3000 already had another session's server running — left that
+one alone, killed only the 3002 instance afterward. **This closes out batch 5 (5/5).** Next: batch 6
+(remaining money-hub items, 5–6) per the step file — not started by this run.
+
+**2026-11-16 — Step 60, Wave 5a finance batch 6 (remaining money-hub items, 5,
+branch `step/60-wave-5a-finance-run-6`, PR #102) — DONE, not yet merged**: added
+`emergency-fund-calculator` (3-month minimum / 6-month recommended target from monthly expenses,
+cited directly to FINRA's investor-education page — "the equivalent of three to six months of
+living expenses" — and the CFPB's own Money as You Grow savings page, which independently sets the
+same 3-month floor and suggests 6-9 months "if possible"; a `rangeBar` visual plots months of
+expenses already covered against that cited range), `mortgage-amortization-schedule-calculator`
+(built, not skipped — the redundancy check against `mortgage-calculator`, which already renders a
+full monthly amortization table per UX-07, found the step file's own suggested genuinely-additional
+angle: an accelerated-biweekly vs. standard-monthly schedule comparison on the same loan, modeled as
+the regular payment plus 1/12 extra every month, the monthly-equivalent of a half-payment every two
+weeks; includes a real CFPB enforcement citation, the Nationwide Biweekly suit, quoting the Bureau's
+own finding that a typical enrolled consumer needed nine years and over $1,200 in fees before a paid
+third-party biweekly program's own promised savings caught up with its cost, with the free DIY
+alternative — `loan-prepayment-calculator` — cross-linked directly), `business-loan-calculator`
+(identical amortized-loan math to `loan-calculator`, differentiated entirely through content per the
+step file's own instruction: working-capital vs. equipment-financing framing, SBA 7(a)/504/Microloan
+program structure and guarantee percentages fetched directly from sba.gov), `commission-calculator`
+(flat-rate vs. tiered/marginal-bracket commission on a sale amount, modeled bracket-by-bracket the
+same way tax brackets work, with an explicit watch-out that some real "cliff" plans instead apply the
+new rate to the whole sale; IRS Publication 15 (2026)'s 22%/37% supplemental-wage flat-withholding
+rule and DOL Fact Sheet #20's commissioned-retail-employee overtime exemption both fetched directly
+rather than recalled), and `college-savings-calculator` (529-style monthly contribution required to
+fund every year of a future college cost — the goal is computed from today's tuition compounded by a
+tuition-inflation-rate input and summed across every year in school, rather than typed in directly as
+`goal-based-investment-calculator` requires, which is the explicit differentiator; College Board's
+*Trends in College Pricing and Student Aid* 2025 report fetched directly for both the $11,950
+public-in-state / $45,000 private-nonprofit 2025-26 tuition defaults and the 2.9%/4.0% nominal
+year-over-year increases used to justify the default inflation-rate assumption; cross-linked both ways
+with `goal-based-investment-calculator`). `down-payment-savings-calculator` was not duplicated, per
+the step file (already shipped in batch 1). One mid-build syntax bug (an unescaped apostrophe in
+`business-loan-calculator`'s content broke parsing for the whole file) was caught by `npm test` and
+fixed before committing. Every worked-example number (emergency-fund months-to-goal, the biweekly
+amortization simulation, business-loan payment/interest at two terms, flat vs. tiered commission
+across three sale sizes, and every college-savings year-by-year tuition figure/required contribution)
+independently re-verified in a standalone Node scratch script before committing. `npm test` 1216/1216
+(three new `KNOWN_NON_FINITE` entries for zero-division edge cases: `emergency-fund-calculator`,
+`commission-calculator`; `mortgage-amortization-schedule-calculator` and `college-savings-calculator`
+needed no entry, since their `compute()` already guards the zero-period edge the same way
+`goal-based-investment-calculator` does), lint clean, `npm run build` green (315 pages, verified via
+a temporary script importing `data/calculators/index.ts` directly — same safer method batch 5 used
+over the per-file grep). `finance` 33 → **38** calculators; site-wide total **315**. **This closes out
+batch 6 (5/5).** Next: batch 7 (`income-tax-calculator`, standalone) per the step file — explicitly
+not started by this run, and the visual-QA spot-check the step file notes as due near the end of
+batch 6/7 is also still pending.
+
+**2026-11-16 — Step 60 batch 7 (income tax, solo, PR #103) — Step 60 (Wave 5a finance/money-hub)
+now FULLY DONE, all 7 batches**: added `income-tax-calculator` — US federal-only income tax
+estimate by filing status (single, married filing jointly, married filing separately, head of
+household), from either gross income (2026 standard deduction applied) or taxable income entered
+directly, with effective tax rate and marginal tax rate shown side by side (addressed directly in
+the content as a common point of confusion: effective is total tax divided by taxable income,
+marginal is the rate on the next dollar, and the gap between them grows with income — the worked
+example shows an 11.44% effective rate vs. a 12% marginal rate on $43,900 of taxable income).
+Reuses the shared `PAYROLL_2026` bracket table `paycheck-calculator` already cites (IRS Rev. Proc.
+2025-32 / Internal Revenue Bulletin 2025-45), extended with a 4th array entry for married filing
+separately — fetched and cross-checked via two independent web searches, then verified identical to
+single's brackets through the 32% bracket, with the 35%/37% cutoff at exactly half of
+married-filing-jointly's own threshold ($384,350, not single's wider $640,600). Explicit, repeated
+disclaimer that this is federal income tax only (no state or local tax), not tax advice, and that a
+real tax professional should be consulted for an actual return — called out in
+`content.formula.note`, a dedicated `watchOut` item, and the FAQ, since this is the most YMYL
+calculator in the whole wave. Every worked-example number (the $60,000-gross example, the
+$150,000 comparison used in the explanation, the 2026 standard deduction figures, and the
+MFS-vs-MFJ/single bracket-boundary facts used in the FAQ) independently re-verified in a standalone
+Node scratch script (no app imports) before committing. `npm test` 1217/1217 (snapshot updated,
+diff additions-only — only the new calculator's entry), lint clean, `npm run build` green (347
+total routes; `finance` 38 → **39**, site-wide 315 → **316**). **Step 60 closes out completely: 31
+new calculators across 7 batches, `finance` 8 → 39, site-wide 285 → 316.** The wave's visual-QA
+spot-check (desktop/dark-mode on `home-affordability-calculator`, `income-tax-calculator`, and one
+retirement-cluster page) was **not** done by this or any prior batch agent — still pending, for the
+main session to pick up (no Chrome/browser tooling was used by this build agent).
+
+**2026-11-16 — Step 46 run 5, physics mechanics-remainder run A (PR #104)**: added
+`acceleration-calculator` (a = Δv ÷ t, 3-variable solver reusing `speed`/`acceleration`/`time`),
+`free-fall-calculator` (h = ½gt², reusing `length`/`acceleration`/`time`, with gravity itself left
+editable like `weight-calculator` so a Moon/other-world fall can be tried, plus a bonus final-velocity
+output v = gt), `projectile-motion-calculator` (range/max-height/time-of-flight from launch speed and
+angle, level ground, no air resistance — a type-B breakdown widget since the three outputs have no
+single invertible equation, same precedent as `series-parallel-resistor-calculator`), `friction-calculator`
+(f = μN, 3-variable solver, μ on the dimensionless `count` dimension per `lens-mirror-equation-calculator`'s
+magnification precedent), and `spring-hookes-law-calculator` (Hooke's law, F = kx). New `lib/units.ts`
+dimension `springConstant` (base N/m, alts N/mm, N/cm, lbf/in — NIST SP 811), round-trip + anchor test
+added to `lib/units.spec.ts`. All other dimensions reused as the step file anticipated. Every formula
+fetched directly from OpenStax University Physics Volume 1 (§3.3 acceleration, §3.5 free fall, §4.3
+projectile motion — including its own golf-shot example used as a cross-check, §6.2 friction and its
+Table 6.1 coefficients, §15.1 Hooke's law) — none recalled from memory. Every worked-example and FAQ
+number (including the friction worked example's normal-force-from-weight step and the projectile
+motion 30°/45°-range comparison) independently recomputed in a standalone Node scratch script (no app
+imports) before writing any copy. One new `KNOWN_NON_FINITE` entry (`acceleration-calculator`:
+`acceleration`, velocityChange and time both 0 at their own min → 0/0); snapshot diff additive-only
+(166 new lines, 0 removed, confirmed with `git diff --stat`). `npm test` 1236/1236, lint clean,
+`npm run build` green (352 routes; `physics` 21 → **26**, site-wide 316 → **321**). Static HTML of
+all 5 new pages checked directly (H1, one JSON-LD script, all 8 section ids, no "application error"
+text) instead of curling a dev server, since a pre-existing `next dev` process was already listening
+on port 3000 (not started by this run, left untouched per instruction) — same precedent as runs 4/5.
+**Physics mechanics-remainder run B (PR #105) DONE 2026-11-16**: centripetal-force, gravitational-force,
+torque, buoyancy, pendulum-period — 5 calculators, `physics` 26 → **31**, site-wide 321 → **326**. New
+`lib/units.ts` dimension: `torque` (base N·m, alts lbf·ft/lbf·in — kept separate from `energy` despite
+the same base units, same precedent as `momentum`/`force`). New `GRAVITATIONAL_CONSTANT` constant in
+`physics.ts` (6.6743×10⁻¹¹ m³ kg⁻¹ s⁻², CODATA 2022/NIST, fetched directly). `gravitational-force-calculator`
+is explicitly cross-linked both ways with `weight-calculator` (its worked example, Earth pulling a 70 kg
+person at ≈687.4 N, is deliberately contrasted with `weight-calculator`'s 686.5 N standard-gravity figure,
+explaining why they differ). Every formula fetched directly from OpenStax University Physics Volume 1
+(§4.4, §13.1, §10.6, §14.4, §15.4) plus NIST's CODATA page and NASA's Earth/Moon fact sheets; every
+worked-example and FAQ number re-verified in a standalone scratch script before writing copy. New
+`KNOWN_NON_FINITE` entries: `centripetal-force-calculator`/`gravitational-force-calculator` (`force`,
+all-zero → 0/0) and `pendulum-period-calculator` (`period`, 0/0 under the square root); snapshot diff
+additive-only (169 new lines). `npm test` 1258/1258, lint clean, `npm run build` green (357 routes).
+Static HTML of all 5 new pages checked directly (same pre-existing port-3000 process left untouched, per
+runs 4/5/A's precedent). Next: physics waves/other-remainder run (Doppler effect, Snell's law, E = mc²,
+thermal expansion, escape velocity) — not started.
+
+**2026-11-16 — Step 46 run 8, physics drivetrain/efficiency run (PR #107, open, not yet merged)**:
+added `horsepower-calculator` (P = τω, from torque + RPM — confirmed distinct from `power-converter`'s
+straight unit conversion), `rpm-to-speed-calculator` (v = rω, wheel RPM → linear speed given
+diameter), `gear-ratio-calculator` (driven ÷ drive teeth, plus an output-RPM `SolverOutput` from a
+`fixed` input-RPM variable), `efficiency-calculator` (η = output ÷ input × 100%, OpenStax College
+Physics 2e §7.6), `angular-velocity-calculator` (ω = Δθ ÷ Δt, the 5th-slot pick after ruling out
+`specific-gravity-calculator` as a near duplicate of chemistry's `density-of-solutions-calculator`).
+New `lib/units.ts` dimension `angularVelocity` (rad/s, rpm, rev/s, deg/s), kept separate from
+`frequency` despite the exact 2π proportionality, same precedent as `torque` vs `energy`; round-trip +
+anchor test added, cross-checked against OpenStax University Physics Volume 1 §10.1's own Example 10.2
+(250 rpm = 26.2 rad/s). Every formula fetched directly from OpenStax University Physics Volume 1
+(§10.1, §10.3, §10.8) and OpenStax College Physics 2e §7.6, plus UC San Diego's MAE 3 machine-design
+course page for the gear-ratio relationship (no OpenStax introductory section covers gear trains).
+Every worked-example and FAQ number (including the 300 lbf·ft/4,000 RPM horsepower example, the exact
+5,252.113 automotive shortcut constant, and the 800 RPM/0.65 m wheel speed example) independently
+recomputed in a standalone scratch script before writing copy. New `KNOWN_NON_FINITE` entries:
+`gear-ratio-calculator`/`efficiency-calculator`/`angular-velocity-calculator` (each an honest divide-
+by-zero at an input's own 0 min); `horsepower-calculator`/`rpm-to-speed-calculator` needed none.
+Snapshot diff additive-only (160 new lines). `npm test` 1,302/1,302, lint clean, `npm run build` green
+(367 routes; `physics` 36 → **41**, site-wide 331 → **336**). Static HTML of all 5 new pages checked
+directly (pre-existing port-3000 process left untouched, same precedent as every prior physics run).
+Next: physics runs 9+ — no seed list left, build agent's own formula choices (angular momentum, moment
+of inertia, rotational kinetic energy, electric field strength, etc.) — not started.
+
+**2026-11-16 — Step 46, chemistry run 10 (PR #109, open, not yet merged) — not part of the
+originally-scoped runs 1-9 (those exhausted the seed lists)**: added
+`grahams-law-effusion-calculator` (r₁÷r₂ = √(M₂÷M₁), 4-variable solver, reuses `molarMass`/`count`),
+`weak-acid-ionization-calculator` (pH + percent ionization of an unbuffered weak acid from Ka and
+concentration, exact numerically-stable quadratic rather than the "x is negligible" textbook
+shortcut — explicitly distinct from `pka-henderson-hasselbalch-calculator`, a buffer), 
+`current-efficiency-calculator` (actual ÷ Faraday's-law-theoretical mass × 100, the gap
+`faradays-law-electrolysis-calculator`'s own watch-out flagged as uncovered), 
+`hess-law-enthalpy-calculator` (ΔH°rxn from reactants'/products' standard enthalpies of formation,
+type-B breakdown, up to 2 of each — distinct from `calorimetry-enthalpy-calculator`'s experimental
+ΔT-based method), and `conservation-of-mass-calculator` (total reactant mass = total product mass,
+4-variable solver). Zero new `lib/units.ts` dimensions — every formula reused existing ones.
+**Found and parked a real pre-existing bug**: `common-ion-effect-calculator` (chemistry run 9) mixes
+a `count`-dimension Ksp (unconverted) with `concentration`-dimension variables (converted ×1000 to SI
+mol/m³) in one formula — the live `SolverCalculator` widget likely gives a wrong answer for any
+non-default input, even though its own `compute()`/worked example/content are all correct (they don't
+go through the SI-conversion code path). `weak-acid-ionization-calculator` avoids the same trap by
+keeping every variable on `count`. Alias-collision sweep caught one near-miss before committing:
+two of `hess-law-enthalpy-calculator`'s draft aliases collided with `calorimetry-enthalpy-
+calculator`'s existing aliases, replaced before commit. Every formula fetched directly from OpenStax
+Chemistry 2e (§9.4, §14.3, §17.7, §5.3 + Appendix G, §1.2), not recalled from memory; the IUPAC Gold
+Book's "current efficiency" entry 403'd to a direct fetch, so that one citation is a search-snippet
+fallback, flagged explicitly. Every number independently recomputed in a standalone scratch script
+before writing copy. `npm test` 1,319/1,319, lint clean, `npm run build` green (372 routes;
+`chemistry` 45 → **50**, site-wide 336 → **341**). Static HTML of all 5 new pages checked directly
+(pre-existing port-3000 process left untouched). Full writeup:
+`mdFiles/steps/46-47-wave-3-physics-chemistry.md`.
+
+**2026-11-17 — Step 48, biology batch 1 (PR #115, open, not yet merged) — opens the brand-new
+`biology` category**: `data/calculators/biology.ts` (new file), registered in
+`data/calculators/index.ts` (`categories`, `calculatorOrder`, the spread list), new `lime`/`dna`
+theme pair (`lib/categoryTheme.ts`, `components/IconTile.tsx`). New `lib/units.ts` dimension
+`cellDensity` (cells/mL, CFU/mL, cells/µL, cells/L) plus three new `massConcentration` labels
+(`ng/µL`, `µg/mL`, `mg/mL` — numerically identical to the existing `mg/L` base, so every solve stays
+a plain multiplication), both with round-trip + anchor tests in `lib/units.spec.ts`. Added
+`cell-dilution-calculator` (C₁V₁ = C₂V₂ for a cell/CFU suspension, cross-linked to and distinguished
+from chemistry's `dilution-calculator`), `bacterial-growth-calculator` (N = N₀ × 2^(t ÷ g), binary
+fission, OpenStax Microbiology §9.1's E. coli/M. tuberculosis/M. leprae generation-time examples),
+`doubling-time-calculator` (t_d = ln2 ÷ µ from a measured growth rate constant — explicitly the
+inverse/different question from `bacterial-growth-calculator`), `dna-concentration-calculator`
+(ng/µL = A260 × dilution factor × 50, the dsDNA constant from Desjardins & Conklin 2010/PMC3346308,
+cross-linked to `beer-lambert-law-calculator`), and `protein-concentration-calculator` (A280
+Beer-Lambert method, c = (MW × A) ÷ (ε₂₈₀ × l), reusing the existing `molarAbsorptivity`/`molarMass`
+dimensions rather than adding a new one — worked example uses BSA, MW 66,463 g/mol and ε₂₈₀ 43,824
+L/(mol·cm), both fetched directly). Pace et al. (1995)'s ε₂₈₀ prediction formula is this run's one
+search-snippet-fallback citation (two different direct PDF fetches both returned corrupted text),
+flagged in the page's own references. Every worked-example number independently re-verified in a
+standalone Node scratch script before committing. `npm test` 1459/1459 (snapshot additions
+additive-only), lint clean, `npm run build` 408 pages (376 calculators, 19 categories), exit code 0.
+**`biology` 0 → 5, site-wide 371 → 376.** No seed-list candidate skipped. Batch 1 was required to
+land alone (new-file category-opening work, per the step file); batches 2-6 can run in parallel with
+each other once PR #115 merges. Full writeup: `mdFiles/steps/48-wave-4-biology.md`.
+
+**2026-11-17 — Step 48, biology batch 2 (PR #116, merged after a conflict resolved against batch 3) — genetics,
+5 calculators**, appended to the `biology.ts` file batch 1 opened: `punnett-square-calculator`
+(monohybrid cross, genotype/phenotype ratios, each parent's genotype as a dominant-allele count
+0/1/2 via `options`), `dihybrid-cross-calculator` (two independently-assorting genes, generalizing
+the classic 9:3:3:1 ratio via the product of each trait's own monohybrid probability),
+`hardy-weinberg-calculator` (p + q = 1, p² + 2pq + q² = 1, a 2-variable solver predicting genotype
+frequencies from an allele frequency), `allele-frequency-calculator` (allele frequency computed
+directly from observed genotype counts — explicitly the opposite direction from
+`hardy-weinberg-calculator`'s predictive calculation, both pages state the distinction), and
+`dna-to-mrna-calculator` (transcription: complementary DNA strand + T→U substitution, a 6-base
+lookup/breakdown widget). All formulas fetched directly from OpenStax Biology 2e (§12.1-12.3
+Mendelian genetics, §19.1 population genetics/Hardy-Weinberg, §15.2 transcription); the
+Hardy-Weinberg and allele-frequency worked examples both reuse OpenStax's own 500-pea-plant
+population (245/210/45 YY/Yy/yy) since it is the exact source of the p=0.7/q=0.3 figures, and the
+predicted 49%/42%/9% Hardy-Weinberg genotype split matches that population's actual observed
+proportions exactly. **Engineering decision:** `dna-to-mrna-calculator` needed a sequence-shaped
+input but `CalculatorInput`/`compute()` have no `text` type (checked `data/calculators/types.ts`
+first, per the step file) — rather than add a cross-cutting input type, it reuses the existing
+`options` mechanism (resistor-color-code-calculator's precedent: 6 fixed base-position dropdowns)
+plus `BreakdownOutput.labels` (the ring-size-letter precedent) to render one shared computation in
+either DNA (T) or RNA (U) alphabet; `compute()` wraps every raw value through a round-and-mod-4
+`normalizeBaseCode` so the snapshot test's ×1.5-scaled "typical" input set can't produce an
+undefined lookup. Every worked-example number independently re-verified in a standalone Node
+scratch script before committing. `npm test` 1467/1467 (snapshot diff additive-only, touching
+exactly the 5 new ids), lint clean, `npm run build` 413 pages (381 calculators), exit code 0.
+**`biology` 5 → 10 from this branch alone; after reconciling with batch 3 (merged first), the true
+post-merge count is 5 → 15, site-wide 376 → 386.** No seed-list candidate skipped. Ran in parallel
+with a batch 3 agent on the same `biology.ts` file per the step file's own batches-2+ go-ahead — as
+expected, PR #116 conflicted against batch 3's already-merged PR #117 (both appended to the end of
+the same array/order list); the main session resolved it with the same hand-splice technique used
+for the physics-wave same-file conflicts (both calculator blocks concatenated, `KNOWN_NON_FINITE`
+entries and `calculatorOrder` combined). Full writeup: `mdFiles/steps/48-wave-4-biology.md`.
+
+**2026-11-17 — Step 48, biology batch 3 (PR #117, merged) — molecular-biology lab
+techniques**, appended to `data/calculators/biology.ts` in parallel with a separate agent's batch 2
+(genetics) run on the same file (conflict resolved at merge time against batch 2, see above).
+New `lib/units.ts` additions: `mass` gains `ug`/`ng` (ligation's insert/vector DNA mass), plus two
+new dimensions, `basePairs` (bp/kb) and `relativeCentrifugalForce` (single-unit `×g`, same precedent
+as `absorbance`/`pH`/`decibel`) — all with round-trip + anchor tests, plus the existing `mass`
+"dimensions unchanged" pin test updated (that test intentionally asserts the exact pre-existing unit
+list; adding `ug`/`ng` needed a matching update, same as `st`'s own addition in step 36). Added
+`pcr-annealing-temperature-calculator` (Wallace rule, Tm = 2°C×(A+T) + 4°C×(G+C), rewritten as a
+continuous function of primer length and GC% — Wallace et al. 1979 *Nucleic Acids Research*,
+confirmed via a search-snippet fallback after NEB/Promega/IDT pages all 403'd or omitted the
+formula), `qpcr-efficiency-calculator` (E = 10^(−1/slope) − 1, confirmed by direct fetch of
+QIAGEN's own PCR bench guide), `ligation-calculator` (insert:vector molar ratio — derived from
+Thermo Fisher Scientific's own dsDNA molecular-weight formula, fetched directly, showing the
+per-bp mass constant cancels out of the ratio; NEB's own ligation-calculator page 403'd on direct
+fetch, confirmed via a search-snippet fallback instead), `centrifuge-rcf-rpm-calculator` (RCF =
+ω²r ÷ g₀, the exact SI form of the conventional 1.118×10⁻⁵ × r(cm) × RPM² lab formula — confirmed
+against Wikipedia's "Centrifuge" article and OpenStax University Physics' own centripetal
+acceleration formula; the two forms agree to within the published constant's own ~0.02% rounding,
+stated explicitly in the content as a watch-out item), and `log-reduction-calculator` (LR =
+log₁₀(N₀÷N), confirmed by direct fetch of Wikipedia's "Log reduction" article). Every worked-example
+number (including the RCF cross-check between the two formula forms) independently re-verified in a
+standalone Node scratch script before committing. `npm test` 1484/1484 (snapshot additions
+additive-only, 163 lines; one new `KNOWN_NON_FINITE` entry for `log-reduction-calculator`'s
+0/0-count edge case), lint clean, `npm run build` exit 0 (381 calculator pages). Static HTML of all
+5 new pages checked directly for H1/JSON-LD/FAQ (pre-existing port-3000 process left untouched, per
+the step file's own instruction not to kill it). **`biology` 5 → 10 on this branch** (pending
+reconciliation with batch 2's parallel PR #116 at merge time). No seed-list candidate skipped. Full
+writeup: `mdFiles/steps/48-wave-4-biology.md`.
+
+**2026-11-17 — Step 48, biology batch 4 (PR #118, merged after a conflict resolved against batch 5
+below), population biology
++ genetics extensions** — a rate-limit interruption killed the first agent on this run partway
+through; a second agent resumed from the branch's own 2 already-committed calculators (documented in
+the step file's Progress checklist) and finished the remaining 3. `population-growth-calculator`
+(continuous N = N0 e^(rt), new `rateConstant` unit `yr-1`) and `hemocytometer-calculator` (raw
+hemocytometer count → cells/mL) were the first agent's own work; `generation-time-calculator` was
+correctly skipped as a confirmed duplicate of `bacterial-growth-calculator`'s existing solve
+direction, same "honest skip" discipline as every prior wave. The resuming agent added
+`mutation-rate-calculator` (µ = mutant frequency ÷ generations, explicitly flagged as a simplified
+estimate — cites OpenStax Microbiology §11.5 "Mutations" and Wikipedia's "Luria–Delbrück experiment"
+directly for the real caveat that frequency alone is "not a sufficiently accurate measure of
+mutation"), `codon-to-amino-acid-calculator` (new `lib/geneticCode.ts` + spec: the full standard
+genetic code, NCBI table 1, independently rebuilt and self-checked against the known 64-codon
+degeneracy table, same precedent as `molecularGeometry.spec.ts`; concept content cites OpenStax
+Biology 2e §15.5 directly), and `surface-area-to-volume-ratio-calculator` (sphere/cube SA:V ratio;
+the prior agent's planned OpenStax §4.2 citation didn't pan out on direct fetch — no such SA:V
+content exists there — so this page cites Wikipedia's "Surface-area-to-volume ratio" article
+instead, confirmed by direct fetch). Every worked-example number, including the full genetic code
+table, independently re-verified in a standalone Node scratch script before committing. `npm test`
+1509/1509 (snapshot additions additive-only, confirmed via `git diff`/grep on the snapshot file; 2
+new `KNOWN_NON_FINITE` entries for the two new breakdown calculators' genuine 0-divide edge cases),
+lint clean, `npm run build` exit 0 (391 calculator pages). Static HTML of all 3 new pages checked
+directly for H1/section-ids/FAQPage JSON-LD (pre-existing port-3000 process left untouched).
+**`biology` 15 → 20 on this branch's own head** — reconciled against batch 5 below: its own
+`surface-area-to-volume-ratio-calculator` was dropped as a duplicate (batch 5's merged first), so
+this batch's net contribution ended up 4 unique calculators, not 5. Re-confirmed (not re-fixed) the
+two pre-existing, unrelated alias collisions already in Parked below. Full writeup:
+`mdFiles/steps/48-wave-4-biology.md`.
+
+**2026-11-17 — Step 48, biology batch 5 (PR #119, merged first, cleanly) — plant/cell biology +
+biochemistry**, appended to `data/calculators/biology.ts` in parallel with a separate batch-4 agent
+on the same file (conflict resolved at merge time against batch 4 above, including the duplicate
+`surface-area-to-volume-ratio-calculator` pick — this batch's version was kept since it merged
+first). Added
+`water-potential-calculator` (Ψ = Ψp + Ψs — fetched OpenStax Biology 2e §30.5 directly for the full
+4-term equation and its own "negligible and easily ignored" statement about gravity/matric potential
+at the cellular scale, justifying the simplified 2-term formula; reuses the `pressure` dimension,
+cross-linked to and distinguished from chemistry's `osmolarity-calculator`/
+`vant-hoff-osmotic-pressure-calculator`), `protein-molecular-weight-calculator` (a full 20-standard-
+amino-acid composition calculator — new `lib/aminoAcids.ts`, each amino acid's free mass computed
+from its formula via the same `molarMassOf`/`ELEMENTS` table `molar-mass-calculator` uses, since a
+citable "~110 Da average residue" shortcut could not be sourced via direct fetch this session; worked
+example met-enkephalin, 573.665 Da, cross-checked against both its own residue-sum formula and its
+known molecular formula C₂₇H₃₅N₅O₇S, and against PubChem CID 42785's listed 573.7 g/mol), `molarity-
+for-buffers-calculator` (mass = molarity × volume × molar mass — judged genuinely distinct from
+`molarity-calculator`/`moles-to-grams-calculator` since it chains both into the one question a bench
+prep actually asks, plus a new `lib/labReagents.ts` reference table of 10 common lab reagents' molar
+masses computed from their formulas, not copied from a datasheet), `inheritance-probability-
+calculator` (reuses `punnett-square-calculator`'s exact genotype-probability math, relabeled
+affected/carrier/unaffected via a new recessive/dominant toggle — cites MedlinePlus Genetics (NIH),
+fetched directly, for cystic fibrosis and Huntington's disease as real, non-invented example
+conditions), and `surface-area-to-volume-ratio-calculator` (sphere SA:V = 3/r, cube SA:V = 6/s —
+built despite the noted batch-4 duplicate-pick risk, since a potometer-based transpiration-rate
+alternative could not be confirmed via direct fetch; cites OpenStax Biology 2e §4.1's real red-blood-
+cell size figure as one of three worked benchmarks). No new `lib/units.ts` dimension needed. Every
+worked-example number re-verified in a standalone Node scratch script (no app imports) before
+committing. `npm test` 1503/1503 (snapshot additions additive-only, 238 lines; two new
+`KNOWN_NON_FINITE` entries, `protein-molecular-weight-calculator` and
+`surface-area-to-volume-ratio-calculator`, both zero-input divide/undefined edge cases), lint clean,
+`npm run build` exit 0 (391 calculator pages). Static HTML of all 5 new pages checked directly for
+H1/FAQPage JSON-LD (a pre-existing port-3000 dev-server process from another session was left
+untouched). **`biology` 15 → 20 on this branch** (merged first; reconciled against batch 4 above —
+final combined count after both: `biology` 24, site-wide 395). No seed-list candidate skipped — all
+5 scoped slots built, including the judgment call on `molarity-for-buffers-calculator` (built, not
+skipped — see the step file for the reasoning).
+Full writeup: `mdFiles/steps/48-wave-4-biology.md`.
+
+**2026-11-17 — Step 48, biology batch 6 (PR #120, open, not yet merged) — simple, non-medical
+animal biology, the final batch of Wave 4.** `dog-age-calculator` (dog-to-human age conversion
+using Wang et al. (2020), *Cell Systems*, "Quantitative Translation of Dog-to-Human Aging by
+Conserved Remodeling of the DNA Methylome," fetched directly from PMC7484147:
+`human_age = 16 × ln(dog_age) + 31` — a solver with a genuine closed-form inverse both ways, with
+content explicitly explaining why the flat "× 7" myth is wrong: a 1-year-old dog computes to 31
+human years, not 7), `cat-age-calculator` (same shape, International Cat Care's published chart —
+1 year = 15, 2 years = 24, then +4/year, fetched directly — implemented as a 3-piece linear
+interpolation so a fractional age also gets an answer, explicitly flagged in content as this
+calculator's own interpolation between the chart's published whole-year checkpoints, not an
+official month-by-month figure), `animal-gestation-calculator` (one page, species-selector lookup
+for dog/cat/cow/horse/goat/sheep/rabbit — same "one page, options-keyed lookup" precedent as
+`resistor-color-code-calculator`/`codon-to-amino-acid-calculator`; sourced from Wikipedia's "List
+of mammalian gestation durations", fetched directly after Merck Veterinary Manual's own pages
+404'd on every direct-fetch attempt, itself citing Doherty/Wildlife Conservation Society, Sacher &
+Staffeldt 1974, and Rijnberk & van Sluijs 2005 per species, plus the University of Nebraska–Lincoln
+Beef Extension directly for cattle; sheep's source publishes only a single average, no separate
+min/max, stated explicitly rather than inventing a range), and `egg-incubation-calculator` (same
+lookup pattern for chicken/duck/Muscovy duck/goose/turkey/coturnix quail/bobwhite quail, sourced
+from Wikipedia's "Egg incubation" article, fetched directly). No pet medication/dosage calculator
+was built, per this step's own gap-check (real veterinary YMYL risk, no licensed-vet review process
+on this site).
+
+**Honest skip (5th of 5 planned slots):** a dog/cat body-condition-score calculator was considered
+and skipped — BCS is a subjective visual/palpation exam scale (1–9), not a computable formula, so
+it doesn't fit this site's calculator format. A pet-food/calorie (RER/MER) calculator was also
+attempted, but every direct-fetch attempt at a citable primary source — AVMA, Tufts/Ohio State/
+Colorado State veterinary-nutrition pages, WSAVA's and NRC's own PDFs, VetFolio, ScienceDirect, and
+NCBI Bookshelf — returned a 404, a reCAPTCHA wall, or JS-rendered content with no formula text ever
+reaching the fetch tool. Rather than ship an uncited or memory-recalled RER formula, this batch
+ships 4 well-sourced calculators instead of padding to 5, per this project's D17 "honest skip over
+padding" discipline — explicitly permitted by this batch's own task brief.
+
+Dog age's `human_age = 16 × ln(dog_age) + 31` formula and cat age's piecewise interpolation were
+both checked for closed-form invertibility before being built as a `solver` (both variables use the
+'time' dimension; a local `YEAR_SECONDS` constant converts SI seconds to the years the published
+formulas are stated in, same self-containment precedent as `centrifuge-rcf-rpm-calculator`'s local
+`STANDARD_GRAVITY`). The two lookup pages reuse `dna-to-mrna-calculator`'s `options`-keyed-by-code
+mechanism via a new shared `normalizeOptionCode(raw, count)` helper (generalizing the existing
+`normalizeBaseCode` to any species count), guarding against the snapshot harness's 1.5× "typical"
+input scaling landing on a non-integer/out-of-range code. Every number (both age formulas' round-
+trip checks, all 7 gestation-species figures, all 7 incubation-species figures, and every "about Nx
+longer/shorter" comparison in the copy) independently re-verified in a standalone Node scratch
+script with no app imports; script output matched the copy exactly. Grepped every new id/alias
+against all `data/calculators/*.ts` site-wide — zero collisions. `seo.title` 45–57 chars,
+`seo.description` 137–141 chars, 6 FAQs and 6 aliases per new page. `npm test` 1529/1529 (snapshot
+diff additive-only, 134 lines, touching exactly the 4 new ids — confirmed via `git diff --stat` and
+a grep for new `exports[...]` lines; one new `KNOWN_NON_FINITE` entry, `dog-age-calculator`:
+`humanAge`, for dog age 0 — its own min — giving `ln(0)`, undefined, guarded explicitly in
+`compute()`), lint clean, `npm run build` exit 0 (399 calculator pages). Static HTML of all 4 new
+pages checked directly for H1, `FAQPage` JSON-LD, and every template section id (including
+`reference-table` on the two lookup pages) — all present. A pre-existing process already listening
+on port 3000 was left untouched; no dev server was started by this batch.
+
+**`biology` 24 → 28, site-wide 395 → 399 — this closes out Step 48 / Wave 4 (biology).** Final
+count is 28, 2 short of the ~30 seed target, both documented as deliberate: batch 4's confirmed
+`generation-time-calculator` duplicate-skip (replaced in-batch with `hemocytometer-calculator`, so
+that one didn't actually cost a slot) and this batch's own 1-slot honest skip above. Per D13/D22,
+**ecology is next and still needs its own separate go-ahead from the user before any scoping or
+work starts** — not begun, not scoped, by this batch. The site has not yet crossed the ~420-
+calculator mark that would trigger the next Visual-QA Chrome spot-check (sitting at 399); worth
+flagging for whichever category/step crosses that line next.
+Full writeup: `mdFiles/steps/48-wave-4-biology.md`.
+
+**2026-11-17 — Step 49, Wave 4 ecology batch 3 (sustainable living / resource use), branch
+`step/49-wave-4-ecology-run-3`, PR #123, marked ready for review**: added `car-vs-bike-calculator`,
+`tree-benefits-calculator`, `books-vs-ebooks-calculator`, `drip-faucet-waste-calculator`,
+`recycling-rate-calculator` to `ecology.ts`. `water-demand-calculator` and
+`composting-impact-calculator` were considered and replaced by the drip-faucet and whole-waste-
+stream framings, to stay genuinely distinct from batch 1's `water-footprint-calculator`/
+`plastic-footprint-calculator`. Every figure fetched directly: EPA GHG Equivalencies Calculator
+(gasoline factor reused from batch 1; urban-tree sequestration factor citing McPherson et al. 2016
+USDA Forest Service), Kozak (2003, University of Michigan CSS Report CSS03-04 — fetched and read
+in full as the published PDF; its own 40-book published totals reproduced exactly as a correctness
+check, break-even ≈5 books), EPA WaterSense Fix a Leak Week (the faucet and showerhead drip-rate
+statistics independently imply the same 50 gal/year-per-drip rate — cross-checked), EPA's 2018
+National Overview (32.1% national recycling-and-composting rate, reusing batch 1's total-MSW-per-
+person figure). No new `lib/units.ts` dimensions. `npm test` 1539/1539 (additive-only snapshot
+diff), lint clean, `npm run build` 442 routes. Static HTML of all 5 new pages checked directly for
+H1 and `FAQPage` JSON-LD. A pre-existing process already listening on port 3000 was left untouched;
+no dev server was started by this batch. `ecology` is 10/~25 from this branch's own point of
+view — batch 2 (population/biodiversity) is running in parallel on another branch and will need
+reconciling at merge time, same as biology batches 2/3 and 4/5 were. Batches 4 (environmental
+health) and 5 (round-out) remain TODO. Full writeup: `mdFiles/steps/49-wave-4-ecology.md`.
+
+**2026-11-17 — Step 61 batch 6, `time` (branch `step/61-deepen-time`, PR #127, merged)**: added
+`business-days-calculator` (inclusive weekday count between two dates minus an optional holiday
+count, explicitly distinct from `date-difference-calculator`'s exclusive calendar-day gap),
+`day-of-week-calculator` (Zeller's congruence, fetched from Wikipedia including its own Jan 1, 2000
+worked example, cross-checked against native `Date` for 1,255 dates with 0 mismatches; also reports
+the ISO 8601 weekday number), `leap-year-calculator` (Gregorian ÷4/÷100/÷400 rule plus an
+inclusion-exclusion leap-year count over a range, cross-checked against a brute-force loop across 6
+ranges), `unix-timestamp-converter` (epoch seconds ↔ UTC date/time both directions, citing POSIX
+§4.16's "seconds since the Epoch" definition and its "every day is exactly 86400 seconds" leap-second
+note), and `timesheet-calculator` (weekly day-by-day hours rolled up with an overtime threshold,
+explicitly distinct in content from both `work-hours-calculator` and the newer
+`overtime-pay-calculator`, whose own FAQ already anticipated this page). All five are plain
+date/count/currency values — no new `lib/units.ts` dimension needed, and no `KNOWN_NON_FINITE`
+entries needed (checked each one's edge-case snapshot; none have a division-by-input path). Business
+days worked example uses MLK Day 2026 (third Monday in January, confirmed via OPM's federal holidays
+page) as the holiday. `npm test` 1,552/1,552 (snapshot diff purely additive), lint clean, `npm run
+build` 452 static pages. `time` now **10 calculators**, **419 total** on the site.
+
+**2026-11-17 — Step 61 batch 7, `creator` (branch `step/61-deepen-creator`, PR #126)**: added
+`tiktok-earnings-calculator`, `twitch-earnings-calculator`, `podcast-ad-revenue-calculator`,
+`blog-ad-revenue-calculator`, `patreon-earnings-calculator`, `affiliate-commission-calculator`,
+`follower-growth-rate-calculator`, `video-engagement-rate-calculator` — all 8 planned, none
+skipped. Re-grouped the 2 pre-existing calculators into "Monetization & Earnings" (7) and
+"Engagement & Growth" (3), since `creator` is already in `categories.spec.ts`'s
+`GROUPED_CATEGORIES` and every member needs a `group`. Ran concurrently with a separate agent's
+batch 6 (`time`) in its own worktree, touching a different category file — no conflict. Citation
+discipline notes: TikTok's own domain (tiktok.com, support.tiktok.com, newsroom.tiktok.com) was
+unreachable from this environment on every attempt (connection refused), and the web-search tool's
+session budget was already exhausted, so the TikTok rate is sourced from Hootsuite (confirms no
+fixed published rate for Creator Rewards) and Influencer Marketing Hub (creator-reported
+~$0.02-$0.04/1,000 views for the retired Creator Fund), both labeled anecdotal in the copy.
+Twitch's help center (help.twitch.tv) is JS-rendered and returned no usable content to the fetch
+tool; the subscription-split figures came from Wikipedia's Twitch (service) article instead
+($2.49/$4.99 base ≈ 50/50, up to 70/30 premium tiers), and since no per-Bit dollar value could be
+confirmed anywhere, that calculator asks for Bits revenue as a dollar figure from the streamer's
+own dashboard rather than asserting an unconfirmed conversion rate. Patreon's flat 10% platform
+fee was fetched live from patreon.com/pricing (its old Lite/Pro/Premium tiers are retired).
+Podcast CPM ranges came from Influencer Marketing Hub (not AdvertiseCast, whose page 404'd after
+a redirect — caught before committing and the citation corrected to the source actually fetched).
+The view-based engagement-rate convention (TikTok/YouTube/Instagram Reels use
+likes+comments+shares÷views, distinct from the existing `instagram-engagement-calculator`'s
+follower-based formula) and the FTC's affiliate-disclosure guidance were both fetched directly.
+No `KNOWN_NON_FINITE` entries needed — divisor fields (`startFollowers`, `periodDays`, `views`)
+were given non-zero `min` values that avoid the test harness's 0/0 edge case by construction,
+rather than adding guard entries after the fact. Every number re-verified in a standalone Node
+scratch script before committing. `npm test` 1569/1569, lint clean, `npm run build` green with
+all 10 `creator` pages present. `creator` is now 10/10. Ran concurrently with batch 6 (`time`,
+above) in a separate worktree, different category file — resolved as a pure docs-only conflict
+(both appended to this same session log) at merge time, no code conflict. **Batches 6+7 both
+closed out their categories: `time` and `creator` both 10/10.** Batches 8-9 (`text`, `education`)
+remain TODO.
+
+**2026-11-17/18 — Step 61 batch 8, `text` (branch `step/61-deepen-text`, PR #129, draft), DONE —
+`text` 2 → 10, closes out the category.** Built across two sessions (the first hit a rate limit
+after 7 of 8 calculators; this session resumed from the branch, finished wiring
+`word-counter-calculator`'s last test registrations, built the 8th calculator, and closed out the
+batch). All 8:
+- `keyword-density-calculator` — keyword/phrase occurrences ÷ total words as a percentage; solver
+  (any two of keyword count/total words/density).
+- `typing-speed-calculator` — WPM from a word count and elapsed time (or the reverse); explicitly
+  not a live typing test, matching this site's enter-numbers-get-a-result pattern.
+- `script-reading-time-calculator` — spoken-delivery time from a cited speaking rate (~130-150
+  wpm), distinct from the character-counter's existing ~200 wpm silent-reading figure.
+- `tweet-thread-length-calculator` — how many posts/segments a text needs once split to a
+  platform's character limit, with an optional per-post numbering reserve; reuses
+  `character-counter`'s already-cited `PLATFORM_LIMITS` table.
+- `readability-score-calculator` — Flesch-Kincaid Grade Level and Flesch Reading Ease from
+  word/sentence/syllable counts, citing Kincaid/Fishburne/Rogers/Chissom's 1975 US Navy report;
+  `rangeBar` visual across the 8 standard reading-ease bands.
+- `word-to-page-count-calculator` — words → estimated pages, citing Wikipedia's "Standard
+  manuscript format" 250-words-per-double-spaced-page convention (500 single-spaced, exactly
+  double); `compareBars` visual against the other spacing.
+- `word-counter-calculator` — the long-planned step-26 idea, finally built: a 3rd mode of the
+  `TextToolsCalculator` custom widget (alongside `character-counter`/`hashtag-counter`), same
+  counting rules as the character counter but leading with the word count and dropping the
+  platform-limit bars, since a word-count target (not a character limit) is the usual goal.
+- `syllable-counter-calculator` — a 4th `TextToolsCalculator` mode: a vowel-group syllable
+  heuristic (count vowel runs, drop a silent trailing "e", add back a syllable for a consonant +
+  "-le" ending as in "table"/"little", minimum 1 per word), simplified from the real heuristic
+  chain Lingua::EN::Syllable (Perl, Greg Fast) → Text-Statistics (PHP, Dave Child) → `syllable`
+  (JS npm package, Titus Wormer/wooorm) — all three fetched directly and cited, including the
+  Perl module's own documented ~10-15% miss-by-one-syllable rate, quoted honestly in the copy as
+  the expected accuracy order for this whole heuristic family. Outputs (total syllables, average
+  syllables/word, complex-word count) feed directly into `readability-score-calculator`, which
+  already anticipated it by name in its own `howTo`/FAQ copy. Verified 28/28 against a
+  hand-counted dictionary-truth word list in a standalone Node scratch script before wiring into
+  the widget.
+
+`TextToolsCalculator.tsx` now has 4 modes (`character`/`hashtag`/`word`/`syllable`); all 4 custom
+widget ids are registered in `page.tsx`'s widget switch, `data/calculators.spec.ts`'s
+`CUSTOM_TOOLS`, and `lib/howItWorks.ts`/`lib/howItWorks.spec.ts`'s `SPECIAL_WIDGETS`. No new
+`lib/units.ts` dimension needed (all plain counts/ratios); no new `KNOWN_NON_FINITE` entries.
+`npm test` 1589/1589 (additive snapshot diff), lint clean, `npm run build` green — 440 calculator
+pages, including all 10 `text` pages. **`text` is now 10/10, site-wide 440.** A pre-existing dev
+server on port 3000 was left untouched. **Batches 6-8 (`time`, `creator`, `text`) all now closed
+out at 10/10; only batch 9 (`education`) remains TODO** — a separate agent/worktree, not touched
+by this session.

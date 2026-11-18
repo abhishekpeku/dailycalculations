@@ -178,16 +178,62 @@ Target ~18 calculators across 4 batches. Sub-grouping deferred to a final retrof
   - `npm test` 1713/1713, lint clean, `npm run build` 527 calculator pages (523 + 4) / 566 total
     routes. Dev-server smoke check: all 4 new pages return 200 with the correct H1 and one JSON-LD
     script each. `business` now 14/~18, site-wide **527**.
-- [ ] Batch 4 — Everyday business novelties (3 built + 1 documented skip), branch
-      `step64-batch4-business-novelties`
+- [x] Batch 4 — Everyday business novelties (3 built + 1 documented skip), DONE 2026-11-19,
+      branch `step64-batch4-business-novelties`, PR #150
   - [x] `accounts-receivable-days-calculator` — accountsReceivable ÷ netCreditSales × daysInPeriod,
         formula confirmed via a direct fetch of Omni's own `/finance/ar-days` page, cross-linked to
         SBA's "Manage Your Finances" page's accrual-vs-cash distinction. Default example (60,000 /
         730,000 / 365 → 30 A/R days) and the 45-vs-30-day net-terms comparison (50% over) verified
         in a standalone Node scratch script. `KNOWN_NON_FINITE` entry added (`arDays`, zero credit
         sales). Snapshot regenerated, diff additions-only.
-  - [ ] `invoice-late-payment-interest-calculator`
-  - [ ] `project-profitability-calculator`
-  - [ ] LLC formation cost — decision pending (leaning documented skip, see notes below)
-- [ ] Sub-grouping retrofit
-- [ ] STATUS.md updated with the final per-category summary
+  - [x] `invoice-late-payment-interest-calculator` — overdueAmount × (annualRatePercent ÷ 100) ×
+        (daysLate ÷ 365), deliberately rate-agnostic: the user enters their own contract/jurisdiction
+        rate rather than a hardcoded statutory figure. Cited directly to the US Treasury's Prompt
+        Payment page (current rate 4.75% for H2 2026, fetched live) and the EU's Late Payment
+        Directive page (statutory interest = ECB reference rate + at least 8 points, fetched live) —
+        both used only as real-world illustrations of how a jurisdiction sets its own rate, never as
+        this calculator's default. Illustrative default rate: 12%/year (a common 1%-a-month contract
+        late fee), explicitly labeled as a placeholder. Every number (the $147.95 worked example, the
+        exact 2x-at-90-days proportionality, and the 360-vs-365-day ~1.4% convention difference)
+        re-verified in a standalone Node scratch script.
+  - [x] `project-profitability-calculator` — budgeted vs. actual revenue/cost on one project →
+        realized profit, margin and variance from plan; explicitly distinguished from the
+        category-level `profit-margin-calculator` (per-project vs. whole-business framing). Cited to
+        SBA's "Manage Your Finances" page and OpenStax's Principles of Managerial Accounting §3.1 (the
+        same contribution-margin chapter already cited by `profit-margin-calculator`, legitimately
+        reused as general grounding for the same profit/margin math applied per-project). `KNOWN_NON_FINITE`
+        entries added for both margin percents (zero revenue). Every number (the $4,000/26.7% budget
+        miss and the 7.08-point margin drop) re-verified in a standalone Node scratch script.
+  - [x] LLC formation cost — **documented skip**, not built. Fetched SBA's own "Choose a Business
+        Structure" guide directly: its only cost figure is "In most cases, the total cost to register
+        your business will be less than $300, but fees vary depending on your state and business
+        structure" — SBA itself declines to give state- or structure-specific figures and defers to
+        each state's own agency. The reframe suggested in this step's own scope (a generic
+        sole-proprietorship-vs-LLC-vs-S-corp cost-range comparison) was evaluated and rejected: sole
+        proprietorship DBA registration fees are fragmented down to the *county* level in many states
+        (finer-grained than the LLC filing-fee fragmentation this step already flagged as out of
+        scope), so a defensible, non-invented range for that side of the comparison doesn't exist
+        either. Confirmed two adjacent facts that would otherwise have been needed for a fuller page
+        (IRS EINs are free — "you never have to pay a fee for an EIN" — and Form 2553's S-corp
+        election carries no IRS filing fee), but a page built from "SBA's one hedge sentence plus two
+        unrelated free-IRS-form facts" would be thin and would not meet the template's 1,200–2,500-word
+        real-content target without padding. Same honesty discipline as step 63's `flood-insurance-cost-estimator`
+        skip. `business` closes at 17 calculators, not 18, as a result — a smaller, honest shortfall
+        matching that same precedent.
+  - `npm test` 1719/1719, lint clean, `npm run build` pending result below.
+- [x] Sub-grouping retrofit, DONE 2026-11-19 — `group` field added to all 17 `business.ts`
+      calculators (`Pricing & Margin` 5, `Business Finance` 5, `Tax` 4, `Everyday & Operations` 3,
+      matching the four build batches exactly), `'business'` added to `categories.spec.ts`'s
+      `GROUPED_CATEGORIES`. `npm test` 1719/1719 (grouping tests pass), lint clean.
+- [x] STATUS.md updated with the final per-category summary — see the step index row.
+
+## Closing summary
+
+`business` (Business & Tax) closes at **17 calculators** across 4 batches plus this retrofit —
+just under the step's own ~18 estimate, the shortfall being one documented, honest skip
+(`llc-formation-cost-estimator`, see above) rather than a thin or inaccurate page. Final group
+breakdown: **Pricing & Margin** (5: profit-margin, markup, break-even, contribution-margin,
+cost-of-goods-sold), **Business Finance** (5: depreciation, burn-rate, business-valuation,
+payback-period, fte), **Tax** (4: gst, vat, self-employment-tax-estimator, 1099-contractor-rate),
+**Everyday & Operations** (3: accounts-receivable-days, invoice-late-payment-interest,
+project-profitability). Category is closed — no further batches planned.

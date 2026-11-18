@@ -244,5 +244,136 @@ export const businessCalculators: CalculatorConfig[] = [
       const marginPercent = values.sellingPrice > 0 ? (profit / values.sellingPrice) * 100 : NaN;
       return { markupPercent, profit, marginPercent };
     }
+  },
+  {
+    id: 'break-even-calculator',
+    category: 'business',
+    glyph: 'BE',
+    updatedAt: '2026-11-18',
+    aliases: ['break even point calculator', 'break even analysis calculator', 'break even units calculator', 'how many units to break even calculator'],
+    related: ['contribution-margin-calculator', 'profit-margin-calculator', 'payback-period-calculator', 'burn-rate-calculator'],
+    title: 'Break-Even Calculator',
+    description: 'Find the break-even point — in units or in sales dollars — from fixed costs, price per unit, and variable cost per unit, or solve backward for the price or cost it takes to break even at a given volume.',
+    example: 'With $24,000 of fixed costs, a $60 price, and $35 of variable cost per unit, break-even is 960 units, or $57,600 in sales.',
+    solver: {
+      defaultTarget: 'breakEvenUnits',
+      variables: [
+        { id: 'fixedCosts', label: 'Fixed costs', symbol: 'F', dimension: 'currency', defaultValue: 24000, defaultUnit: 'currency' },
+        { id: 'pricePerUnit', label: 'Price per unit', symbol: 'P', dimension: 'currency', defaultValue: 60, defaultUnit: 'currency' },
+        { id: 'variableCostPerUnit', label: 'Variable cost per unit', symbol: 'V', dimension: 'currency', defaultValue: 35, defaultUnit: 'currency' },
+        { id: 'breakEvenUnits', label: 'Break-even units', symbol: 'Q', dimension: 'count', defaultValue: 960, defaultUnit: 'count', bounds: [0, 1e9] }
+      ],
+      // Every variable has a closed form around the one break-even equation: F = Q(P - V).
+      solve: {
+        breakEvenUnits: ({ fixedCosts, pricePerUnit, variableCostPerUnit }) =>
+          pricePerUnit - variableCostPerUnit > 0 ? fixedCosts / (pricePerUnit - variableCostPerUnit) : NaN,
+        fixedCosts: ({ breakEvenUnits, pricePerUnit, variableCostPerUnit }) => breakEvenUnits * (pricePerUnit - variableCostPerUnit),
+        pricePerUnit: ({ fixedCosts, breakEvenUnits, variableCostPerUnit }) =>
+          breakEvenUnits > 0 ? variableCostPerUnit + fixedCosts / breakEvenUnits : NaN,
+        variableCostPerUnit: ({ fixedCosts, breakEvenUnits, pricePerUnit }) =>
+          breakEvenUnits > 0 ? pricePerUnit - fixedCosts / breakEvenUnits : NaN
+      },
+      outputs: [
+        { id: 'contributionMarginPerUnit', label: 'Contribution margin per unit', dimension: 'currency', compute: (si) => si.pricePerUnit - si.variableCostPerUnit },
+        {
+          id: 'contributionMarginRatio',
+          label: 'Contribution margin ratio',
+          dimension: 'percent',
+          compute: (si) => (si.pricePerUnit > 0 ? ((si.pricePerUnit - si.variableCostPerUnit) / si.pricePerUnit) * 100 : NaN)
+        },
+        { id: 'breakEvenRevenue', label: 'Break-even sales (dollars)', dimension: 'currency', compute: (si) => si.breakEvenUnits * si.pricePerUnit },
+        { id: 'totalVariableCostAtBreakEven', label: 'Total variable cost at break-even', dimension: 'currency', compute: (si) => si.breakEvenUnits * si.variableCostPerUnit }
+      ],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'fixedCosts', label: 'Fixed costs' },
+            { from: 'totalVariableCostAtBreakEven', label: 'Variable costs' }
+          ],
+          center: 'breakEvenRevenue',
+          centerSub: 'break-even sales'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What is the break-even point?',
+        paragraphs: [
+          "The U.S. Small Business Administration defines the break-even point as \"the point at which total cost and total revenue are equal, meaning there is no loss or gain\" for a business — the sales volume where a venture stops losing money and is about to start making it, with every dollar above that point falling straight to profit (before tax).",
+          "The SBA gives the formula as fixed costs divided by (price minus variable costs), which is exactly this calculator's break-even-units direction. Price minus variable cost per unit is the contribution margin per unit — the amount each sale contributes toward covering fixed costs before anything is left over as profit — covered in more detail on its own page here, since it is the denominator in every direction of this formula.",
+          'There is also a dollars version: break-even sales equal fixed costs divided by the contribution margin ratio (contribution margin per unit divided by price), rather than fixed costs divided by contribution margin per unit alone. Both versions describe the same break-even point, one in units sold and one in total revenue.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of fixed costs, price per unit, variable cost per unit and break-even units. The fourth, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter fixed costs', text: 'Costs that stay the same regardless of how many units are sold — rent, salaries, insurance, loan payments.' },
+          { name: 'Enter the price per unit', text: 'What one unit sells for.' },
+          { name: 'Enter the variable cost per unit', text: 'What it costs to produce or deliver one more unit — materials, direct labor, shipping.' },
+          { name: 'Read break-even units', text: 'How many units need to sell before fixed costs are fully covered. Break-even sales dollars and the contribution margin figures are shown alongside it.' },
+          { name: 'Or solve backward', text: 'Leave fixed costs, price, or variable cost alone instead to see what a known break-even volume implies about any of the other three.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Contribution margin per unit is what is left of price after variable cost. Dividing fixed costs by it gives the units needed to cover those fixed costs exactly.',
+        expression:
+          'contributionMarginPerUnit = pricePerUnit − variableCostPerUnit\nbreakEvenUnits = fixedCosts ÷ contributionMarginPerUnit\ncontributionMarginRatio = contributionMarginPerUnit ÷ pricePerUnit × 100\nbreakEvenRevenue = breakEvenUnits × pricePerUnit = fixedCosts ÷ (contributionMarginRatio ÷ 100)',
+        terms: [
+          { symbol: 'fixedCosts', meaning: 'Costs that do not change with sales volume in the period being analyzed.' },
+          { symbol: 'contributionMarginPerUnit', meaning: 'Price minus variable cost per unit — what each unit sold contributes toward fixed costs and, beyond break-even, profit.' }
+        ],
+        note: 'Estimates only, and a simplified model: it assumes price and variable cost per unit stay constant at every volume, with no bulk-purchase discounts, no step changes in fixed costs, and no tax. Real break-even points shift as a business scales past the range these assumptions hold for.'
+      },
+      workedExample: {
+        intro: 'A small manufacturer has $24,000 of monthly fixed costs, sells a product for $60, and spends $35 in variable cost per unit. How many units, and how much revenue, does it take to break even?',
+        rows: [
+          { label: 'Contribution margin per unit (60 − 35)', value: '$25' },
+          { label: 'Break-even units (24,000 ÷ 25)', value: '960 units' },
+          { label: 'Contribution margin ratio (25 ÷ 60 × 100)', value: '41.67%' },
+          { label: 'Break-even sales (960 × 60)', value: '$57,600' }
+        ],
+        result: 'Break-even is 960 units, or $57,600 in sales.',
+        explanation: 'Checked the dollars way: fixed costs ÷ contribution margin ratio = 24,000 ÷ 0.41667 ≈ $57,600, the same figure as 960 units × $60. Selling a 961st unit clears $25 of pure profit, since every unit past break-even no longer has to help cover the $24,000 of fixed costs.'
+      },
+      watchOut: [
+        { title: 'Fixed costs only stay fixed within a range', body: 'Renting a bigger warehouse or hiring a second manager to support higher volume are "step" increases in fixed costs that this linear model does not capture — it assumes the same fixed-cost base at every volume.' },
+        { title: 'Variable cost per unit can change with volume too', body: 'Bulk-purchase discounts can lower variable cost per unit at higher volumes, which would lower the real break-even point below what a single constant variable-cost figure predicts.' },
+        { title: 'Break-even is not the same as profitable', body: 'At exactly the break-even point, profit is zero by definition — the business is covering its costs but not yet making money. A sales target should sit meaningfully above break-even, not at it.' },
+        { title: 'This ignores tax and financing costs', body: 'Break-even analysis as modeled here works in pre-tax, operating terms. Interest on debt and income tax both reduce how much of "profit past break-even" actually reaches the owner.' },
+        { title: 'Contribution margin feeds this calculator\'s denominator', body: 'Price minus variable cost per unit is the same contribution margin per unit calculated on its own page here — a drop in contribution margin (a price cut, or a rise in variable cost) raises the break-even point, even if fixed costs do not change.' }
+      ],
+      references: [
+        { label: 'U.S. Small Business Administration, Calculate your startup costs (break-even analysis)', url: 'https://www.sba.gov/business-guide/plan-your-business/calculate-your-startup-costs' },
+        { label: 'OpenStax, Principles of Managerial Accounting §3.2, Calculate a break-even point in units and dollars', url: 'https://openstax.org/books/principles-managerial-accounting/pages/3-2-calculate-a-break-even-point-in-units-and-dollars' }
+      ]
+    },
+    inputs: [
+      { id: 'fixedCosts', label: 'Fixed costs', type: 'currency', placeholder: '24000', defaultValue: 24000, step: 500, min: 0 },
+      { id: 'pricePerUnit', label: 'Price per unit', type: 'currency', placeholder: '60', defaultValue: 60, step: 1, min: 0 },
+      { id: 'variableCostPerUnit', label: 'Variable cost per unit', type: 'currency', placeholder: '35', defaultValue: 35, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Break-Even Calculator – Units and Sales Dollars',
+      description: 'Calculate the break-even point in units and sales dollars from fixed costs, price, and variable cost per unit, or solve backward. Free, with contribution margin.',
+      faq: [
+        { question: 'How do I calculate the break-even point?', answer: 'Divide fixed costs by contribution margin per unit (price minus variable cost per unit). $24,000 of fixed costs with a $25 contribution margin ($60 price, $35 variable cost) breaks even at 960 units.' },
+        { question: 'What is break-even in sales dollars, not units?', answer: 'Fixed costs divided by the contribution margin ratio (contribution margin per unit divided by price). In the example, $24,000 ÷ 41.67% ≈ $57,600, the same as 960 units × $60.' },
+        { question: 'What is contribution margin, and why does it matter here?', answer: 'Contribution margin per unit is price minus variable cost per unit — the amount each sale puts toward fixed costs. It is the denominator of the break-even formula: a lower contribution margin means more units are needed to break even.' },
+        { question: 'Does break-even mean the business is profitable?', answer: 'No. At exactly the break-even point, total revenue equals total cost and profit is zero. Only sales beyond that point turn into profit.' },
+        { question: 'What counts as a fixed cost versus a variable cost?', answer: 'Fixed costs (rent, salaries, insurance) do not change with sales volume over the period being analyzed. Variable costs (materials, direct labor, shipping) rise and fall with each unit sold.' },
+        { question: 'Does this account for taxes?', answer: 'No. This is a pre-tax, operating break-even calculation. Income tax and interest on any debt both reduce how much of the profit earned past break-even is actually kept.' },
+        { question: 'How is break-even different from payback period?', answer: 'Break-even finds the sales volume where revenue equals cost in a given period. payback-period-calculator instead finds how long it takes an upfront investment to be recovered from cash flow — a different question about time, not volume.' }
+      ]
+    },
+    compute(values) {
+      const contributionMarginPerUnit = values.pricePerUnit - values.variableCostPerUnit;
+      const breakEvenUnits = contributionMarginPerUnit > 0 ? values.fixedCosts / contributionMarginPerUnit : NaN;
+      const contributionMarginRatio = values.pricePerUnit > 0 ? (contributionMarginPerUnit / values.pricePerUnit) * 100 : NaN;
+      const breakEvenRevenue = breakEvenUnits * values.pricePerUnit;
+      return { breakEvenUnits, contributionMarginPerUnit, contributionMarginRatio, breakEvenRevenue };
+    }
   }
 ];

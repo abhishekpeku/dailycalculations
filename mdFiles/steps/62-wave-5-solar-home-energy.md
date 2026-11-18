@@ -12,6 +12,21 @@
 Batch 1 done 2026-11-18. Next: batch 2 (storage & consumption, 5) and batch 3 (everyday efficiency
 novelties, 4) in separate sessions, per the "one batch at a time" rule.
 
+## Progress (batch 2, branch `step/62-solar-home-energy-batch2`)
+
+- [ ] `battery-backup-sizing-calculator`
+- [ ] `off-grid-solar-calculator`
+- [ ] `home-electricity-consumption-calculator`
+- [ ] `appliance-energy-cost-calculator`
+- [ ] `heat-pump-savings-calculator`
+- [ ] `npm test` / lint / build pass, snapshot regenerated
+- [ ] PR opened
+
+Sourcing note: `nrel.gov`/`pvwatts.nrel.gov` still unreachable (DNS failure) from this sandbox, same
+as batch 1. Most of `energy.gov`'s old `/energysaver/*` consumer-tips paths now 404 (site
+restructure) — `/eere/solar/*` and `energystar.gov` pages still work. Substituted EnergySage +
+EIA + ENERGY STAR + DOE `/eere/solar/*` pages throughout, same substitution precedent as batch 1.
+
 # Step 62 — Wave 5: Solar & Home Energy (new category)
 
 Per `mdFiles/omni-strategy.md` §4.5 ("Solar & home energy — new category"). Go-ahead per D23

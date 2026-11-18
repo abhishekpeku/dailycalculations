@@ -2340,7 +2340,7 @@ export const funCalculators: CalculatorConfig[] = [
         { id: 'moonAgeDays', label: "Moon's age (days since the last new moon)", format: 'number' },
         { id: 'illuminationPercent', label: 'Illuminated fraction', format: 'percent' }
       ],
-      groups: [{ title: 'Date', inputs: ['year', 'month', 'day'] }]
+      groups: [{ title: 'Date', inputs: ['moonYear', 'moonMonth', 'moonDay'] }]
     },
     content: {
       lastReviewed: '2026-11-18',
@@ -2400,9 +2400,9 @@ export const funCalculators: CalculatorConfig[] = [
       ]
     },
     inputs: [
-      { id: 'year', label: 'Year', type: 'number', placeholder: '2026', defaultValue: 2026, step: 1, min: 1 },
-      { id: 'month', label: 'Month (1-12)', type: 'number', placeholder: '11', defaultValue: 11, step: 1, min: 1 },
-      { id: 'day', label: 'Day (1-31)', type: 'number', placeholder: '18', defaultValue: 18, step: 1, min: 1 }
+      { id: 'moonYear', label: 'Year', type: 'number', placeholder: '2026', defaultValue: 2026, step: 1, min: 1 },
+      { id: 'moonMonth', label: 'Month (1-12)', type: 'number', placeholder: '11', defaultValue: 11, step: 1, min: 1 },
+      { id: 'moonDay', label: 'Day (1-31)', type: 'number', placeholder: '18', defaultValue: 18, step: 1, min: 1 }
     ],
     seo: {
       title: "Moon Phase Calculator – Lunar Phase & Illumination",
@@ -2418,9 +2418,9 @@ export const funCalculators: CalculatorConfig[] = [
       ]
     },
     compute(values) {
-      const year = Math.round(values.year);
-      const month = Math.round(values.month);
-      const day = Math.round(values.day);
+      const year = Math.round(values.moonYear);
+      const month = Math.round(values.moonMonth);
+      const day = Math.round(values.moonDay);
       const noAnswer = { phaseNameCode: NaN, moonAgeDays: NaN, illuminationPercent: NaN };
       if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day) || month < 1 || month > 12 || day < 1) return noAnswer;
       const daysInMonth = new Date(year, month, 0).getDate();

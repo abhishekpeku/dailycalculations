@@ -587,6 +587,47 @@ exports[`compute() snapshots > annuity-payout-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > antipode-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "latitude": 40.7128,
+      "longitude": -74.006
+    },
+    "outputs": {
+      "antipodeLat": -40.7128,
+      "antipodeLon": 105.994,
+      "surfaceDistanceKm": 20015.0868,
+      "straightLineDistanceKm": 12742
+    }
+  },
+  "typical": {
+    "inputs": {
+      "latitude": 61.0692,
+      "longitude": -111.009
+    },
+    "outputs": {
+      "antipodeLat": -61.0692,
+      "antipodeLon": 68.991,
+      "surfaceDistanceKm": 20015.0868,
+      "straightLineDistanceKm": 12742
+    }
+  },
+  "edge": {
+    "inputs": {
+      "latitude": -90,
+      "longitude": -180
+    },
+    "outputs": {
+      "antipodeLat": 90,
+      "antipodeLon": 0,
+      "surfaceDistanceKm": 20015.0868,
+      "straightLineDistanceKm": 12742
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > area-calculator 1`] = `
 {
   "default": {
@@ -7820,6 +7861,41 @@ exports[`compute() snapshots > heat-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > heat-index-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "airTemp": 96,
+      "relativeHumidity": 65
+    },
+    "outputs": {
+      "heatIndexF": 121.0316293,
+      "heatIndexRise": 25.0316293
+    }
+  },
+  "typical": {
+    "inputs": {
+      "airTemp": 144,
+      "relativeHumidity": 98
+    },
+    "outputs": {
+      "heatIndexF": 686.8049166,
+      "heatIndexRise": 542.8049166
+    }
+  },
+  "edge": {
+    "inputs": {
+      "airTemp": 0,
+      "relativeHumidity": 0
+    },
+    "outputs": {
+      "heatIndexF": 0,
+      "heatIndexRise": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > hemocytometer-calculator 1`] = `
 {
   "default": {
@@ -11148,6 +11224,47 @@ exports[`compute() snapshots > momentum-calculator 1`] = `
     },
     "outputs": {
       "momentum": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > moon-phase-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "moonYear": 2026,
+      "moonMonth": 11,
+      "moonDay": 18
+    },
+    "outputs": {
+      "phaseNameCode": 3,
+      "moonAgeDays": 9.229954722,
+      "illuminationPercent": 69.15034196
+    }
+  },
+  "typical": {
+    "inputs": {
+      "moonYear": 2027,
+      "moonMonth": 12,
+      "moonDay": 27
+    },
+    "outputs": {
+      "phaseNameCode": 0,
+      "moonAgeDays": 29.33228472,
+      "illuminationPercent": 0.04449995916
+    }
+  },
+  "edge": {
+    "inputs": {
+      "moonYear": 1,
+      "moonMonth": 1,
+      "moonDay": 1
+    },
+    "outputs": {
+      "phaseNameCode": 3,
+      "moonAgeDays": 11.35858472,
+      "illuminationPercent": 87.4302318
     }
   }
 }
@@ -14912,6 +15029,62 @@ exports[`compute() snapshots > recycling-rate-calculator 1`] = `
       "annualLb": 1788.5,
       "divertedLb": 0,
       "notDivertedLb": 1788.5
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > relationship-anniversary-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "startMonth": 2,
+      "startDay": 14,
+      "startYear": 2019
+    },
+    "outputs": {
+      "years": 7,
+      "months": 4,
+      "days": 3,
+      "totalDays": 2680,
+      "nextMilestoneDays": 3000,
+      "nextMilestoneDateMs": 1809282600000,
+      "daysToNextAnniversary": 242,
+      "nextAnniversaryDateMs": 1802543400000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "startMonth": 3,
+      "startDay": 23,
+      "startYear": 2020
+    },
+    "outputs": {
+      "years": 6,
+      "months": 2,
+      "days": 25,
+      "totalDays": 2277,
+      "nextMilestoneDays": 2500,
+      "nextMilestoneDateMs": 1800901800000,
+      "daysToNextAnniversary": 279,
+      "nextAnniversaryDateMs": 1805740200000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "startMonth": 1,
+      "startDay": 1,
+      "startYear": 1900
+    },
+    "outputs": {
+      "years": 126,
+      "months": 5,
+      "days": 16,
+      "totalDays": 46188,
+      "nextMilestoneDays": 50000,
+      "nextMilestoneDateMs": 2110991930000,
+      "daysToNextAnniversary": 198,
+      "nextAnniversaryDateMs": 1798741800000
     }
   }
 }
@@ -19683,6 +19856,41 @@ exports[`compute() snapshots > weighted-average-calculator 1`] = `
       "weightedAverage": "NaN",
       "weightedSum": 0,
       "totalWeight": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > wind-chill-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "airTemp": 0,
+      "windSpeed": 15
+    },
+    "outputs": {
+      "windChillF": -19.39795411,
+      "windChillDepression": 19.39795411
+    }
+  },
+  "typical": {
+    "inputs": {
+      "airTemp": 0,
+      "windSpeed": 23
+    },
+    "outputs": {
+      "windChillF": -23.30083621,
+      "windChillDepression": 23.30083621
+    }
+  },
+  "edge": {
+    "inputs": {
+      "airTemp": 0,
+      "windSpeed": 0
+    },
+    "outputs": {
+      "windChillF": 0,
+      "windChillDepression": 0
     }
   }
 }

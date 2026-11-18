@@ -526,6 +526,11 @@ export const calculatorOrder: string[] = [
   'screen-size-calculator',
   'aspect-ratio-calculator',
   'uptime-percentage-calculator',
+  'wind-chill-calculator',
+  'heat-index-calculator',
+  'antipode-calculator',
+  'moon-phase-calculator',
+  'relationship-anniversary-calculator',
   'ip-subnet-calculator',
   'iban-calculator',
   'password-strength-checker'

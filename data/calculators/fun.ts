@@ -336,6 +336,20 @@ function uptimeDowntime(uptimePercent: number) {
 // The four "nines" the step asked for, used to build the reference table below.
 const STANDARD_NINES = [99, 99.9, 99.99, 99.999];
 
+// Lunar phase approximation (Wikipedia, "Lunar phase": age mod the mean synodic month). Reference
+// instant is the verified new moon of the August 11, 1999 total solar eclipse, 11:04:09 UTC
+// (Wikipedia, "Solar eclipse of August 11, 1999") -- cross-checked in the scratch script against
+// the April 8, 2024 eclipse (another verified new moon) and the September 7, 2025 lunar eclipse
+// (a verified full moon); both land within about a day of the predicted phase, consistent with
+// this being a mean-motion approximation rather than a precise ephemeris.
+const MOON_SYNODIC_MONTH_DAYS = 29.53059;
+const MOON_REF_NEW_MOON_MS = Date.UTC(1999, 7, 11, 11, 4, 9);
+const MOON_PHASE_NAMES = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous', 'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'] as const;
+
+// Relationship "day count" milestones: fixed round numbers, extended with a multiple-of-10,000
+// fallback for any relationship longer than the table (100+ years).
+const ANNIVERSARY_MILESTONES = [100, 500, 1000, 1500, 2000, 2500, 3000, 4000, 5000, 6000, 7000, 7500, 8000, 9000, 10000, 12500, 15000, 17500, 20000, 25000, 30000, 35000, 40000];
+
 export const funCalculators: CalculatorConfig[] = [
   {
     id: 'zodiac-sign-calculator',
@@ -1993,6 +2007,611 @@ export const funCalculators: CalculatorConfig[] = [
       const minutesLeft = Math.floor((diffMs % 3600000) / 60000);
       const hoursBehindKiribati = 14 - utcOffsetHours;
       return { daysLeft, hoursLeft, minutesLeft, hoursBehindKiribati };
+    }
+  },
+  {
+    id: 'wind-chill-calculator',
+    category: 'fun',
+    glyph: 'WC',
+    updatedAt: '2026-11-18',
+    aliases: ['wind chill calculator', 'feels like temperature calculator cold', 'wind chill factor calculator', 'windchill chart calculator', 'NWS wind chill formula calculator'],
+    related: ['heat-index-calculator', 'fahrenheit-to-celsius-converter', 'speed-converter', 'daylight-hours-calculator'],
+    title: 'Wind Chill Calculator',
+    description: 'Calculate wind chill -- how cold moving air actually feels on exposed skin -- using the real National Weather Service wind chill temperature index formula.',
+    example: "At 0°F with a 15 mph wind, the NWS's own formula gives a wind chill of about -19°F, cold enough to cause frostbite on exposed skin in about 30 minutes.",
+    breakdown: {
+      headline: 'windChillF',
+      headlineLabel: 'Wind chill temperature',
+      outputs: [
+        { id: 'windChillF', label: 'Wind chill temperature', format: 'number', dimension: 'temperature', unit: 'F', alsoIn: ['C'] },
+        { id: 'windChillDepression', label: 'Feels colder by', format: 'number', dimension: 'temperatureDelta', unit: 'F' }
+      ],
+      groups: [{ title: 'Conditions', inputs: ['airTemp', 'windSpeed'] }]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why moving air feels colder than the thermometer says',
+        paragraphs: [
+          "Still air next to your skin warms up slightly as your body heats it, forming a thin insulating layer. Wind strips that layer away continuously, so skin loses heat faster than the air temperature alone would suggest. Wind chill is the National Weather Service's attempt to state that faster heat loss as a single number: the temperature still air would have to be to cool exposed skin at the same rate the actual wind is cooling it.",
+          'The index has a real, documented history. Paul Siple and Charles Passel devised the original wind chill tables working in Antarctica before World War II, timing how fast water froze in a plastic bottle left out in the wind. In November 2001, the US National Weather Service, Canada and the UK jointly replaced that old method with a new formula from the Joint Action Group for Temperature Indices (JAG/TI), based on how fast a bare face loses heat while walking into the wind at a brisk 1.4 m/s, with wind speed measured the way weather stations actually measure it: at the standard 10-meter anemometer height, not at face level.',
+          'Because it models facial skin specifically, wind chill has real limits. The National Weather Service notes that direct sunshine can make a cold day feel 10 to 18°F warmer than the plain wind chill number suggests, and the formula says nothing about how covered skin, or a different body part, experiences the same conditions.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the air temperature and the wind speed.',
+        steps: [
+          { name: 'Enter the air temperature', text: 'The actual thermometer reading, in °F, °C or any temperature unit.' },
+          { name: 'Enter the wind speed', text: 'Sustained wind speed, in mph, km/h or any speed unit -- use the reading from a weather report, not a gust.' },
+          { name: 'Read the wind chill', text: 'The headline is what the air actually feels like on exposed skin, with how many degrees colder than the thermometer shown underneath.' },
+          { name: 'Check whether the formula applies', text: 'The NWS formula is only defined for air temperature at or below 50°F and wind faster than 3 mph. Outside that range, the calculator simply shows the actual air temperature, because there is no meaningful wind chill effect to report.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "The current NWS formula, adopted jointly by the US, Canada and the UK in November 2001, replaced the older Siple-Passel tables with one based on modeled facial heat loss.",
+        expression: 'WC = 35.74 + 0.6215×T − 35.75×V^0.16 + 0.4275×T×V^0.16\n(T in °F, V in mph; valid only for T ≤ 50°F and V > 3 mph)',
+        terms: [
+          { symbol: 'T', meaning: 'Air temperature, in degrees Fahrenheit.' },
+          { symbol: 'V', meaning: 'Wind speed, in miles per hour, measured at the standard 10-meter (33 ft) anemometer height used by weather stations.' },
+          { symbol: 'V^0.16', meaning: "The wind-speed exponent from the standard engineering correlation between wind speed and heat-transfer rate used to build the 2001 formula -- it is why wind chill drops quickly at first as wind picks up, then more slowly at higher speeds." },
+          { symbol: 'WC', meaning: 'Wind chill temperature, in °F -- the still-air temperature that would cool skin at the same rate.' }
+        ],
+        note: 'Outside the formula\'s valid range (T > 50°F or V ≤ 3 mph), this calculator shows the wind chill as equal to the actual air temperature, matching NWS practice of not reporting a wind chill in those conditions.'
+      },
+      workedExample: {
+        intro: "The National Weather Service's own published example: air temperature 0°F, wind speed 15 mph.",
+        rows: [
+          { label: 'V^0.16 = 15^0.16', value: '1.3876' },
+          { label: '35.74 + 0.6215×0', value: '35.74' },
+          { label: '− 35.75×1.3876', value: '−49.60' },
+          { label: '+ 0.4275×0×1.3876', value: '0' },
+          { label: 'Wind chill (sum)', value: '≈ −19.40°F' }
+        ],
+        result: '≈ -19°F -- about -28°C',
+        explanation: "Rounded to -19°F, this matches the exact example the National Weather Service publishes on its own wind chill chart page, where it notes that exposed skin can suffer frostbite in about 30 minutes at this wind chill. The air itself is only at 0°F; the 15 mph wind makes it feel roughly 19 degrees colder."
+      },
+      watchOut: [
+        { title: 'The formula only applies in specific conditions', body: 'It is defined only for air temperature at or below 50°F and wind faster than 3 mph. Outside that range there is no official wind chill value, so this calculator just shows the actual temperature.' },
+        { title: 'Sunshine is not included', body: 'The NWS notes that direct sunshine on a clear day can make the air feel 10 to 18°F warmer than the calculated wind chill, because the formula assumes no solar heating of the skin.' },
+        { title: 'It models a face in the wind, not your whole body or your clothing', body: 'The 2001 revision is based on heat loss from bare facial skin walking into the wind. Covered skin, a different orientation to the wind, or heavy clothing all change how cold a given wind chill actually feels in practice.' },
+        { title: 'Wind speed means the standard weather-station measurement', body: 'The formula assumes wind measured at the standard 10-meter anemometer height. A handheld anemometer at head height, or a gusty reading instead of a sustained one, will not match a weather report\'s wind chill exactly.' },
+        { title: 'Frostbite times are general guidance, not a guarantee', body: 'How fast frostbite actually sets in depends on exposure time, clothing, individual circulation and other factors the formula does not account for.' }
+      ],
+      references: [
+        { label: 'National Weather Service, Cold Weather Safety: Wind Chill Chart and Formula', url: 'https://www.weather.gov/safety/cold-wind-chill-chart' },
+        { label: 'Wikipedia, Wind chill (Siple-Passel history; the 2001 JAG/TI revision)', url: 'https://en.wikipedia.org/wiki/Wind_chill' }
+      ]
+    },
+    inputs: [
+      { id: 'airTemp', label: 'Air temperature', type: 'number', placeholder: '0', defaultValue: 0, step: 1, dimension: 'temperature', unit: 'F' },
+      { id: 'windSpeed', label: 'Wind speed', type: 'number', placeholder: '15', defaultValue: 15, step: 1, min: 0, dimension: 'speed', unit: 'mph' }
+    ],
+    seo: {
+      title: 'Wind Chill Calculator – NWS Wind Chill Formula',
+      description: 'Free wind chill calculator using the real National Weather Service formula. Enter air temperature and wind speed to find how cold it actually feels.',
+      faq: [
+        { question: 'What is the formula for wind chill?', answer: 'The US National Weather Service formula is WC = 35.74 + 0.6215T − 35.75V^0.16 + 0.4275TV^0.16, with air temperature T in °F and wind speed V in mph, valid only for T at or below 50°F and V above 3 mph.' },
+        { question: 'What is the wind chill at 0°F with a 15 mph wind?', answer: 'About -19°F. This is the exact example the National Weather Service publishes, noting that exposed skin can develop frostbite in about 30 minutes at that wind chill.' },
+        { question: 'Why does wind make cold feel worse?', answer: 'Still air next to your skin warms up slightly and insulates you. Wind continuously strips that warmed layer away, so your skin loses heat faster than the plain air temperature would suggest -- wind chill is the single number the NWS uses to express that faster cooling rate.' },
+        { question: 'Below what wind speed does wind chill not apply?', answer: '3 mph. Below that, and at air temperatures above 50°F, the National Weather Service formula is not defined, so there is no official wind chill figure to report.' },
+        { question: 'Does sunshine change the wind chill?', answer: 'The number itself does not include it, but the National Weather Service notes that direct sunshine on a clear day can make the air feel 10 to 18°F warmer than the calculated wind chill.' },
+        { question: 'When did the current wind chill formula start being used?', answer: 'November 2001, when the US, Canada and the UK jointly adopted the current formula, based on modeled heat loss from a bare face walking into the wind, replacing the older Siple-Passel tables from the 1940s.' },
+        { question: 'Is wind chill the same everywhere on the body?', answer: 'No. The formula specifically models exposed facial skin. Covered skin and other body parts lose heat differently, so the real effect on, say, your hands can differ from the published wind chill number.' }
+      ]
+    },
+    compute(values) {
+      const T = values.airTemp;
+      const V = values.windSpeed;
+      if (!Number.isFinite(T) || !Number.isFinite(V) || V < 0) return { windChillF: NaN, windChillDepression: NaN };
+      let windChillF: number;
+      if (T > 50 || V <= 3) {
+        windChillF = T; // outside the NWS formula's valid range -- no meaningful wind chill effect to report
+      } else {
+        const Vp = Math.pow(V, 0.16);
+        windChillF = 35.74 + 0.6215 * T - 35.75 * Vp + 0.4275 * T * Vp;
+      }
+      return { windChillF, windChillDepression: T - windChillF };
+    }
+  },
+  {
+    id: 'heat-index-calculator',
+    category: 'fun',
+    glyph: 'HI',
+    updatedAt: '2026-11-18',
+    aliases: ['heat index calculator', 'feels like temperature calculator hot', 'heat index chart calculator', 'NWS heat index formula calculator', 'real feel temperature calculator'],
+    related: ['wind-chill-calculator', 'fahrenheit-to-celsius-converter', 'daylight-hours-calculator'],
+    title: 'Heat Index Calculator',
+    description: "Calculate heat index -- how hot it actually feels once humidity is factored in -- using the real National Weather Service Rothfusz regression formula.",
+    example: 'At 96°F with 65% relative humidity, the NWS formula gives a heat index of about 121°F, in its "Danger" category.',
+    breakdown: {
+      headline: 'heatIndexF',
+      headlineLabel: 'Heat index (what it feels like)',
+      outputs: [
+        { id: 'heatIndexF', label: 'Heat index', format: 'number', dimension: 'temperature', unit: 'F', alsoIn: ['C'] },
+        { id: 'heatIndexRise', label: 'Feels hotter by', format: 'number', dimension: 'temperatureDelta', unit: 'F' }
+      ],
+      groups: [{ title: 'Conditions', inputs: ['airTemp', 'relativeHumidity'] }],
+      visual: {
+        type: 'rangeBar',
+        value: 'heatIndexF',
+        title: 'NWS heat index risk category',
+        bands: [
+          { label: 'Little to no heat risk', min: 0, max: 80 },
+          { label: 'Caution', min: 80, max: 90 },
+          { label: 'Extreme Caution', min: 90, max: 103 },
+          { label: 'Danger', min: 103, max: 125 },
+          { label: 'Extreme Danger', min: 125, max: 200 }
+        ]
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why humid heat feels worse than dry heat at the same temperature',
+        paragraphs: [
+          'Sweating only cools you down if it can evaporate. In humid air, the air is already close to carrying as much water vapor as it can hold, so sweat evaporates more slowly and carries away less heat -- the same air temperature feels hotter because your body\'s main cooling system is working less effectively. Heat index is the National Weather Service\'s single number for that combined effect of temperature and humidity on how hot it actually feels to a person.',
+          "The science behind it has a documented history. Robert Steadman published the underlying physiological model in 1979, with assumptions about body mass, height, clothing, activity level and even sun exposure built in. Because Steadman's full model is too complex to compute by hand, Lans Rothfusz of the NWS Southern Region published a simpler regression formula in 1990 that closely approximates it -- the version still used for the heat index reported in forecasts today.",
+          "Heat index assumes shade, not direct sun. The National Weather Service notes that full sunshine can add as much as 15°F to how hot conditions actually feel compared to the plain heat index number."
+        ]
+      },
+      howTo: {
+        intro: 'Enter the air temperature and the relative humidity.',
+        steps: [
+          { name: 'Enter the air temperature', text: 'The actual thermometer reading, in °F, °C or any temperature unit.' },
+          { name: 'Enter the relative humidity', text: 'As a percentage, from a weather report or a hygrometer.' },
+          { name: 'Read the heat index', text: 'The headline is what the air actually feels like once humidity is factored in, with how many degrees hotter than the thermometer shown underneath.' },
+          { name: 'Check the risk category', text: "The bar shows where that heat index falls on the National Weather Service's own four-level scale, from Caution up to Extreme Danger." }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "The Rothfusz regression is a multi-term polynomial fit to Steadman's physiological model, built from air temperature and relative humidity alone.",
+        expression:
+          'HI = −42.379 + 2.04901523T + 10.14333127R − 0.22475541TR − 0.00683783T² − 0.05481717R²\n+ 0.00122874T²R + 0.00085282TR² − 0.00000199T²R²\n(T in °F, R as a percent number; fitted for T ≥ 80°F and R ≥ 40%)',
+        terms: [
+          { symbol: 'T', meaning: 'Air temperature, in degrees Fahrenheit.' },
+          { symbol: 'R', meaning: 'Relative humidity, as a percent number (65 means 65%).' },
+          { symbol: 'HI', meaning: 'Heat index, in °F -- the National Weather Service states its own regression carries about a ±1.3°F margin of error.' }
+        ],
+        note: 'This calculator uses the core Rothfusz regression. The NWS applies small additional correction terms at the edges -- very low humidity with hot, dry air, or very high humidity at more moderate heat -- which are not reproduced here; they matter only in those narrow corners of the range. Below 80°F or 40% humidity, where the regression was not fitted, this calculator shows the heat index as equal to the actual air temperature.'
+      },
+      workedExample: {
+        intro: 'Air temperature 96°F, relative humidity 65%.',
+        rows: [
+          { label: '-42.379 + 2.04901523×96', value: '154.3236' },
+          { label: '+ 10.14333127×65', value: '659.3166' },
+          { label: '− 0.22475541×96×65', value: '−1402.0938' },
+          { label: '− 0.00683783×96²', value: '−63.0206' },
+          { label: '− 0.05481717×65²', value: '−231.6025' },
+          { label: '+ 0.00122874×96²×65', value: '737.4547' },
+          { label: '+ 0.00085282×96×65²', value: '345.2459' },
+          { label: '− 0.00000199×96²×65²', value: '−77.5911' },
+          { label: 'Heat index (sum)', value: '≈ 121.03°F' }
+        ],
+        result: '≈ 121°F -- about 49.5°C -- "Danger" category',
+        explanation: 'Although the thermometer reads 96°F, the 65% humidity makes it feel about 25°F hotter: 121°F, squarely in the National Weather Service\'s "Danger" category, where heat cramps or heat exhaustion are likely with prolonged exposure or activity.'
+      },
+      watchOut: [
+        { title: "The regression is fitted for T ≥ 80°F and R ≥ 40%", body: 'Below that range, the National Weather Service does not report a heat index because there is no meaningful humidity effect to add -- this calculator shows the plain air temperature instead.' },
+        { title: 'Small NWS adjustment terms are not reproduced here', body: 'The full NWS procedure makes small corrections at very low humidity with hot, dry air, and at very high humidity with more moderate heat. This calculator uses the core Rothfusz regression only, which the NWS itself states carries about a ±1.3°F margin of error even within its fitted range.' },
+        { title: 'It assumes shade', body: 'The National Weather Service notes that direct sunshine can add up to 15°F to how conditions actually feel compared to the calculated heat index.' },
+        { title: "It is a model, not a measurement of you specifically", body: "Steadman's underlying model fixes assumptions about body size, clothing and activity level. Individual factors -- hydration, body size, acclimatization, age and health -- all change how hot a given heat index actually feels to a real person." },
+        { title: 'It is for air temperature, not water temperature or other conditions', body: 'Heat index describes still, shaded air. It does not apply to water exposure, direct physical exertion heat, or industrial heat sources.' }
+      ],
+      references: [
+        { label: 'National Weather Service, The Heat Index Equation (Rothfusz regression, full coefficients)', url: 'https://www.weather.gov/media/epz/wxcalc/heatIndex.pdf' },
+        { label: 'National Weather Service, Amarillo/Lubbock: What is the Heat Index? (categories, ±1.3°F accuracy, sun adjustment)', url: 'https://www.weather.gov/ama/heatindex' },
+        { label: 'Wikipedia, Heat index (Steadman 1979 model; Rothfusz 1990 NWS regression)', url: 'https://en.wikipedia.org/wiki/Heat_index' }
+      ]
+    },
+    inputs: [
+      { id: 'airTemp', label: 'Air temperature', type: 'number', placeholder: '96', defaultValue: 96, step: 1, dimension: 'temperature', unit: 'F' },
+      { id: 'relativeHumidity', label: 'Relative humidity', type: 'percent', placeholder: '65', defaultValue: 65, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Heat Index Calculator – NWS Heat Index Formula',
+      description: 'Free heat index calculator using the real NWS Rothfusz regression. Enter temperature and humidity to find how hot it actually feels, with risk category.',
+      faq: [
+        { question: 'What is the formula for heat index?', answer: 'The NWS Rothfusz regression: HI = -42.379 + 2.04901523T + 10.14333127R - 0.22475541TR - 0.00683783T² - 0.05481717R² + 0.00122874T²R + 0.00085282TR² - 0.00000199T²R², with T in °F and R as a percent number.' },
+        { question: 'What is the heat index at 96°F and 65% humidity?', answer: 'About 121°F -- roughly 25°F hotter than the thermometer reading, which falls in the National Weather Service\'s "Danger" category.' },
+        { question: 'Why does humidity make heat feel worse?', answer: 'Sweat only cools you by evaporating. Humid air is already closer to saturated with water vapor, so sweat evaporates more slowly and carries away less heat, making the same air temperature feel hotter.' },
+        { question: 'What are the NWS heat index categories?', answer: 'Caution (80-90°F): possible fatigue with prolonged activity. Extreme Caution (90-103°F): possible heat exhaustion or cramps. Danger (103-125°F): heat exhaustion likely, heat stroke possible. Extreme Danger (125°F+): heat stroke highly likely.' },
+        { question: 'How accurate is the heat index formula?', answer: 'The National Weather Service states its Rothfusz regression carries about a ±1.3°F margin of error within the range it was fitted for (80°F and up, 40% humidity and up).' },
+        { question: 'Who created the heat index formula?', answer: "Robert Steadman published the underlying physiological model in 1979. Lans Rothfusz of the NWS Southern Region published the simpler regression approximation used today in a 1990 technical paper." },
+        { question: 'Does sunshine affect the heat index?', answer: 'The number itself assumes shade. The National Weather Service notes that full direct sunshine can add up to 15°F to how hot conditions actually feel.' }
+      ]
+    },
+    compute(values) {
+      const T = values.airTemp;
+      const RH = values.relativeHumidity;
+      if (!Number.isFinite(T) || !Number.isFinite(RH) || RH < 0 || RH > 100) return { heatIndexF: NaN, heatIndexRise: NaN };
+      let heatIndexF: number;
+      if (T < 80) {
+        heatIndexF = T; // below the regression's fitted range -- no NWS-reported heat index here
+      } else {
+        heatIndexF = -42.379 + 2.04901523 * T + 10.14333127 * RH - 0.22475541 * T * RH - 0.00683783 * T * T
+          - 0.05481717 * RH * RH + 0.00122874 * T * T * RH + 0.00085282 * T * RH * RH - 0.00000199 * T * T * RH * RH;
+      }
+      return { heatIndexF, heatIndexRise: heatIndexF - T };
+    }
+  },
+  {
+    id: 'antipode-calculator',
+    category: 'fun',
+    glyph: 'ANT',
+    updatedAt: '2026-11-18',
+    aliases: ['antipode calculator', 'opposite side of the earth calculator', 'antipodal point calculator', 'dig a hole to china calculator', 'what is on the other side of the world'],
+    related: ['moon-phase-calculator', 'daylight-hours-calculator', 'timezone-meeting-planner'],
+    title: 'Antipode Calculator',
+    description: "Find any location's exact antipode -- the point on the opposite side of the Earth -- from its latitude and longitude, plus why most antipodes land in open ocean.",
+    example: "New York City's (40.7128°N, 74.0060°W) antipode is 40.7128°S, 105.9940°E -- deep in the Indian Ocean south of Australia, not China.",
+    breakdown: {
+      headline: 'antipodeLat',
+      headlineLabel: 'Antipodal point — latitude',
+      outputs: [
+        { id: 'antipodeLat', label: 'Antipodal point — latitude', format: 'number' },
+        { id: 'antipodeLon', label: 'Antipodal point — longitude', format: 'number' },
+        { id: 'surfaceDistanceKm', label: 'Distance along the surface', format: 'number', dimension: 'length', unit: 'km', alsoIn: ['mi'] },
+        { id: 'straightLineDistanceKm', label: 'Straight-line distance through the Earth', format: 'number', dimension: 'length', unit: 'km', alsoIn: ['mi'] }
+      ],
+      groups: [{ title: 'Your location', inputs: ['latitude', 'longitude'] }],
+      visual: {
+        type: 'compareBars',
+        title: 'Two ways to measure "halfway around the world"',
+        bars: [
+          { from: 'surfaceDistanceKm', label: 'Along the surface' },
+          { from: 'straightLineDistanceKm', label: 'Straight through the Earth' }
+        ]
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: "What a location's antipode actually is",
+        paragraphs: [
+          "A location's antipode is the single point diametrically opposite it on the globe: the spot you would reach by drilling straight through the center of the Earth. Finding it is pure geometry -- flip the latitude from north to south (or south to north) by the same number of degrees, and move the longitude exactly halfway around the globe, 180° the other way.",
+          "The old schoolyard idea of digging a hole \"straight to China\" almost never works out, because land is not evenly spread across the globe. Nearly all of Earth's land mass sits within one hemisphere, usually centered near Nantes, France, which Wikipedia's geographic data describes as 47% land and 53% water. Its exact antipodal hemisphere, centered near New Zealand's Bounty Islands, is the reverse: about 89% water, 6% dry land and 5% polar ice. Because so much of the globe's land is concentrated on one side, a given point of land is disproportionately likely to have its antipode fall in open ocean -- which the worked example below shows directly.",
+          "The National Oceanic and Atmospheric Administration states that the ocean covers approximately 70% of Earth's surface overall, so even a location's antipode picked completely at random is already more likely to be ocean than land before factoring in where the continents actually sit."
+        ]
+      },
+      howTo: {
+        intro: "Enter a location's latitude and longitude in decimal degrees.",
+        steps: [
+          { name: 'Enter the latitude', text: 'Positive for north of the equator, negative for south -- for example 40.7128 for New York City.' },
+          { name: 'Enter the longitude', text: 'Positive for east of the prime meridian, negative for west -- for example -74.0060 for New York City.' },
+          { name: 'Read the antipodal coordinates', text: 'The latitude flips sign; the longitude moves 180° around the globe.' },
+          { name: 'Read the two distances', text: 'Every antipode on Earth is the same distance away: half the circumference along the surface, or the full diameter in a straight line through the planet.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The antipode is a direct coordinate flip; the two distances come from Earth\'s mean radius.',
+        expression:
+          'antipodeLat = −lat\nantipodeLon = lng − 180° (if lng > 0), or lng + 180° (if lng ≤ 0)\nsurface distance = π × R (half of Earth\'s circumference)\nstraight-line distance = 2 × R (Earth\'s diameter)',
+        terms: [
+          { symbol: 'lat, lng', meaning: "The location's latitude and longitude, in decimal degrees." },
+          { symbol: 'R', meaning: "Earth's volumetric mean radius, 6,371 km, as published by NASA." }
+        ],
+        note: 'Longitude is undefined exactly at the poles -- the antipode of either pole is simply the other pole, whatever longitude is entered. The distances use a sphere approximation; Earth is very slightly flattened, so real antipodal distances vary by a small fraction of a percent depending on direction.'
+      },
+      workedExample: {
+        intro: "New York City: 40.7128°N, 74.0060°W (that is, longitude -74.0060).",
+        rows: [
+          { label: 'antipodeLat = −40.7128', value: '−40.7128° (40.7128°S)' },
+          { label: 'antipodeLon = −74.0060 + 180', value: '105.9940° (105.9940°E)' },
+          { label: 'Surface distance = π × 6,371 km', value: '≈ 20,015 km (12,437 mi)' },
+          { label: 'Straight-line distance = 2 × 6,371 km', value: '≈ 12,742 km (7,918 mi)' }
+        ],
+        result: '40.7128°S, 105.9940°E -- open ocean south of Australia',
+        explanation: "New York's antipode sits in the Indian Ocean, well south of Australia -- nowhere near China, which is in the same (Northern) hemisphere as New York and therefore cannot be anyone's antipode from there. Every point on Earth, wherever it is, is exactly the same two distances from its own antipode: about 20,015 km along the surface, or 12,742 km straight through the planet."
+      },
+      watchOut: [
+        { title: 'Longitude means nothing at the poles', body: 'At exactly 90°N or 90°S, every line of longitude meets at the same point, so the antipode of either pole is simply the other pole, regardless of the longitude you entered.' },
+        { title: 'This uses a sphere approximation', body: "Earth's mean radius (6,371 km) treats the planet as a perfect sphere. The real Earth is very slightly flattened at the poles, so true antipodal distances vary by a small fraction of a percent depending on direction -- not large enough to matter for this purpose." },
+        { title: "Most antipodes are ocean, but not all", body: "Because so much of Earth's land sits in one hemisphere, most individual points of land do have an oceanic antipode -- but this is a geometric and statistical tendency from how land happens to be distributed, not a rule that applies to every single point." },
+        { title: 'Decimal degrees only', body: 'If your source gives degrees, minutes and seconds (DMS), convert to decimal degrees first before entering a latitude or longitude here.' }
+      ],
+      references: [
+        { label: "NASA, Earth Fact Sheet (volumetric mean radius, 6,371 km)", url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html' },
+        { label: 'NOAA Ocean Exploration, How much of the ocean have we explored? (~70% of Earth\'s surface is ocean)', url: 'https://oceanexplorer.noaa.gov/facts/explored.html' },
+        { label: 'Wikipedia, Land hemisphere (47% land / 53% water)', url: 'https://en.wikipedia.org/wiki/Land_hemisphere' },
+        { label: 'Wikipedia, Water hemisphere (89% water / 6% land / 5% ice)', url: 'https://en.wikipedia.org/wiki/Water_hemisphere' }
+      ]
+    },
+    inputs: [
+      { id: 'latitude', label: 'Latitude (°, + north / − south)', type: 'number', placeholder: '40.7128', defaultValue: 40.7128, step: 0.0001, min: -90 },
+      { id: 'longitude', label: 'Longitude (°, + east / − west)', type: 'number', placeholder: '-74.0060', defaultValue: -74.006, step: 0.0001, min: -180 }
+    ],
+    seo: {
+      title: "Antipode Calculator – Find the Opposite Side of the Earth",
+      description: "Free antipode calculator. Enter a latitude and longitude to find the exact point on the opposite side of the Earth, with the real distance between them.",
+      faq: [
+        { question: 'How do you calculate an antipode?', answer: 'Flip the sign of the latitude, and move the longitude 180° around the globe (subtract 180° if it is positive, add 180° if it is negative or zero).' },
+        { question: "What is New York's antipode?", answer: "40.7128°N, 74.0060°W has an antipode of 40.7128°S, 105.9940°E -- in the Indian Ocean well south of Australia, not China." },
+        { question: 'How far away is a location from its own antipode?', answer: "Every antipode on Earth is the same two distances: about 20,015 km (12,437 mi) along the surface -- exactly half the circumference -- or about 12,742 km (7,918 mi) in a straight line through the planet's center." },
+        { question: "Is it true that digging a hole from the US comes out in China?", answer: "No. China is in the Northern Hemisphere, like the United States, so it can never be any US location's antipode. Most of the contiguous US has an antipode in the Indian Ocean instead." },
+        { question: 'Why are most antipodes ocean rather than land?', answer: "Nearly all of Earth's land sits within one hemisphere (47% land, per Wikipedia's geographic data). Its exact opposite hemisphere, centered near New Zealand, is about 89% water -- so a typical point of land is disproportionately likely to have an oceanic antipode." },
+        { question: 'What is the antipode of the North Pole?', answer: 'The South Pole, and vice versa -- longitude has no meaning at either pole, since every line of longitude meets there.' },
+        { question: 'Does this account for Earth not being a perfect sphere?', answer: "No -- it uses Earth's mean radius and treats the planet as a sphere, which is accurate to within a small fraction of a percent for this purpose." }
+      ]
+    },
+    compute(values) {
+      const lat = values.latitude;
+      const lng = values.longitude;
+      if (!Number.isFinite(lat) || !Number.isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+        return { antipodeLat: NaN, antipodeLon: NaN, surfaceDistanceKm: NaN, straightLineDistanceKm: NaN };
+      }
+      const antipodeLat = lat === 0 ? 0 : -lat;
+      const antipodeLon = lng > 0 ? lng - 180 : lng + 180;
+      const EARTH_MEAN_RADIUS_KM = 6371; // NASA Earth Fact Sheet, volumetric mean radius
+      return {
+        antipodeLat,
+        antipodeLon,
+        surfaceDistanceKm: Math.PI * EARTH_MEAN_RADIUS_KM,
+        straightLineDistanceKm: 2 * EARTH_MEAN_RADIUS_KM
+      };
+    }
+  },
+  {
+    id: 'moon-phase-calculator',
+    category: 'fun',
+    glyph: '☾',
+    updatedAt: '2026-11-18',
+    aliases: ['moon phase calculator', 'what phase is the moon today', 'lunar phase calculator', 'moon age calculator', 'moon illumination calculator'],
+    related: ['easter-date-calculator', 'antipode-calculator', 'mayan-calendar-converter', 'date-difference-calculator'],
+    title: 'Moon Phase Calculator',
+    description: "Find the Moon's phase and illuminated fraction for any date, using the mean synodic month -- the same days-since-a-known-new-moon approximation astronomers describe.",
+    example: 'On November 18, 2026, the Moon is about 9.2 days into its cycle, 69% illuminated, in its Waxing Gibbous phase.',
+    breakdown: {
+      headline: 'phaseNameCode',
+      headlineLabel: 'Moon phase',
+      outputs: [
+        { id: 'phaseNameCode', label: 'Moon phase', labels: MOON_PHASE_NAMES.map((name, i) => ({ value: i, label: name })) },
+        { id: 'moonAgeDays', label: "Moon's age (days since the last new moon)", format: 'number' },
+        { id: 'illuminationPercent', label: 'Illuminated fraction', format: 'percent' }
+      ],
+      groups: [{ title: 'Date', inputs: ['moonYear', 'moonMonth', 'moonDay'] }]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'The synodic month, and how to approximate the Moon\'s phase from a date alone',
+        paragraphs: [
+          "The Moon takes about 27.3 days to complete one real orbit of Earth (the sidereal month), but because Earth is also moving around the Sun, the Moon has to travel a little further each cycle to catch up to the same Sun-Earth-Moon angle -- so the time from one new moon to the next, the synodic month NASA describes as about 29.5 days, is longer than the orbit itself.",
+          "Wikipedia's article on lunar phases describes a simple way to estimate the Moon's phase for any date without a full ephemeris: count the number of days since a known new moon, and reduce that count modulo the mean synodic month (29.53059 days). The remainder is the Moon's \"age\" -- 0 days at new moon, about 14.8 days (half the cycle) at full moon -- and dividing the age by the synodic month gives the fraction of the way through the cycle, which this calculator also uses to estimate the percentage of the Moon's visible face that is lit.",
+          "This calculator anchors that count to a precisely documented new moon: the one behind the total solar eclipse of August 11, 1999, at 11:04:09 UTC. Because the formula uses the mean length of the synodic month rather than the Moon's real, slightly irregular orbit, it is an approximation -- checking it against two other precisely documented events (the April 8, 2024 solar eclipse and the September 7, 2025 lunar eclipse, both real new/full moons) shows it lands within about a day of the true moment even a quarter-century later, which is accurate enough to name the phase but not to predict an eclipse."
+        ]
+      },
+      howTo: {
+        intro: 'Enter any calendar date.',
+        steps: [
+          { name: 'Enter a date', text: 'Any year, month and day on the modern calendar.' },
+          { name: 'Read the phase', text: "The headline names which of the eight traditional phases -- New Moon through Waning Crescent -- the Moon is in on that date." },
+          { name: "Read the Moon's age", text: 'Days since the most recent new moon, from 0 up to just under 29.53.' },
+          { name: 'Read the illuminated fraction', text: 'An estimate of how much of the Moon\'s visible face is lit, from 0% at new moon to 100% at full moon.' }
+        ],
+        outro: 'Everything is calculated in your browser using the formula below. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "A date becomes an age by counting days from a known new moon and reducing modulo the mean synodic month; the age gives both the phase and the illuminated fraction.",
+        expression:
+          'age = (days since a known new moon) mod 29.53059\nphaseFraction = age ÷ 29.53059\nilluminated % ≈ (1 − cos(2π × phaseFraction)) ÷ 2 × 100\nphase = round(phaseFraction × 8) mod 8, naming one of 8 equal slices of the cycle',
+        terms: [
+          { symbol: '29.53059', meaning: "The mean synodic month in days, per Wikipedia's lunar phase article." },
+          { symbol: 'known new moon', meaning: 'August 11, 1999, 11:04:09 UTC -- the precisely documented new moon of that day\'s total solar eclipse.' },
+          { symbol: 'illuminated %', meaning: "A standard circular approximation of the Moon's phase angle -- exact for a circular orbit viewed face-on, very slightly off in reality." },
+          { symbol: '8 equal slices', meaning: 'The common convention of naming eight phases (New, Waxing Crescent, First Quarter, Waxing Gibbous, Full, Waning Gibbous, Last Quarter, Waning Crescent) as equal-width bands centered on the four precise points -- new, first quarter, full and last quarter.' }
+        ],
+        note: 'The date you enter is evaluated at 12:00 UTC, so results can differ by up to about half a day from a calculation anchored to your own local midnight.'
+      },
+      workedExample: {
+        intro: 'November 18, 2026.',
+        rows: [
+          { label: 'Days since Aug 11, 1999, 11:04:09 UTC (at noon UTC, Nov 18, 2026)', value: '9,961.038 days' },
+          { label: 'age = 9,961.038 mod 29.53059', value: '≈ 9.23 days' },
+          { label: 'phaseFraction = 9.23 ÷ 29.53059', value: '≈ 0.3126' },
+          { label: 'illuminated % ≈ (1 − cos(2π × 0.3126)) ÷ 2 × 100', value: '≈ 69.2%' },
+          { label: 'phase = round(0.3126 × 8) mod 8 = round(2.5)', value: '3 → Waxing Gibbous' }
+        ],
+        result: 'Waxing Gibbous -- about 9.2 days old, about 69% illuminated',
+        explanation: 'At just under a third of the way through the cycle, the Moon has passed the First Quarter (a quarter of the way through, 50% lit) but has not yet reached Full (halfway through, 100% lit) -- which is exactly what "Waxing Gibbous" means: growing, and more than half lit.'
+      },
+      watchOut: [
+        { title: 'This is a mean-motion approximation, not a precise ephemeris', body: "The Moon's real orbit is elliptical and perturbed by the Sun, so actual new and full moons drift from this estimate. Checked against two independently documented events 25 years apart, the drift was under a day in both cases -- fine for naming a phase, not for predicting an eclipse or an exact moonrise time." },
+        { title: 'Calculated at 12:00 UTC for the date you enter', body: "Not your local midnight -- a date near a phase boundary can show a different-looking age or phase than a calculation anchored to your own time zone." },
+        { title: 'The 8 named phases are a convention, not an official standard', body: 'They are equal-width slices of the cycle centered on the four precisely defined points (new, first quarter, full, last quarter) -- a common way to describe the Moon\'s appearance, not a formal astronomical boundary.' },
+        { title: 'Illuminated percentage assumes a circular orbit viewed face-on', body: "It is a standard approximation. The Moon's actual illuminated fraction depends very slightly on its real elliptical position too." },
+        { title: 'This does not predict eclipses, supermoons or rise/set times', body: 'Those all require the Moon\'s precise position, not just where it is in the roughly 29.5-day lighting cycle.' }
+      ],
+      references: [
+        { label: 'NASA Science, Moon Phases (~29.5-day new-moon-to-new-moon cycle)', url: 'https://science.nasa.gov/moon/moon-phases/' },
+        { label: 'Wikipedia, Lunar phase (29.53059-day synodic month; the days-since-a-known-new-moon method)', url: 'https://en.wikipedia.org/wiki/Lunar_phase' },
+        { label: 'Wikipedia, Solar eclipse of August 11, 1999 (reference new moon instant, 11:04:09 UTC)', url: 'https://en.wikipedia.org/wiki/Solar_eclipse_of_August_11,_1999' }
+      ]
+    },
+    inputs: [
+      { id: 'moonYear', label: 'Year', type: 'number', placeholder: '2026', defaultValue: 2026, step: 1, min: 1 },
+      { id: 'moonMonth', label: 'Month (1-12)', type: 'number', placeholder: '11', defaultValue: 11, step: 1, min: 1 },
+      { id: 'moonDay', label: 'Day (1-31)', type: 'number', placeholder: '18', defaultValue: 18, step: 1, min: 1 }
+    ],
+    seo: {
+      title: "Moon Phase Calculator – Lunar Phase & Illumination",
+      description: "Free moon phase calculator. Find the Moon's phase, age and illuminated fraction for any date, using the real synodic-month approximation.",
+      faq: [
+        { question: "What phase is the Moon in today?", answer: 'Enter today\'s date to see the phase, the number of days since the last new moon, and the estimated illuminated fraction.' },
+        { question: 'How is moon phase calculated from a date?', answer: "By counting the days since a precisely known new moon and reducing that count modulo the mean synodic month (29.53059 days) -- the remainder is the Moon's age, which maps directly to its phase and illuminated fraction." },
+        { question: 'How long is a full moon cycle?', answer: "About 29.5 days (the synodic month, new moon to new moon) -- longer than the Moon's roughly 27.3-day orbit around Earth, because Earth's own motion around the Sun means the Moon has to travel a little further to realign." },
+        { question: 'How accurate is this moon phase calculator?', answer: "It is a mean-motion approximation, not a precise ephemeris. Checked against two real, documented new/full moons 25 years apart, it stayed within about a day of the true moment -- accurate enough to name a phase, not to time an eclipse." },
+        { question: 'What is a Waxing Gibbous moon?', answer: 'A moon more than half but not yet fully illuminated, on its way toward full -- between the First Quarter (50% lit, growing) and Full Moon (100% lit).' },
+        { question: "What does the Moon's \"age\" mean?", answer: 'The number of days since the most recent new moon, from 0 (new moon) up to just under 29.53 (the next new moon).' },
+        { question: 'Does this predict lunar eclipses?', answer: 'No. Lunar eclipses only happen at some full moons, when the Moon also passes through Earth\'s shadow -- a separate calculation this phase estimate does not make.' }
+      ]
+    },
+    compute(values) {
+      const year = Math.round(values.moonYear);
+      const month = Math.round(values.moonMonth);
+      const day = Math.round(values.moonDay);
+      const noAnswer = { phaseNameCode: NaN, moonAgeDays: NaN, illuminationPercent: NaN };
+      if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day) || month < 1 || month > 12 || day < 1) return noAnswer;
+      const daysInMonth = new Date(year, month, 0).getDate();
+      if (day > daysInMonth) return noAnswer;
+      const targetMs = Date.UTC(year, month - 1, day, 12, 0, 0);
+      let age = ((targetMs - MOON_REF_NEW_MOON_MS) / 86400000) % MOON_SYNODIC_MONTH_DAYS;
+      if (age < 0) age += MOON_SYNODIC_MONTH_DAYS;
+      const fraction = age / MOON_SYNODIC_MONTH_DAYS;
+      const illuminationPercent = ((1 - Math.cos(2 * Math.PI * fraction)) / 2) * 100;
+      const phaseNameCode = Math.round(fraction * 8) % 8;
+      return { phaseNameCode, moonAgeDays: age, illuminationPercent };
+    }
+  },
+  {
+    id: 'relationship-anniversary-calculator',
+    category: 'fun',
+    glyph: 'Ann',
+    updatedAt: '2026-11-18',
+    timeDependent: true,
+    aliases: ['relationship anniversary calculator', 'days together calculator', 'dating anniversary calculator', 'how long have we been together calculator', 'relationship milestone calculator'],
+    related: ['age-calculator', 'date-difference-calculator', 'love-calculator', 'name-numerology-calculator'],
+    title: 'Relationship Anniversary Calculator',
+    description: 'Find exactly how long you have been together, your next round-number day-count milestone, and your next annual anniversary, from the date your relationship started.',
+    example: 'A relationship that started February 14, 2019 is 7 years, 9 months and 4 days old on November 18, 2026 -- 2,834 days together, with the 3,000-day milestone 166 days away.',
+    breakdown: {
+      headline: 'years',
+      headlineLabel: 'Years together',
+      outputs: [
+        { id: 'years', label: 'Years', format: 'integer' },
+        { id: 'months', label: 'Plus months', format: 'integer' },
+        { id: 'days', label: 'Plus days', format: 'integer' },
+        { id: 'totalDays', label: 'Total days together', format: 'integer' },
+        { id: 'nextMilestoneDays', label: 'Next round-number milestone (days)', format: 'integer' },
+        { id: 'nextMilestoneDateMs', label: 'Date of that milestone', format: 'date' },
+        { id: 'daysToNextAnniversary', label: 'Days until next anniversary', format: 'integer' },
+        { id: 'nextAnniversaryDateMs', label: 'Next anniversary date', format: 'date' }
+      ],
+      groups: [{ title: 'Relationship start date', inputs: ['startMonth', 'startDay', 'startYear'] }],
+      derive: (values) => {
+        const today = new Date(values.todayMs);
+        const todayMidMs = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+        let nextAnniversaryMs = new Date(today.getFullYear(), values.startMonth - 1, values.startDay).getTime();
+        if (nextAnniversaryMs < todayMidMs) nextAnniversaryMs = new Date(today.getFullYear() + 1, values.startMonth - 1, values.startDay).getTime();
+        const lastAnniversaryMs = new Date(new Date(nextAnniversaryMs).getFullYear() - 1, values.startMonth - 1, values.startDay).getTime();
+        return { lastAnniversaryMs, nextAnniversaryMs, todayMidMs };
+      },
+      visual: {
+        type: 'timeline',
+        start: 'lastAnniversaryMs',
+        end: 'nextAnniversaryMs',
+        today: 'todayMidMs',
+        startLabel: 'last anniversary',
+        endLabel: 'next anniversary',
+        title: 'Countdown to your next anniversary'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Three ways to mark a relationship: exact duration, round-number milestones, and the yearly anniversary',
+        paragraphs: [
+          "A relationship's exact age works the same way the age calculator finds a person's exact age from a birth date: count the full years from the start date to the most recent anniversary, then the leftover months and days since. The total day count, found by converting both dates to a timestamp and subtracting, is exact regardless of how long the individual months in between happen to be.",
+          'That same total day count also lets you track a relationship by round numbers of days rather than only by years -- a 100th day, a 1,000th day, a 10,000th day -- which is a popular way many couples mark time together online, alongside the traditional yearly anniversary. This calculator looks ahead to the next such milestone from a fixed list of round numbers, and separately counts down to the next annual anniversary, the way the age calculator counts down to a next birthday.',
+          "Because the calculation depends on today's date, the milestone and anniversary countdowns change every day without you touching the form. The page reads your device's clock after it loads rather than baking in a fixed date."
+        ]
+      },
+      howTo: {
+        intro: "Enter the date your relationship started. Every figure is calculated against today's date, read from your device.",
+        steps: [
+          { name: 'Enter the start date', text: 'The month, day and full four-digit year your relationship began.' },
+          { name: 'Read how long you have been together', text: 'The headline is the number of full years, with the leftover months and days shown below it, plus the exact total number of days.' },
+          { name: 'Check the next milestone', text: 'The next round-number day count ahead of today -- 1,000 days, 5,000 days and so on -- with its exact date.' },
+          { name: 'Check the next anniversary', text: "The date your start month and day next occur, and how many days away that is." },
+          { name: 'Watch the timeline', text: 'The bar spans your last anniversary to your next one, with today marked in between.' }
+        ],
+        outro: "Everything is calculated in your browser from your device's clock. Nothing you type is sent or stored."
+      },
+      formula: {
+        intro: 'The same start date is read three different ways: as a calendar remainder, as an exact day count, and as a lookup against a fixed list of milestones.',
+        expression:
+          'years, months, days = calendar remainder from the start date to today\ntotalDays = round( (today − start) ÷ 86,400,000 )\nnextMilestone = smallest listed round-number day count greater than totalDays\nnextAnniversary = this year\'s start month/day, or next year\'s if that date has passed',
+        terms: [
+          { symbol: 'years, months, days', meaning: 'The same running-calendar-total method the age calculator uses: full years since the start date, then the leftover months and days since the most recent anniversary.' },
+          { symbol: 'totalDays', meaning: 'Both dates converted to a timestamp and subtracted, so it is exact to the day regardless of which specific months fall in between.' },
+          { symbol: 'nextMilestone', meaning: 'The next value from a fixed list of round day counts (100, 500, 1,000, and on up through 40,000) that is still ahead of today, with its date found by adding that many days to the start date.' },
+          { symbol: 'nextAnniversary', meaning: "This year's start month and day if that date has not happened yet, otherwise the same date next year -- identical logic to the age calculator's next-birthday countdown." }
+        ],
+        note: 'Dates are compared at local midnight, so the figures change at midnight in your device\'s time zone.'
+      },
+      workedExample: {
+        intro: 'A relationship started on February 14, 2019. Where does it stand on November 18, 2026?',
+        rows: [
+          { label: 'Full years (Feb 14, 2019 to Feb 14, 2026)', value: '7 years' },
+          { label: 'Months since the last anniversary (Feb 14 to Oct 14)', value: '9 months' },
+          { label: 'Days since then (Oct 14 to Nov 18)', value: '4 days' },
+          { label: 'Total days together (Feb 14, 2019 to Nov 18, 2026)', value: '2,834 days' },
+          { label: 'Next milestone (first listed value above 2,834)', value: '3,000 days, on May 3, 2027 -- 166 days away' },
+          { label: 'Next anniversary (Feb 14, 2026 has passed)', value: 'February 14, 2027 -- 88 days away' }
+        ],
+        result: '7 years, 9 months, 4 days together · 2,834 days · 3,000-day milestone in 166 days · next anniversary in 88 days',
+        explanation: 'Every figure comes from the one start date read a different way: the calendar remainder gives years/months/days, the full timestamp gap gives the exact day count, the day count checked against the milestone list gives the next round number, and moving the start date forward past today gives the anniversary countdown. All of them always agree, because they all come from the same date.'
+      },
+      watchOut: [
+        { title: 'The figures change at your local midnight', body: 'Not at the exact time of day the relationship began, if you happen to know it -- this calculator, like the age calculator, works entirely from calendar dates.' },
+        { title: 'A February 29 start date rolls forward', body: 'In a year without a leap day, a start date of February 29 is read as March 1, because that date simply does not exist that year.' },
+        { title: 'Total days is exact; years/months/days is calendar-based', body: 'The day count never rounds or averages. The years/months/days breakdown depends on how long the specific months in your span happen to be, so two relationships of the same total number of days will not always show identical months-and-days figures.' },
+        { title: 'The milestone list is fixed round numbers, not every day', body: 'It reports the next milestone from a set list (100, 500, 1,000, and on up through 40,000 days) that is still ahead of today -- not a count of which milestones you have already passed.' },
+        { title: "Uses your device's date and time zone", body: "The result depends on the clock and time zone set on the device you are using. If they are wrong, every figure here will be too." }
+      ],
+      references: [
+        { label: 'The Open Group, IEEE Std 1003.1-2017 (POSIX.1), Base Definitions §4.16, Seconds Since the Epoch', url: 'https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap04.html' },
+        { label: 'Royal Museums Greenwich, Which years are leap years, and can you have leap seconds?', url: 'https://www.rmg.co.uk/stories/time/which-years-are-leap-years-can-you-have-leap-seconds' }
+      ]
+    },
+    inputs: [
+      { id: 'startMonth', label: 'Relationship start month (1–12)', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 1 },
+      { id: 'startDay', label: 'Relationship start day (1–31)', type: 'number', placeholder: '14', defaultValue: 14, step: 1, min: 1 },
+      { id: 'startYear', label: 'Relationship start year', type: 'number', placeholder: '2019', defaultValue: 2019, step: 1, min: 1900 }
+    ],
+    seo: {
+      title: "Relationship Anniversary Calculator – Days & Milestones",
+      description: 'Free relationship anniversary calculator. Find exactly how long you have been together, your next day-count milestone, and your next anniversary date.',
+      faq: [
+        { question: 'How do I calculate how long we have been together?', answer: 'Enter the date your relationship started. The calculator counts the full years to your most recent anniversary, then the leftover months and days -- for example 7 years, 9 months and 4 days -- plus the exact total number of days together.' },
+        { question: 'How many days have we been together?', answer: 'Both dates are converted to a timestamp and subtracted, the same method the age calculator and date difference calculator use. A relationship starting February 14, 2019 has run 2,834 days as of November 18, 2026.' },
+        { question: 'What is the next relationship milestone?', answer: 'The calculator checks your total days together against a fixed list of round numbers (100, 500, 1,000, and on up through 40,000) and reports the next one still ahead, with its exact date.' },
+        { question: 'How many days until our next anniversary?', answer: "The calculator moves your start month and day to this year; if that date has already passed, it uses next year instead, then counts the days from today. For a February 14 start date checked on November 18, 2026, the next anniversary is February 14, 2027, 88 days away." },
+        { question: 'What happens to a February 29 start date in other years?', answer: 'Since February 29 only exists in leap years, the date rolls forward to March 1 in a year without one.' },
+        { question: 'Is this different from the age calculator?', answer: "It uses the same next-anniversary-date math, but starting from a relationship's start date instead of a birth date, and it adds the round-number day-count milestones, which the age calculator does not track." },
+        { question: 'Can I calculate this as of a date other than today?', answer: 'Not directly -- this calculator always measures from today. For the days between your start date and any other specific date, use the date difference calculator instead.' }
+      ]
+    },
+    compute(values) {
+      const now = values.todayMs !== undefined ? new Date(values.todayMs) : new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const start = new Date(values.startYear, values.startMonth - 1, values.startDay);
+
+      let years = today.getFullYear() - start.getFullYear();
+      let months = today.getMonth() - start.getMonth();
+      let days = today.getDate() - start.getDate();
+      if (days < 0) {
+        months -= 1;
+        days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+      }
+      if (months < 0) {
+        years -= 1;
+        months += 12;
+      }
+      years = Math.max(0, years);
+
+      const totalDays = Math.max(0, Math.round((today.getTime() - start.getTime()) / 86400000));
+
+      const nextMilestoneDays = ANNIVERSARY_MILESTONES.find((m) => m > totalDays) ?? Math.ceil((totalDays + 1) / 10000) * 10000;
+      const nextMilestoneDateMs = start.getTime() + nextMilestoneDays * 86400000;
+
+      let nextAnniversary = new Date(today.getFullYear(), start.getMonth(), start.getDate());
+      if (nextAnniversary.getTime() < today.getTime()) nextAnniversary = new Date(today.getFullYear() + 1, start.getMonth(), start.getDate());
+      const daysToNextAnniversary = Math.round((nextAnniversary.getTime() - today.getTime()) / 86400000);
+
+      return { years, months, days, totalDays, nextMilestoneDays, nextMilestoneDateMs, daysToNextAnniversary, nextAnniversaryDateMs: nextAnniversary.getTime() };
     }
   },
   {

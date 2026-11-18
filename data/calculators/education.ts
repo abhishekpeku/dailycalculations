@@ -966,5 +966,113 @@ export const educationCalculators: CalculatorConfig[] = [
       const termGpa = termCredits === 0 ? 0 : termPoints / termCredits;
       return { newCumulativeGpa, newTotalCredits, termGpa, termCredits };
     }
+  },
+  {
+    id: 'semester-credit-hours-calculator',
+    category: 'education',
+    group: 'Study & Time',
+    glyph: 'CR',
+    updatedAt: '2026-11-18',
+    aliases: ['total credit hours calculator', 'am i full time calculator', 'course load calculator', 'credit hour total calculator'],
+    related: ['cumulative-gpa-calculator', 'study-time-calculator', 'grade-calculator', 'class-attendance-calculator'],
+    title: 'Semester Credit Hours Calculator',
+    description: 'Add up your total credit hours from a list of courses, and check that total against a full-time enrollment threshold — 12 credit hours is a commonly cited undergraduate minimum.',
+    example: 'Five courses of 3, 3, 4, 3 and 3 credits total 16 credit hours — above the common 12-credit full-time minimum, with 4 credits of room to spare.',
+    breakdown: {
+      headline: 'totalCredits',
+      headlineLabel: 'Total credit hours',
+      outputs: [
+        { id: 'totalCredits', label: 'Total credit hours', format: 'number' },
+        { id: 'isFullTimeCode', label: 'Full-time?', labels: [
+          { value: 0, label: 'No' },
+          { value: 1, label: 'Yes' }
+        ] },
+        { id: 'creditsUntilFullTime', label: 'Credits needed to reach full-time', format: 'number' }
+      ],
+      groups: [
+        { title: 'Your courses', inputs: ['courseCredits'] },
+        { title: 'Full-time threshold', inputs: ['fullTimeThreshold'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'totalCredits', label: 'Your total credits' },
+          { from: 'fullTimeThreshold', label: 'Full-time threshold' }
+        ],
+        title: 'Your course load vs. the full-time threshold',
+        highlight: 0
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Total credit hours, and what "full-time" means by the numbers',
+        paragraphs: [
+          'Total credit hours is just the sum of each course\'s own credit value for the term. It matters beyond simple bookkeeping because many things — financial aid eligibility, insurance coverage under a parent\'s plan, visa status for international students, and tuition structure itself — key off whether that total clears a "full-time" threshold.',
+          'There is no single nationwide number, but a commonly cited one: the University of Cincinnati\'s own tuition policy, for example, defines full-time undergraduate enrollment as 12 to 18 credit hours, with 19 or more treated as an overload that can carry an extra per-credit charge. Many other undergraduate programs use the same 12-credit floor, but this varies by school and especially by level — graduate full-time status is often set lower, commonly around 9 credits.',
+          "This calculator totals your own courses and compares that total to a threshold you set (12 by default), so you can check your own specific program's definition rather than assume this one applies."
+        ]
+      },
+      howTo: {
+        intro: "List each course's credit hours, then set the full-time threshold your school uses.",
+        steps: [
+          { name: "Enter each course's credit hours", text: "Paste or type the credit value of every course you're taking this term, one per line or separated by commas." },
+          { name: 'Set the full-time threshold', text: "12 is a commonly cited undergraduate minimum, but check your own school's financial aid or registrar page — graduate programs often use a lower threshold." },
+          { name: 'Read your total credit hours', text: 'The headline is the sum of every course you listed.' },
+          { name: 'Check your full-time status', text: "The second figure shows whether your total meets the threshold, and the third shows exactly how many more credits you'd need if it doesn't." }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Total credit hours is the sum of every course listed; full-time status is a simple threshold check against that sum.',
+        expression: 'totalCredits = sum of every course\'s credit hours\nisFullTime = totalCredits ≥ fullTimeThreshold\ncreditsUntilFullTime = max(0, fullTimeThreshold − totalCredits)',
+        terms: [
+          { symbol: 'courseCredits', meaning: 'The credit hours of each individual course.' },
+          { symbol: 'fullTimeThreshold', meaning: 'The minimum total credit hours your school or program counts as full-time — commonly 12 for undergraduates.' }
+        ],
+        note: 'Full-time thresholds genuinely differ by school and by undergraduate vs. graduate level — this is a check against whatever threshold you enter, not a universal rule.'
+      },
+      workedExample: {
+        intro: 'Five courses: 3, 3, 4, 3 and 3 credit hours, against a 12-credit full-time threshold.',
+        rows: [
+          { label: 'Total credit hours (3+3+4+3+3)', value: '16' },
+          { label: 'Full-time? (16 ≥ 12)', value: 'Yes' },
+          { label: 'Credits needed to reach full-time (max(0, 12 − 16))', value: '0' }
+        ],
+        result: 'Total credit hours = 16 (full-time, 4 credits above the threshold)',
+        explanation: 'At 16 total credits against a 12-credit threshold, this course load already clears full-time status with room to spare, so the "credits needed" figure floors at 0 rather than going negative.'
+      },
+      watchOut: [
+        { title: 'The 12-credit figure is common, not universal', body: "It matches the undergraduate full-time floor in sources like the University of Cincinnati's own tuition policy (12-18 credits is full-time, 19+ is an overload), but check your own school — thresholds genuinely vary." },
+        { title: 'Graduate programs typically use a lower threshold', body: 'Graduate full-time status is commonly set lower than the undergraduate figure — set the threshold field to your program\'s own number rather than the 12-credit default.' },
+        { title: '"Credits needed" floors at 0', body: "If you're already above the threshold, this figure stays at 0 rather than showing a negative number — it answers \"how many more do I need,\" not \"how far over am I.\"" },
+        { title: 'This is not financial aid or visa advice', body: "Full-time enrollment can affect financial aid, insurance, and visa status, but the specific rules for each of those are set by the relevant office, not by this calculator. Confirm with your school's financial aid or international student office for anything that depends on it." }
+      ],
+      references: [
+        { label: 'University of Cincinnati, Office of the Registrar: Tuition Overload Policy (12-18 credit hours = full-time)', url: 'https://www.uc.edu/about/registrar/registration/policies/tuition-overload.html' }
+      ]
+    },
+    inputs: [
+      { id: 'courseCredits', label: 'Course credit hours', type: 'list', placeholder: 'Enter each course\'s credit hours, one per line or separated by commas.', defaultValue: 0, listDefault: [3, 3, 4, 3, 3], listMin: 1 },
+      { id: 'fullTimeThreshold', label: 'Full-time threshold (credit hours)', type: 'number', placeholder: '12', defaultValue: 12, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Semester Credit Hours Calculator – Full-Time Check',
+      description: 'Add up your total credit hours from a course list and check it against a full-time threshold — 12 credits is a commonly cited undergraduate minimum.',
+      faq: [
+        { question: 'How many credit hours is full-time?', answer: "There's no single nationwide number, but 12 credit hours per semester is a commonly cited undergraduate minimum — for example, the University of Cincinnati's own tuition policy sets full-time at 12-18 credit hours. Check your own school, since this varies." },
+        { question: 'How do I calculate my total credit hours?', answer: "Add up the credit value of every course you're taking. Five courses of 3, 3, 4, 3 and 3 credits total 16." },
+        { question: 'Is the full-time threshold the same for graduate students?', answer: 'Often not — graduate full-time status is commonly set lower than the undergraduate figure. Change the threshold field to your own program\'s number.' },
+        { question: 'What happens if I\'m below the full-time threshold?', answer: 'The "credits needed to reach full-time" figure shows exactly how many more credit hours you\'d need to add to clear the threshold.' },
+        { question: 'What is an overload?', answer: 'Some schools define a separate upper threshold above full-time — for example, 19 or more credit hours at the University of Cincinnati — that can carry an extra per-credit charge. This calculator checks the full-time floor, not an overload ceiling.' },
+        { question: 'Does full-time status affect financial aid?', answer: 'It often does, along with insurance coverage and visa status for international students, but the specific rules are set by your school\'s financial aid or international student office, not by this calculator.' }
+      ]
+    },
+    compute(values, lists) {
+      const totalCredits = lists.courseCredits.reduce((sum, credits) => sum + credits, 0);
+      const isFullTimeCode = totalCredits >= values.fullTimeThreshold ? 1 : 0;
+      const creditsUntilFullTime = Math.max(0, values.fullTimeThreshold - totalCredits);
+      return { totalCredits, isFullTimeCode, creditsUntilFullTime };
+    }
   }
 ];

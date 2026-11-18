@@ -15110,6 +15110,64 @@ exports[`compute() snapshots > self-rising-flour-substitute-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > semester-credit-hours-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "fullTimeThreshold": 12,
+      "lists": {
+        "courseCredits": [
+          3,
+          3,
+          4,
+          3,
+          3
+        ]
+      }
+    },
+    "outputs": {
+      "totalCredits": 16,
+      "isFullTimeCode": 1,
+      "creditsUntilFullTime": 0
+    }
+  },
+  "typical": {
+    "inputs": {
+      "fullTimeThreshold": 18,
+      "lists": {
+        "courseCredits": [
+          5,
+          5,
+          6,
+          5,
+          5
+        ]
+      }
+    },
+    "outputs": {
+      "totalCredits": 26,
+      "isFullTimeCode": 1,
+      "creditsUntilFullTime": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "fullTimeThreshold": 1,
+      "lists": {
+        "courseCredits": [
+          0
+        ]
+      }
+    },
+    "outputs": {
+      "totalCredits": 0,
+      "isFullTimeCode": 0,
+      "creditsUntilFullTime": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > serial-dilution-calculator 1`] = `
 {
   "default": {

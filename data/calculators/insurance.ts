@@ -1209,5 +1209,122 @@ export const insuranceCalculators: CalculatorConfig[] = [
       const loanToValuePercent = vehicleValueToday > 0 ? (remainingLoanBalance / vehicleValueToday) * 100 : NaN;
       return { gapAmount, remainingLoanBalance, vehicleValueToday, loanToValuePercent };
     }
+  },
+  {
+    id: 'renters-insurance-contents-value-calculator',
+    category: 'insurance',
+    glyph: 'INV',
+    updatedAt: '2026-11-18',
+    aliases: ['renters insurance contents calculator', 'personal property coverage calculator', 'home inventory value calculator', 'how much renters insurance do i need', 'belongings value estimator'],
+    related: ['emergency-fund-calculator', 'human-life-value-calculator', 'long-term-care-insurance-needs-calculator', 'gap-insurance-calculator'],
+    title: 'Renters Insurance Contents Value Calculator',
+    description: 'Add up a room-by-room home inventory to estimate the personal-property coverage amount a renters policy should carry — the same approach the Insurance Information Institute recommends.',
+    example: 'Belongings valued at $4,000 (living room), $6,000 (bedroom), $3,000 (kitchen/dining), $2,500 (electronics), $1,500 (clothing/jewelry) and $850 (other) total $17,850.00, a suggested policy limit of $18,000.00.',
+    breakdown: {
+      headline: 'totalContentsValue',
+      headlineLabel: 'Total estimated contents value',
+      outputs: [
+        { id: 'totalContentsValue', format: 'currency' },
+        { id: 'suggestedPolicyLimit', label: 'Suggested policy limit (rounded up to the nearest $1,000)', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Belongings by room or category', inputs: ['livingRoomValue', 'bedroomValue', 'kitchenDiningValue', 'electronicsValue', 'clothingJewelryValue', 'otherBelongingsValue'] }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'livingRoomValue', label: 'Living room' },
+          { from: 'bedroomValue', label: 'Bedroom(s)' },
+          { from: 'kitchenDiningValue', label: 'Kitchen & dining' },
+          { from: 'electronicsValue', label: 'Electronics' },
+          { from: 'clothingJewelryValue', label: 'Clothing & jewelry' },
+          { from: 'otherBelongingsValue', label: 'Other' }
+        ],
+        center: 'totalContentsValue',
+        centerSub: 'total contents value'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why a home inventory, not a guess?',
+        paragraphs: [
+          'Renters insurance\'s personal-property (contents) coverage pays to repair or replace your belongings after a covered loss like fire, theft or certain water damage — but a policy can only pay up to its own coverage limit. The Insurance Information Institute (III) recommends building a home inventory as the practical way to set that limit correctly: "documenting all of your belongings along with their estimated value," room by room, rather than guessing at a round number.',
+          'Most renters underestimate what they own, because belongings accumulate gradually and are rarely tallied all at once. Going room by room — living areas, bedrooms, kitchen, electronics, clothing and everything else — surfaces a more complete, and usually larger, total than a single off-the-cuff guess. III\'s guidance is direct about the goal: "have enough insurance to replace all of your personal possessions in the event of a burglary, fire or other covered disaster," which means matching the coverage limit to the actual inventory total, not a generic industry-wide default.',
+          'This calculator totals six broad categories and rounds the result up to the nearest $1,000 as a practical policy-limit suggestion, since insurers typically sell coverage in round-number tiers rather than exact dollar amounts. III also notes that a standard policy caps the value of individual high-value items like jewelry, furs or collectibles, and that a separate "floater" can be added for those specifically — this calculator\'s totals do not know whether any single item in your inventory exceeds that kind of per-item sublimit.'
+        ]
+      },
+      howTo: {
+        intro: 'Walk through your home and add up what you own in each category — closets and storage count too.',
+        steps: [
+          { name: 'Estimate your living room\'s contents', text: 'Furniture, rugs, décor, a TV if it is not counted under electronics.' },
+          { name: 'Estimate your bedroom(s)\' contents', text: 'Furniture, bedding and anything stored in them, combined across all bedrooms.' },
+          { name: 'Estimate your kitchen & dining contents', text: 'Appliances you own (not ones built into the rental), cookware, dishes and dining furniture.' },
+          { name: 'Estimate your electronics', text: 'Computers, phones, game consoles, TVs and similar — these depreciate fast, so use what they would cost to replace today, not what you paid.' },
+          { name: 'Estimate clothing & jewelry, then everything else', text: 'Clothing and jewelry together, then a catch-all for anything not covered above.' },
+          { name: 'Read the result', text: 'The headline is your inventory total; the suggested policy limit rounds that up to a practical coverage amount to ask for.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Pure addition across the six categories, then a round-up for a practical coverage ask.',
+        expression: 'Total contents value = sum of all six category values\nSuggested policy limit = ⌈Total contents value ÷ 1,000⌉ × 1,000',
+        terms: [
+          { symbol: '⌈ ⌉', meaning: 'Round up to the next whole number — here, the next $1,000.' }
+        ],
+        note: 'An educational estimate, not a quote or a policy recommendation. It does not know about any single item that might exceed your policy\'s own per-item sublimit for jewelry, collectibles or similar valuables.'
+      },
+      workedExample: {
+        intro: 'A renter totals their belongings by category.',
+        rows: [
+          { label: 'Living room', value: '$4,000.00' },
+          { label: 'Bedroom(s)', value: '$6,000.00' },
+          { label: 'Kitchen & dining', value: '$3,000.00' },
+          { label: 'Electronics', value: '$2,500.00' },
+          { label: 'Clothing & jewelry', value: '$1,500.00' },
+          { label: 'Other', value: '$850.00' },
+          { label: 'Total (sum of all six)', value: '$17,850.00' },
+          { label: 'Suggested policy limit (rounded up to the nearest $1,000)', value: '$18,000.00' }
+        ],
+        result: 'A $17,850.00 inventory total, suggesting an $18,000.00 policy limit.',
+        explanation: 'The $150.00 difference between the exact total and the suggested limit is the round-up, since policies are typically sold in whole-dollar tiers rather than an exact figure like $17,850.'
+      },
+      watchOut: [
+        { title: 'This is an educational estimate, not a quote or an offer to sell insurance', body: 'This calculator totals a home inventory for your own planning. It does not sell, recommend or bind any policy, and is not a substitute for an actual room-by-room inventory with receipts, photos or serial numbers for a real claim.' },
+        { title: 'High-value items often need separate coverage', body: 'Per III, a standard policy caps how much it pays for categories like jewelry, furs or collectibles. If any single item in your inventory is worth a lot, ask about a "floater" or rider specifically for it rather than assuming this total covers it in full.' },
+        { title: 'Floods and earthquakes are excluded', body: 'III states that a standard renters policy does not cover flood or earthquake damage — those require separate coverage, regardless of the total estimated here.' },
+        { title: 'Use replacement cost, not what you originally paid', body: 'Electronics and furniture usually cost less to replace than their original price due to depreciation, while some items (certain collectibles, for example) can cost more. Estimate what buying each category again today would actually cost.' },
+        { title: 'This total is not proof of ownership', body: 'A real claim typically needs receipts, photos or serial numbers for individual items — keep that documentation separately. This calculator only adds up the numbers you type in.' }
+      ],
+      references: [
+        { label: 'Insurance Information Institute, Your renters insurance guide', url: 'https://www.iii.org/article/your-renters-insurance-guide' }
+      ]
+    },
+    inputs: [
+      { id: 'livingRoomValue', label: 'Living room', type: 'currency', placeholder: '4000', defaultValue: 4000, step: 250, min: 0 },
+      { id: 'bedroomValue', label: 'Bedroom(s)', type: 'currency', placeholder: '6000', defaultValue: 6000, step: 250, min: 0 },
+      { id: 'kitchenDiningValue', label: 'Kitchen & dining', type: 'currency', placeholder: '3000', defaultValue: 3000, step: 250, min: 0 },
+      { id: 'electronicsValue', label: 'Electronics', type: 'currency', placeholder: '2500', defaultValue: 2500, step: 250, min: 0 },
+      { id: 'clothingJewelryValue', label: 'Clothing & jewelry', type: 'currency', placeholder: '1500', defaultValue: 1500, step: 250, min: 0 },
+      { id: 'otherBelongingsValue', label: 'Other belongings', type: 'currency', placeholder: '850', defaultValue: 850, step: 250, min: 0 }
+    ],
+    seo: {
+      title: 'Renters Insurance Contents Value Calculator',
+      description: 'Free renters insurance calculator: add up a room-by-room home inventory to estimate the personal-property coverage limit to ask for, per III.org\'s own guidance.',
+      faq: [
+        { question: 'How much renters insurance coverage do I need for my belongings?', answer: 'Enough to replace everything you own, per the Insurance Information Institute\'s guidance — which means building an actual home inventory rather than guessing. This calculator totals six broad categories to estimate that figure.' },
+        { question: 'How is the suggested policy limit calculated?', answer: 'It is the inventory total rounded up to the nearest $1,000, since coverage is typically sold in round tiers. A $17,850.00 inventory total suggests an $18,000.00 limit.' },
+        { question: 'Should I use the original price or the replacement cost?', answer: 'Replacement cost — what it would cost to buy each category again today. Electronics and furniture often cost less to replace than their original price due to depreciation.' },
+        { question: 'Does renters insurance cover jewelry and collectibles at full value?', answer: 'Not always. III notes that standard policies cap payouts for categories like jewelry, furs and collectibles, and that a separate "floater" can be added for a specific high-value item.' },
+        { question: 'Does renters insurance cover flood damage?', answer: 'No. III states that a standard renters policy excludes flood and earthquake damage; those need separate coverage regardless of your contents total.' },
+        { question: 'What if I don\'t know the exact value of everything I own?', answer: 'Estimate as closely as you can category by category — a reasonable room-by-room estimate is far more accurate than a single guess at a round total, which is the whole point of doing the inventory this way.' },
+        { question: 'Is this calculator the same as filing a claim or getting a quote?', answer: 'No. It is an educational planning estimate only. An actual claim needs documentation like receipts, photos or serial numbers, and an actual quote comes from a licensed agent or insurer.' }
+      ]
+    },
+    compute(values) {
+      const totalContentsValue = values.livingRoomValue + values.bedroomValue + values.kitchenDiningValue + values.electronicsValue + values.clothingJewelryValue + values.otherBelongingsValue;
+      const suggestedPolicyLimit = Math.ceil(totalContentsValue / 1000) * 1000;
+      return { totalContentsValue, suggestedPolicyLimit };
+    }
   }
 ];

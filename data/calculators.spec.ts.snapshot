@@ -16510,6 +16510,53 @@ exports[`compute() snapshots > rent-vs-buy-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > renters-insurance-contents-value-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "livingRoomValue": 4000,
+      "bedroomValue": 6000,
+      "kitchenDiningValue": 3000,
+      "electronicsValue": 2500,
+      "clothingJewelryValue": 1500,
+      "otherBelongingsValue": 850
+    },
+    "outputs": {
+      "totalContentsValue": 17850,
+      "suggestedPolicyLimit": 18000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "livingRoomValue": 6000,
+      "bedroomValue": 9000,
+      "kitchenDiningValue": 4500,
+      "electronicsValue": 3750,
+      "clothingJewelryValue": 2250,
+      "otherBelongingsValue": 1250
+    },
+    "outputs": {
+      "totalContentsValue": 26750,
+      "suggestedPolicyLimit": 27000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "livingRoomValue": 0,
+      "bedroomValue": 0,
+      "kitchenDiningValue": 0,
+      "electronicsValue": 0,
+      "clothingJewelryValue": 0,
+      "otherBelongingsValue": 0
+    },
+    "outputs": {
+      "totalContentsValue": 0,
+      "suggestedPolicyLimit": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > resistor-color-code-calculator 1`] = `
 {
   "default": {

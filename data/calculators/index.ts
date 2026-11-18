@@ -569,6 +569,7 @@ export const calculatorOrder: string[] = [
   'long-term-care-insurance-needs-calculator',
   'car-insurance-coverage-calculator',
   'gap-insurance-calculator',
+  'renters-insurance-contents-value-calculator',
   'profit-margin-calculator',
   'markup-calculator',
   'break-even-calculator',

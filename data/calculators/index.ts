@@ -481,7 +481,12 @@ export const calculatorOrder: string[] = [
   'co2-breathing-emission-calculator',
   'mark-recapture-population-estimate-calculator',
   'noise-exposure-calculator',
-  'trophic-level-energy-calculator'
+  'trophic-level-energy-calculator',
+  'fish-mercury-calculator',
+  'earth-overshoot-day-calculator',
+  'water-fixture-calculator',
+  'species-extinction-rate-calculator',
+  'food-waste-composting-calculator'
 ];
 
 const rank = (id: string) => {

@@ -289,8 +289,43 @@ discipline as every prior wave — ship fewer than 5 rather than pad, if good ca
       - `npm test` 1558/1558, lint clean, `npm run build` all green. All 5 pages verified via the
         build's own static HTML output (H1, FAQPage JSON-LD present).
       - `ecology` 15 → 20, site-wide 414 → 419.
-- [ ] Batch 5 (round out to ~25, 5)
-- [ ] Visual-QA spot-check (once the site crosses ~420 calculators) — site is at 419 after batch 4,
-      so this is now due during batch 5.
-- [ ] STATUS.md updated, `ecology` category count recorded, Wave 4 fully closed out (biology +
+- [x] Batch 5 (round out to ~25, 5) — **DONE 2026-11-18**, branch `step/49-wave-4-ecology-run-5`.
+      A prior attempt on this exact branch died to a session rate limit before any commit; this run
+      restarted fresh. Added:
+      - [x] `fish-mercury-calculator` — FDA's mercury-in-fish table (fetched directly) vs. EPA
+            IRIS's methylmercury RfD (0.1 µg/kg-day, also fetched directly). Worked example
+            independently reproduces the step brief's own 58.32%/460.54% canned-light-tuna/swordfish
+            figures exactly.
+      - [x] `earth-overshoot-day-calculator` — Global Footprint Network's own Overshoot Day page
+            and formula (fetched directly), World footprint/biocapacity 2.51/1.48 gha/person
+            (2025 edition, cross-checked via Wikipedia's sourced country-footprint table since
+            GFN's own data platform would not serve figures as fetchable text). Content explicitly
+            flags that this simplified formula lands on day 215, ~10 days after GFN's own
+            officially announced July 24, 2025 date — not papered over.
+      - [x] `water-fixture-calculator` — EPA WaterSense's own showerhead/toilet/faucet
+            standard-vs-certified flow rates, each fetched directly from its own page. The prior
+            research pass's "≈22.83% saving" claim could not be independently reproduced from any
+            defensible usage-assumption set, so this run derived its own (verified 24.48% saving)
+            with only the shower-minutes default tied to a real EPA anchor and the other two
+            honestly labeled as editable illustrative starting points, not EPA figures.
+      - [x] `species-extinction-rate-calculator` — Ceballos et al. (2015), *Science Advances*,
+            fetched directly via PMC. E/MSY formula and 2 E/MSY background rate; cites the paper's
+            own directly-stated 477-vs-9-expected, ~53×-background vertebrate finding rather than
+            back-deriving an unstated species count.
+      - [x] `food-waste-composting-calculator` — EPA's 2019 Wasted Food Report (fetched directly),
+            59.84% landfilled / 4.99% composted nationally, cross-checked against EPA's own raw
+            tonnage figures. The per-sector tonnage breakdown this step file hoped for could not be
+            confirmed via direct fetch after several attempts and was honestly dropped rather than
+            guessed (noted as a skip, not built as a guess).
+
+      One `KNOWN_NON_FINITE` entry added: `water-fixture-calculator`'s `savingsPct` (all three
+      daily-usage inputs at their shared min of 0 → 0/0). No new `lib/units.ts` dimensions needed.
+      Every number independently re-verified in a standalone Node scratch script before writing any
+      copy. `npm test` 1579/1579 (additive-only snapshot diff), lint clean, `npm run build` all
+      green. **`ecology` 20 → 25, at its ~25 seed-list target.**
+- [ ] Visual-QA spot-check — **due, not yet performed.** The site crossed the ~420-calculator
+      mark flagged earlier in this file during this batch, landing at 437. This batch agent did not
+      run it (out of scope for a single-batch build run) — flagged here for the main session to
+      pick up per CLAUDE.md's "once per ~50 new calculators" rule.
+- [x] STATUS.md updated, `ecology` category count recorded (25), Wave 4 fully closed out (biology +
       ecology both done) — fun/other is next per D13/D22/D23 (already has its go-ahead, per D23)

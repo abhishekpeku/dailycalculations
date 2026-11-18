@@ -202,7 +202,13 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'contribution-margin-calculator': ['contributionMarginRatio'],
   // beginningInventory, purchases, endingInventory and revenue all 0 (their min) -> cogs and
   // grossProfit are both a finite 0, but grossMarginPercent (divides by revenue) has no answer.
-  'cost-of-goods-sold-calculator': ['grossMarginPercent']
+  'cost-of-goods-sold-calculator': ['grossMarginPercent'],
+  // cashBalance and monthlyBurnRate both 0 (their min) -> runwayMonths divides by zero burn rate;
+  // annualBurnRate (monthlyBurnRate x 12) stays a finite 0 either way.
+  'burn-rate-calculator': ['runwayMonths'],
+  // initialInvestment and annualCashInflow both 0 (their min) -> paybackPeriod (divides by cash
+  // inflow) and simpleReturnPercent (divides by investment) both have no answer from the same 0/0.
+  'payback-period-calculator': ['paybackPeriod', 'simpleReturnPercent']
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

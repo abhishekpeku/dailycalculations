@@ -571,7 +571,12 @@ export const calculatorOrder: string[] = [
   'markup-calculator',
   'break-even-calculator',
   'contribution-margin-calculator',
-  'cost-of-goods-sold-calculator'
+  'cost-of-goods-sold-calculator',
+  'depreciation-calculator',
+  'burn-rate-calculator',
+  'business-valuation-calculator',
+  'payback-period-calculator',
+  'fte-calculator'
 ];
 
 const rank = (id: string) => {

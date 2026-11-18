@@ -1852,6 +1852,41 @@ exports[`compute() snapshots > buoyancy-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > burn-rate-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "cashBalance": 450000,
+      "monthlyBurnRate": 30000
+    },
+    "outputs": {
+      "runwayMonths": 15,
+      "annualBurnRate": 360000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "cashBalance": 675000,
+      "monthlyBurnRate": 45000
+    },
+    "outputs": {
+      "runwayMonths": 15,
+      "annualBurnRate": 540000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "cashBalance": 0,
+      "monthlyBurnRate": 0
+    },
+    "outputs": {
+      "runwayMonths": "NaN",
+      "annualBurnRate": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > business-days-calculator 1`] = `
 {
   "default": {
@@ -1944,6 +1979,50 @@ exports[`compute() snapshots > business-loan-calculator 1`] = `
       "monthlyPayment": 0,
       "totalCost": 0,
       "totalInterest": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > business-valuation-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "annualRevenue": 500000,
+      "revenueMultiple": 1,
+      "annualEarnings": 120000,
+      "earningsMultiple": 3
+    },
+    "outputs": {
+      "earningsBasedValuation": 360000,
+      "revenueBasedValuation": 500000,
+      "averageValuation": 430000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "annualRevenue": 750000,
+      "revenueMultiple": 1.5,
+      "annualEarnings": 180000,
+      "earningsMultiple": 4.5
+    },
+    "outputs": {
+      "earningsBasedValuation": 810000,
+      "revenueBasedValuation": 1125000,
+      "averageValuation": 967500
+    }
+  },
+  "edge": {
+    "inputs": {
+      "annualRevenue": 0,
+      "revenueMultiple": 0,
+      "annualEarnings": 0,
+      "earningsMultiple": 0
+    },
+    "outputs": {
+      "earningsBasedValuation": 0,
+      "revenueBasedValuation": 0,
+      "averageValuation": 0
     }
   }
 }
@@ -5275,6 +5354,56 @@ exports[`compute() snapshots > density-of-solutions-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > depreciation-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "cost": 50000,
+      "salvageValue": 5000,
+      "usefulLifeYears": 5,
+      "year": 3
+    },
+    "outputs": {
+      "straightLineBookValue": 23000,
+      "decliningBalanceBookValue": 10800,
+      "straightLineAnnualDepreciation": 9000,
+      "decliningBalanceRatePercent": 40,
+      "decliningBalanceDepreciationThisYear": 7200
+    }
+  },
+  "typical": {
+    "inputs": {
+      "cost": 75000,
+      "salvageValue": 7500,
+      "usefulLifeYears": 8,
+      "year": 4.5
+    },
+    "outputs": {
+      "straightLineBookValue": 37031.25,
+      "decliningBalanceBookValue": 20551.18878,
+      "straightLineAnnualDepreciation": 8437.5,
+      "decliningBalanceRatePercent": 25,
+      "decliningBalanceDepreciationThisYear": 6850.39626
+    }
+  },
+  "edge": {
+    "inputs": {
+      "cost": 0,
+      "salvageValue": 0,
+      "usefulLifeYears": 2,
+      "year": 0
+    },
+    "outputs": {
+      "straightLineBookValue": 0,
+      "decliningBalanceBookValue": 0,
+      "straightLineAnnualDepreciation": 0,
+      "decliningBalanceRatePercent": 100,
+      "decliningBalanceDepreciationThisYear": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > dice-probability-calculator 1`] = `
 {
   "default": {
@@ -7664,6 +7793,44 @@ exports[`compute() snapshots > friday-the-13th-calculator 1`] = `
       "month3Code": 0,
       "yearStartsOnCode": 6,
       "isLeapYear": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > fte-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "fullTimeEmployeeCount": 8,
+      "partTimeEmployeeCount": 5,
+      "avgPartTimeHoursPerMonth": 80
+    },
+    "outputs": {
+      "totalFTE": 11.33333333,
+      "partTimeFTE": 3.333333333
+    }
+  },
+  "typical": {
+    "inputs": {
+      "fullTimeEmployeeCount": 12,
+      "partTimeEmployeeCount": 8,
+      "avgPartTimeHoursPerMonth": 120
+    },
+    "outputs": {
+      "totalFTE": 20,
+      "partTimeFTE": 8
+    }
+  },
+  "edge": {
+    "inputs": {
+      "fullTimeEmployeeCount": 0,
+      "partTimeEmployeeCount": 0,
+      "avgPartTimeHoursPerMonth": 0
+    },
+    "outputs": {
+      "totalFTE": 0,
+      "partTimeFTE": 0
     }
   }
 }
@@ -13944,6 +14111,41 @@ exports[`compute() snapshots > paver-calculator 1`] = `
       "paversWithWaste": 36,
       "baseVolumeCuYd": 0.0007716049383,
       "sandVolumeCuYd": 0.0003858024691
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > payback-period-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "initialInvestment": 60000,
+      "annualCashInflow": 15000
+    },
+    "outputs": {
+      "paybackPeriod": 4,
+      "simpleReturnPercent": 25
+    }
+  },
+  "typical": {
+    "inputs": {
+      "initialInvestment": 90000,
+      "annualCashInflow": 22500
+    },
+    "outputs": {
+      "paybackPeriod": 4,
+      "simpleReturnPercent": 25
+    }
+  },
+  "edge": {
+    "inputs": {
+      "initialInvestment": 0,
+      "annualCashInflow": 0
+    },
+    "outputs": {
+      "paybackPeriod": "NaN",
+      "simpleReturnPercent": "NaN"
     }
   }
 }

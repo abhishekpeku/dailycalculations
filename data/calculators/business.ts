@@ -1,5 +1,30 @@
 import type { CalculatorConfig } from './types.ts';
 
+// depreciation-calculator: the 200% declining-balance book value at year t is a closed-form
+// cost * (1 - rate)^t, floored at salvage — handles fractional years without a year-by-year loop.
+// usefulLifeYears has a min of 2 so the declining-balance rate (2 / usefulLifeYears) never reaches
+// or exceeds 1, which would otherwise make (1 - rate) zero or negative and break Math.pow for a
+// fractional year. Shared by compute() and the reference table so every number comes from one formula.
+const decliningBalanceBookValue = (cost: number, salvage: number, rate: number, t: number) => Math.max(salvage, cost * Math.pow(1 - rate, t));
+
+// Reference table rows (years 0-5) on a fixed $100,000/$10,000/5-year basis, independent of
+// whatever the reader has typed into the calculator itself — same convention as auto's
+// car-depreciation-calculator reference table.
+const depreciationScheduleRows = () => {
+  const cost = 100000;
+  const salvage = 10000;
+  const usefulLife = 5;
+  const rate = 2 / usefulLife;
+  const slAnnual = (cost - salvage) / usefulLife;
+  const rows: { label: string; values: number[] }[] = [];
+  for (let year = 0; year <= usefulLife; year++) {
+    const sl = Math.max(salvage, cost - Math.min(year, usefulLife) * slAnnual);
+    const db = decliningBalanceBookValue(cost, salvage, rate, year);
+    rows.push({ label: String(year), values: [Math.round(sl), Math.round(db)] });
+  }
+  return rows;
+};
+
 export const businessCalculators: CalculatorConfig[] = [
   {
     id: 'profit-margin-calculator',
@@ -604,6 +629,574 @@ export const businessCalculators: CalculatorConfig[] = [
       const grossProfit = values.revenue - cogs;
       const grossMarginPercent = values.revenue > 0 ? (grossProfit / values.revenue) * 100 : NaN;
       return { cogs, grossProfit, grossMarginPercent };
+    }
+  },
+  {
+    id: 'depreciation-calculator',
+    category: 'business',
+    glyph: 'DEP',
+    updatedAt: '2026-11-18',
+    aliases: ['straight line depreciation calculator', 'declining balance depreciation calculator', 'asset depreciation schedule calculator', 'book value depreciation calculator', 'double declining balance calculator'],
+    related: ['car-depreciation-calculator', 'cost-of-goods-sold-calculator', 'business-valuation-calculator', 'payback-period-calculator'],
+    title: 'Depreciation Calculator (Straight-Line vs. Declining Balance)',
+    description: 'Find an asset\'s book value under the straight-line and 200% declining-balance depreciation methods side by side, from its cost, salvage value, and useful life.',
+    example: 'A $50,000 asset with a $5,000 salvage value and a 5-year useful life is worth $23,000 after 3 years under straight-line, or $10,800 under 200% declining balance.',
+    breakdown: {
+      headline: 'straightLineBookValue',
+      headlineLabel: 'Book value — straight-line',
+      outputs: [
+        { id: 'straightLineBookValue', label: 'Book value — straight-line', format: 'currency' },
+        { id: 'decliningBalanceBookValue', label: 'Book value — 200% declining balance', format: 'currency' },
+        { id: 'straightLineAnnualDepreciation', label: 'Straight-line annual depreciation', format: 'currency' },
+        { id: 'decliningBalanceRatePercent', label: 'Declining-balance rate', format: 'percent' },
+        { id: 'decliningBalanceDepreciationThisYear', label: 'Declining-balance depreciation, this year', format: 'currency' }
+      ],
+      groups: [{ title: 'Asset', inputs: ['cost', 'salvageValue', 'usefulLifeYears', 'year'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'straightLineBookValue', label: 'Straight-line' },
+          { from: 'decliningBalanceBookValue', label: 'Declining balance' }
+        ],
+        title: 'Book value at the entered year, by method'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What is depreciation, and why do methods disagree?',
+        paragraphs: [
+          'Depreciation spreads an asset\'s cost over the years it is used, rather than expensing it all at once. IRS Publication 946 describes the straight-line method plainly: "Subtract the salvage value, if any, from the adjusted basis," then "divide the balance by the number of years in the useful life" — the same amount comes off the book value every year.',
+          'The declining-balance method instead takes a fixed percentage off whatever is left each year, so the dollar amount shrinks as the book value shrinks. The governing Treasury regulation, 26 CFR § 1.167(b)-2, states the method as "a uniform rate is applied each year to the unrecovered cost or other basis of the property," with the rate capped so it "shall not exceed twice the appropriate straight line rate computed without adjustment for salvage" — the 200% ("double-declining") rate used here, and the one its own worked example applies to a 20-year asset.',
+          'Both methods must stop at the same floor: book value is never written down below a reasonable salvage value. Because declining balance takes a bigger bite early and a smaller one later, the two methods show the same asset at very different book values partway through its life, even though both eventually land at the same floor if the asset is held its full useful life — this page shows both at once, on the same cost, salvage value and useful life, so the shapes of the two curves are easy to compare.',
+          'This is a different question from what a car is actually worth to resell — that is the resale-value estimate on the car-depreciation-calculator here. This page models the accounting/tax book-value schedule instead, which is what shows up on a balance sheet or a depreciation schedule, not what a buyer would pay for the asset today.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the asset\'s cost, salvage value, useful life, and the year you want to check.',
+        steps: [
+          { name: 'Enter the cost', text: 'What the asset cost when placed in service, including setup costs you are capitalizing.' },
+          { name: 'Enter the salvage value', text: 'What you expect the asset to be worth, or sellable for, at the end of its useful life — zero if none.' },
+          { name: 'Enter the useful life', text: 'How many years the asset is expected to be in service. Must be at least 2, since the declining-balance rate below is twice the straight-line rate.' },
+          { name: 'Enter the year to check', text: 'Decimals are fine, for example 2.5 for two and a half years in. Year 0 is the cost itself, before any depreciation.' },
+          { name: 'Compare the two book values', text: 'The headline is the straight-line book value; the declining-balance figure and both methods\' per-year depreciation amounts are shown alongside it, plus a full 0-5-year illustrative schedule further down the page.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Straight-line spreads the same dollar amount over every year. Declining balance applies a fixed rate to whatever book value is left, which shrinks every year, and never goes below salvage value under either method.',
+        expression:
+          'straightLineAnnualDepreciation = (cost − salvageValue) ÷ usefulLifeYears\nstraightLineBookValue(t) = max(salvageValue, cost − min(t, usefulLifeYears) × straightLineAnnualDepreciation)\ndecliningBalanceRate = 2 ÷ usefulLifeYears\ndecliningBalanceBookValue(t) = max(salvageValue, cost × (1 − decliningBalanceRate)^t)',
+        terms: [
+          { symbol: 'salvageValue', meaning: 'The floor book value can never be depreciated below, under either method.' },
+          { symbol: 'decliningBalanceRate', meaning: 'Twice the straight-line rate (1 ÷ usefulLifeYears) — the 200%, or "double-declining," rate set in 26 CFR § 1.167(b)-2.' }
+        ],
+        note: 'Estimates only. This is a simplified, two-method comparison for understanding how book value differs by method — it is not MACRS, the US tax system\'s actual recovery-period and percentage-table method for most business property, and does not replace a tax professional\'s depreciation schedule for an actual return.'
+      },
+      workedExample: {
+        intro: 'An asset costs $50,000, has a $5,000 salvage value, and a 5-year useful life. What is its book value after 3 years under each method?',
+        rows: [
+          { label: 'Straight-line annual depreciation ((50,000 − 5,000) ÷ 5)', value: '$9,000.00' },
+          { label: 'Straight-line book value at year 3 (50,000 − 3 × 9,000)', value: '$23,000.00' },
+          { label: 'Declining-balance rate (2 ÷ 5)', value: '40%' },
+          { label: 'Declining-balance book value at year 3 (50,000 × 0.60³)', value: '$10,800.00' },
+          { label: 'Declining-balance depreciation in year 3 alone (18,000.00 − 10,800.00)', value: '$7,200.00' }
+        ],
+        result: 'After 3 years, the asset is worth $23,000.00 under straight-line, but only $10,800.00 under 200% declining balance.',
+        explanation: 'Declining balance front-loads the deduction: it takes $20,000.00 off in year 1 alone (versus $9,000.00 for straight-line), so by year 3 its book value has fallen much further, even though both methods started at the same $50,000.00 and both are still above the $5,000.00 salvage floor.'
+      },
+      watchOut: [
+        { title: 'This is not resale value', body: 'A car or piece of equipment\'s actual resale value depends on condition, market demand and wear, not an accounting schedule. For a vehicle\'s estimated worth, see the car-depreciation-calculator instead — that page models what a buyer would likely pay, not a book-value schedule.' },
+        { title: 'This is not MACRS', body: 'Most US business property is actually depreciated under MACRS, which uses IRS-published percentage tables and fixed recovery periods (3, 5, 7, 15, 27.5 years and others), not a direct straight-line or declining-balance formula applied by hand. This page is for understanding how the two underlying methods behave, not for filing a return.' },
+        { title: 'Useful life must be at least 2 years here', body: 'At a 1-year useful life, the 200% declining-balance rate would be 200% — a rate above 100% makes "percent of what is left" produce a negative, nonsensical result. Real short-lived assets still use MACRS\'s own tables for this case, not a plain declining-balance formula.' },
+        { title: 'Declining balance never quite reaches salvage value on its own', body: 'The exponential formula only approaches the salvage floor, so this calculator applies a hard floor explicitly — real declining-balance schedules typically switch to straight-line partway through so the asset is fully written down by the end of its useful life, a switch this simplified two-method comparison does not model.' },
+        { title: 'Salvage value should not exceed cost', body: 'If salvage value is entered higher than cost, both formulas still run, but the result (an asset that is "worth more" scrapped than new) is not a realistic input — double-check the two figures.' }
+      ],
+      references: [
+        { label: 'Internal Revenue Service, Publication 946, How To Depreciate Property', url: 'https://www.irs.gov/publications/p946' },
+        { label: '26 CFR § 1.167(b)-2, Declining balance method', url: 'https://www.law.cornell.edu/cfr/text/26/1.167(b)-2' }
+      ],
+      referenceTable: {
+        title: 'Book value by year, both methods (illustrative $100,000 cost, $10,000 salvage, 5-year life)',
+        columns: ['Year', 'Straight-line book value', 'Declining-balance (200%) book value'],
+        rows: depreciationScheduleRows(),
+        decimals: 0,
+        note: 'Computed from a fixed $100,000/$10,000/5-year basis, not from your own inputs above — change the inputs in the calculator to see your own schedule.'
+      }
+    },
+    inputs: [
+      { id: 'cost', label: 'Cost', type: 'currency', placeholder: '50000', defaultValue: 50000, step: 1000, min: 0 },
+      { id: 'salvageValue', label: 'Salvage value', type: 'currency', placeholder: '5000', defaultValue: 5000, step: 500, min: 0 },
+      { id: 'usefulLifeYears', label: 'Useful life (years)', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 2 },
+      { id: 'year', label: 'Year to check', type: 'number', placeholder: '3', defaultValue: 3, step: 0.5, min: 0 }
+    ],
+    seo: {
+      title: 'Depreciation Calculator – Straight-Line & Declining Balance',
+      description: 'Compare an asset\'s straight-line and 200% declining-balance book value, from cost, salvage value and useful life. Free, with a year-by-year schedule.',
+      faq: [
+        { question: 'How do I calculate straight-line depreciation?', answer: 'Subtract salvage value from cost, then divide by useful life in years. A $50,000 asset with a $5,000 salvage value over 5 years depreciates $9,000.00 a year.' },
+        { question: 'How do I calculate declining-balance depreciation?', answer: 'Apply a fixed rate (here, 200% of the straight-line rate, or 2 ÷ useful life) to whatever book value is left each year, never going below salvage value. On the $50,000 example at a 40% rate, year 1\'s book value is 50,000 × 0.60 = $30,000.00.' },
+        { question: 'Why are straight-line and declining-balance book values so different partway through?', answer: 'Declining balance front-loads the deduction. In the worked example, it removes $20,000.00 in year 1 alone versus straight-line\'s constant $9,000.00 a year, so by year 3 the declining-balance book value ($10,800.00) is well below straight-line\'s ($23,000.00) — both still end up at the same $5,000.00 salvage floor eventually.' },
+        { question: 'Is this the same as car depreciation?', answer: 'No. This models an accounting/tax book-value schedule. The car-depreciation-calculator instead estimates resale value, which depends on condition and market demand, not a formula.' },
+        { question: 'Is this the same as MACRS?', answer: 'No. MACRS, which most US business property actually uses for tax depreciation, applies IRS-published percentage tables over fixed recovery periods. This calculator compares the two underlying methods directly, for understanding, not for filing a return.' },
+        { question: 'Can book value go below salvage value?', answer: 'Not under either formula here — both are floored at the salvage value you enter, which is the realistic end point for either method.' },
+        { question: 'Why does useful life have to be at least 2 years?', answer: 'The declining-balance rate used here is 2 ÷ useful life (the 200% rate). At a 1-year useful life that rate would be 200%, which is mathematically invalid for this formula (it would mean removing more than 100% of what is left). Very short-lived assets use MACRS\'s own tables instead.' }
+      ]
+    },
+    compute(values) {
+      const { cost, salvageValue, usefulLifeYears, year } = values;
+      const straightLineAnnualDepreciation = (cost - salvageValue) / usefulLifeYears;
+      const straightLineBookValue = Math.max(salvageValue, cost - Math.min(year, usefulLifeYears) * straightLineAnnualDepreciation);
+      const decliningBalanceRate = 2 / usefulLifeYears;
+      const decliningBalanceRatePercent = decliningBalanceRate * 100;
+      const currentDecliningBalanceBookValue = decliningBalanceBookValue(cost, salvageValue, decliningBalanceRate, year);
+      const decliningBalanceDepreciationThisYear =
+        year > 0 ? decliningBalanceBookValue(cost, salvageValue, decliningBalanceRate, Math.max(0, year - 1)) - currentDecliningBalanceBookValue : 0;
+      return {
+        straightLineBookValue,
+        decliningBalanceBookValue: currentDecliningBalanceBookValue,
+        straightLineAnnualDepreciation,
+        decliningBalanceRatePercent,
+        decliningBalanceDepreciationThisYear
+      };
+    }
+  },
+  {
+    id: 'burn-rate-calculator',
+    category: 'business',
+    glyph: 'BURN',
+    updatedAt: '2026-11-18',
+    aliases: ['cash burn rate calculator', 'startup runway calculator', 'cash runway calculator', 'monthly burn rate calculator', 'how long will my cash last calculator'],
+    related: ['break-even-calculator', 'payback-period-calculator', 'business-valuation-calculator', 'emergency-fund-calculator'],
+    title: 'Burn Rate & Cash Runway Calculator',
+    description: 'Find how many months of cash a business has left from its cash balance and monthly burn rate, or solve backward for the burn rate a target runway allows.',
+    example: 'A startup with $450,000 in the bank and a $30,000 monthly net burn rate has about 15 months of runway.',
+    solver: {
+      defaultTarget: 'runwayMonths',
+      variables: [
+        { id: 'cashBalance', label: 'Cash on hand', symbol: 'C', dimension: 'currency', defaultValue: 450000, defaultUnit: 'currency' },
+        { id: 'monthlyBurnRate', label: 'Monthly net burn rate', symbol: 'B', dimension: 'currency', defaultValue: 30000, defaultUnit: 'currency' },
+        { id: 'runwayMonths', label: 'Runway', symbol: 'R', dimension: 'term', defaultValue: 15, defaultUnit: 'mo' }
+      ],
+      // Every variable has a closed form: cashBalance = monthlyBurnRate x runwayMonths (SI months).
+      solve: {
+        runwayMonths: ({ cashBalance, monthlyBurnRate }) => (monthlyBurnRate > 0 ? cashBalance / monthlyBurnRate : NaN),
+        cashBalance: ({ monthlyBurnRate, runwayMonths }) => monthlyBurnRate * runwayMonths,
+        monthlyBurnRate: ({ cashBalance, runwayMonths }) => (runwayMonths > 0 ? cashBalance / runwayMonths : NaN)
+      },
+      outputs: [{ id: 'annualBurnRate', label: 'Annualized burn rate', dimension: 'currency', compute: (si) => si.monthlyBurnRate * 12 }],
+      visuals: [
+        {
+          type: 'compareBars',
+          bars: [
+            { from: 'cashBalance', label: 'Cash on hand' },
+            { from: 'annualBurnRate', label: 'Annualized burn rate' }
+          ],
+          title: 'Cash on hand vs. a full year of burn at the current rate'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What is burn rate, and what is runway?',
+        paragraphs: [
+          'Burn rate is how fast a business is spending its cash, usually measured per month. "Gross burn" is total monthly operating expenses; "net burn" subtracts whatever revenue is coming in, leaving the actual monthly drop in the cash balance. This calculator works from net burn — the number that actually determines how long the cash lasts — since a business with real revenue burns through cash more slowly than its raw expense total alone would suggest.',
+          'Runway is simply cash on hand divided by the net burn rate: how many more months of spending the current cash balance can cover before it runs out, assuming burn stays constant. It is the startup-finance version of the same question the U.S. Small Business Administration\'s own startup-cost guidance raises when it recommends projecting "at least one year" of monthly expenses, and ideally five, before relying on a cash flow forecast.',
+          'The relationship runs in either direction: given cash and a burn rate, runway follows directly; given cash and a target runway, the maximum burn rate that stays within it follows too — useful for working out what a spending plan needs to look like to last a specific number of months.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of cash on hand, monthly net burn rate and runway. The third, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter cash on hand', text: 'The actual, current cash balance available to spend — not revenue expected later, and not an undrawn credit line.' },
+          { name: 'Enter the monthly net burn rate', text: 'Total monthly operating expenses minus any monthly revenue. If the business is pre-revenue, this is just total monthly expenses.' },
+          { name: 'Read the runway', text: 'How many months the current cash balance covers at that burn rate.' },
+          { name: 'Or solve backward', text: 'Leave burn rate alone instead to see the maximum monthly burn a target runway (say, 18 months) allows on the current cash balance.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Runway is cash divided by the rate it is being spent down.',
+        expression: 'runwayMonths = cashBalance ÷ monthlyBurnRate\ncashBalance = monthlyBurnRate × runwayMonths\nannualBurnRate = monthlyBurnRate × 12',
+        terms: [
+          { symbol: 'monthlyBurnRate', meaning: 'Net burn: monthly operating expenses minus monthly revenue, not gross expenses alone.' },
+          { symbol: 'runwayMonths', meaning: 'How many months the current cash balance lasts if net burn stays constant.' }
+        ],
+        note: 'Estimates only, and assumes a constant burn rate. Real burn rate changes as a business hires, cuts costs, or grows revenue — treat this as a snapshot, not a fixed countdown.'
+      },
+      workedExample: {
+        intro: 'A startup has $450,000 in the bank and a $30,000 monthly net burn rate (expenses minus revenue). How much runway is left, and what burn rate would stretch that same cash to 18 months instead?',
+        rows: [
+          { label: 'Runway (450,000 ÷ 30,000)', value: '15 months' },
+          { label: 'Annualized burn rate (30,000 × 12)', value: '$360,000.00' },
+          { label: 'Burn rate for an 18-month runway on the same cash (450,000 ÷ 18)', value: '$25,000.00' }
+        ],
+        result: 'At $30,000 a month, the $450,000 balance lasts 15 months; stretching that to 18 months needs burn to come down to $25,000.00 a month.',
+        explanation: 'Extending runway by 3 months on a fixed cash balance means cutting monthly burn by $5,000.00 (from $30,000.00 to $25,000.00) — about a 16.7% cut, since runway and burn rate move inversely on the same cash balance, not by the same percentage the runway itself changed.'
+      },
+      watchOut: [
+        { title: 'This uses net burn, not gross burn', body: 'Gross burn (total expenses only) overstates how fast cash is actually disappearing whenever there is any revenue. Subtract monthly revenue from monthly expenses before entering a burn rate here, unless the business is genuinely pre-revenue.' },
+        { title: 'Burn rate is rarely constant', body: 'Hiring, a new contract, a seasonal slowdown, or a cost cut can all change next month\'s burn rate from this month\'s. Runway is a snapshot based on the current rate, not a guaranteed countdown.' },
+        { title: 'This does not include planned future fundraising', body: 'Cash on hand should be the actual current balance, not cash a round of funding is expected to add later. Add a future raise to the balance only once it has actually closed.' },
+        { title: 'Zero runway does not necessarily mean shutting down', body: 'Running out of runway is a trigger to cut costs or raise more, not automatically the end of the business — but it does mean the current spending plan cannot continue unchanged past that point.' },
+        { title: 'A $0 burn rate means infinite runway, not zero', body: 'If monthly net burn is zero or negative (break-even or profitable), there is no cash runway to run out of under this formula — this calculator has no "runway" answer for that case, which is the honest result, not an error.' }
+      ],
+      references: [
+        { label: 'U.S. Small Business Administration, Calculate your startup costs', url: 'https://www.sba.gov/business-guide/plan-your-business/calculate-your-startup-costs' },
+        { label: 'U.S. Small Business Administration, Manage your finances', url: 'https://www.sba.gov/business-guide/manage-your-business/manage-your-finances' }
+      ]
+    },
+    inputs: [
+      { id: 'cashBalance', label: 'Cash on hand', type: 'currency', placeholder: '450000', defaultValue: 450000, step: 5000, min: 0 },
+      { id: 'monthlyBurnRate', label: 'Monthly net burn rate', type: 'currency', placeholder: '30000', defaultValue: 30000, step: 500, min: 0 }
+    ],
+    seo: {
+      title: 'Burn Rate & Cash Runway Calculator',
+      description: 'Calculate cash runway in months from cash on hand and monthly net burn rate, or solve backward for the burn rate a target runway allows. Free.',
+      faq: [
+        { question: 'How do I calculate burn rate?', answer: 'Subtract monthly revenue from monthly operating expenses to get net burn rate. A pre-revenue business\'s net burn rate is just its total monthly expenses.' },
+        { question: 'How do I calculate cash runway?', answer: 'Divide cash on hand by the monthly net burn rate. $450,000 in the bank at a $30,000 monthly burn rate gives 15 months of runway.' },
+        { question: 'What is the difference between gross burn and net burn?', answer: 'Gross burn is total monthly expenses only. Net burn subtracts monthly revenue from that figure. Runway should be calculated from net burn, since that is the rate the cash balance is actually falling.' },
+        { question: 'What burn rate gives an 18-month runway?', answer: 'Divide cash on hand by 18. On a $450,000 balance, that is 450,000 ÷ 18 = $25,000.00 a month, down from the $30,000.00 that gives a 15-month runway.' },
+        { question: 'Is burn rate the same every month?', answer: 'Rarely. Hiring, new contracts, seasonal swings and cost cuts all change it. This calculator uses a single constant rate, so treat the runway result as a snapshot at the current rate, not a fixed deadline.' },
+        { question: 'What happens if burn rate is zero?', answer: 'If monthly net burn is zero (expenses equal revenue) or negative (profitable), there is no runway to calculate — the cash balance is not shrinking under this formula, so the "months until it runs out" question does not apply.' },
+        { question: 'Should planned future funding count as cash on hand?', answer: 'No. Use the actual current cash balance. Add a funding round to the balance only once it has actually closed and the money is in the bank.' }
+      ]
+    },
+    compute(values) {
+      const runwayMonths = values.monthlyBurnRate > 0 ? values.cashBalance / values.monthlyBurnRate : NaN;
+      const annualBurnRate = values.monthlyBurnRate * 12;
+      return { runwayMonths, annualBurnRate };
+    }
+  },
+  {
+    id: 'business-valuation-calculator',
+    category: 'business',
+    glyph: 'VAL',
+    updatedAt: '2026-11-18',
+    aliases: ['how much is my business worth calculator', 'business valuation estimator', 'revenue multiple valuation calculator', 'sde multiple valuation calculator'],
+    related: ['payback-period-calculator', 'burn-rate-calculator', 'profit-margin-calculator', 'cost-of-goods-sold-calculator'],
+    title: 'Business Valuation Calculator (Revenue & Earnings Multiple)',
+    description: 'A rough estimate of what a business might be worth, using a revenue multiple and an earnings multiple side by side — not a substitute for a professional valuation.',
+    example: 'A business with $500,000 in annual revenue (at a 1.0x revenue multiple) and $120,000 in annual earnings (at a 3.0x earnings multiple) gets a $500,000 revenue-based estimate and a $360,000 earnings-based estimate.',
+    breakdown: {
+      headline: 'earningsBasedValuation',
+      headlineLabel: 'Earnings-based estimate',
+      outputs: [
+        { id: 'earningsBasedValuation', label: 'Earnings-based estimate (earnings × earnings multiple)', format: 'currency' },
+        { id: 'revenueBasedValuation', label: 'Revenue-based estimate (revenue × revenue multiple)', format: 'currency' },
+        { id: 'averageValuation', label: 'Simple average of the two estimates', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Revenue method', inputs: ['annualRevenue', 'revenueMultiple'] },
+        { title: 'Earnings method', inputs: ['annualEarnings', 'earningsMultiple'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'revenueBasedValuation', label: 'Revenue-based' },
+          { from: 'earningsBasedValuation', label: 'Earnings-based' }
+        ],
+        title: 'The two estimates side by side'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What is a revenue or earnings multiple, and how rough is "rough"?',
+        paragraphs: [
+          'A multiple-based valuation estimates what a business is worth by multiplying a single financial figure — usually annual revenue or annual earnings — by a multiplier appropriate for that business\'s size, industry and growth. This calculator applies a user-entered multiple to each figure and shows both resulting estimates side by side, since the two methods can disagree by a lot depending on how profitable the business is relative to its revenue.',
+          'This is deliberately one of several real approaches, not the only one. The U.S. Small Business Administration\'s own guide for buyers of an existing business or franchise lists multiple valuation methods side by side — a "capitalized earning approach," an "excess earning method," a "cash flow method," and asset-based methods — and recommends buyers "hire an attorney and an accountant" to work through them rather than rely on any single number.',
+          'The multiple itself is the hardest part, and this calculator cannot supply one: it varies enormously by industry, growth rate, customer concentration, and how much of the business depends on the current owner personally. A multiple pulled from a different industry, or from a public-company comparison that does not reflect a small private business\'s size and risk, can be off by a factor of two or more. Get an industry-appropriate multiple from a business broker, an accountant, or recent comparable sales before trusting either estimate here.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter annual revenue and a revenue multiple for one estimate, and annual earnings (such as seller\'s discretionary earnings or net profit) and an earnings multiple for the other.',
+        steps: [
+          { name: 'Enter annual revenue', text: 'Total sales for a typical recent year.' },
+          { name: 'Enter a revenue multiple', text: 'A multiplier appropriate for the industry — this varies enormously and is not supplied here; get one from a broker, accountant, or comparable recent sales.' },
+          { name: 'Enter annual earnings', text: 'Net profit, or seller\'s discretionary earnings for a small, owner-operated business — add back the owner\'s own salary and personal expenses run through the business if using SDE.' },
+          { name: 'Enter an earnings multiple', text: 'Also industry- and size-specific — small private businesses typically use lower multiples than public-company comparisons.' },
+          { name: 'Compare both estimates', text: 'The two figures will usually differ. Treat the gap, and both numbers, as a rough range — not a precise price.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Each method is one figure times one multiple — the simplicity is also the limitation.',
+        expression: 'revenueBasedValuation = annualRevenue × revenueMultiple\nearningsBasedValuation = annualEarnings × earningsMultiple\naverageValuation = (revenueBasedValuation + earningsBasedValuation) ÷ 2',
+        terms: [
+          { symbol: 'annualEarnings', meaning: 'Net profit, or seller\'s discretionary earnings (SDE) for a small owner-operated business.' },
+          { symbol: 'revenueMultiple, earningsMultiple', meaning: 'User-supplied multipliers. This calculator does not provide a "typical" multiple — get one for the specific industry and deal.' }
+        ],
+        note: 'This is a rough estimate, not a professional valuation. The SBA\'s own guidance for buying an existing business lists several real valuation approaches and recommends hiring an attorney and an accountant — a real transaction should use one of those, with a broker- or accountant-sourced multiple, not this page alone.'
+      },
+      workedExample: {
+        intro: 'A small business has $500,000 in annual revenue and $120,000 in annual earnings. A broker suggests a 1.0x revenue multiple and a 3.0x earnings multiple are typical for this specific industry and size. What are the two estimates?',
+        rows: [
+          { label: 'Revenue-based estimate (500,000 × 1.0)', value: '$500,000.00' },
+          { label: 'Earnings-based estimate (120,000 × 3.0)', value: '$360,000.00' },
+          { label: 'Simple average ((500,000 + 360,000) ÷ 2)', value: '$430,000.00' }
+        ],
+        result: 'The two methods give $500,000.00 and $360,000.00 — a $140,000.00 gap on the same business.',
+        explanation: 'The gap exists because this business keeps a relatively modest 24% of revenue as earnings (120,000 ÷ 500,000). A business with thinner margins would show an even wider gap between its revenue- and earnings-based estimates; a more profitable one, a narrower one. Neither figure is automatically the "right" one — which method a buyer or broker weights more heavily depends on the industry and the deal.'
+      },
+      watchOut: [
+        { title: 'This is a rough estimate, not a professional valuation', body: 'A real business valuation accounts for growth trends, customer concentration, owner dependency, assets and liabilities, and market conditions at the time of sale — far more than one figure times one multiple. Use a business appraiser, broker, or accountant for an actual transaction.' },
+        { title: 'The multiple is doing almost all the work, and it is not supplied here', body: 'The same $500,000-revenue business could reasonably use a 0.5x or a 2x revenue multiple depending on its industry, growth and risk — this calculator applies whatever multiple is entered without checking whether it fits the business.' },
+        { title: 'Revenue and earnings multiples answer different questions', body: 'A high-revenue, low-margin business (a grocery store) and a low-revenue, high-margin business (a software company) can have wildly different revenue-to-earnings ratios, so their revenue- and earnings-based estimates diverge by very different amounts even at "similar" multiples.' },
+        { title: '"Earnings" needs a consistent definition', body: 'Net profit, EBITDA, and seller\'s discretionary earnings (SDE, which adds back owner salary and personal expenses) are all different numbers for the same business. Make sure the earnings multiple being used actually matches the earnings definition entered.' },
+        { title: 'The simple average is not a third, better method', body: 'Averaging the two estimates does not resolve which one is closer to reality — it is shown only as a single reference point between two different models, not a statistically meaningful blend.' }
+      ],
+      references: [
+        { label: 'U.S. Small Business Administration, Buy an existing business or franchise', url: 'https://www.sba.gov/business-guide/plan-your-business/buy-existing-business-or-franchise' }
+      ]
+    },
+    inputs: [
+      { id: 'annualRevenue', label: 'Annual revenue', type: 'currency', placeholder: '500000', defaultValue: 500000, step: 5000, min: 0 },
+      { id: 'revenueMultiple', label: 'Revenue multiple', type: 'number', placeholder: '1.0', defaultValue: 1, step: 0.1, min: 0 },
+      { id: 'annualEarnings', label: 'Annual earnings (net profit or SDE)', type: 'currency', placeholder: '120000', defaultValue: 120000, step: 1000, min: 0 },
+      { id: 'earningsMultiple', label: 'Earnings multiple', type: 'number', placeholder: '3.0', defaultValue: 3, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Business Valuation Calculator – Revenue & Earnings Multiple',
+      description: 'A rough business valuation estimate from a revenue multiple and an earnings multiple, side by side. Free. Not a substitute for a professional valuation.',
+      faq: [
+        { question: 'How do I estimate what a business is worth?', answer: 'One common rough method multiplies annual revenue, or annual earnings, by a multiple appropriate for the industry. $500,000 of revenue at a 1.0x multiple is $500,000.00; $120,000 of earnings at a 3.0x multiple is $360,000.00.' },
+        { question: 'What multiple should I use?', answer: 'This calculator does not supply one — multiples vary enormously by industry, size, growth and risk. Get an industry-appropriate multiple from a business broker, accountant, or recent comparable sales.' },
+        { question: 'Why do the revenue-based and earnings-based estimates disagree?', answer: 'They measure different things. In the worked example, a business keeping 24% of revenue as earnings shows a $140,000.00 gap between the two estimates — a thinner-margin business would show an even bigger gap.' },
+        { question: 'What is SDE?', answer: 'Seller\'s discretionary earnings: net profit with the owner\'s own salary and personal expenses run through the business added back. It is the earnings figure commonly used for valuing small, owner-operated businesses.' },
+        { question: 'Is this a real appraisal?', answer: 'No. It is a rough estimate using two simple multiple-based methods. A real valuation accounts for far more — growth, customer concentration, assets, liabilities and market conditions. Use a business appraiser, broker or accountant for an actual sale or purchase.' },
+        { question: 'What valuation methods does the SBA mention?', answer: 'The SBA\'s guide to buying an existing business lists a capitalized earning approach, an excess earning method, a cash flow method, and tangible- and intangible-asset methods — and recommends hiring an attorney and an accountant to work through them.' }
+      ]
+    },
+    compute(values) {
+      const revenueBasedValuation = values.annualRevenue * values.revenueMultiple;
+      const earningsBasedValuation = values.annualEarnings * values.earningsMultiple;
+      const averageValuation = (revenueBasedValuation + earningsBasedValuation) / 2;
+      return { earningsBasedValuation, revenueBasedValuation, averageValuation };
+    }
+  },
+  {
+    id: 'payback-period-calculator',
+    category: 'business',
+    glyph: 'PBP',
+    updatedAt: '2026-11-18',
+    aliases: ['payback period formula calculator', 'investment payback calculator', 'simple payback period calculator', 'capital budgeting payback calculator'],
+    related: ['irr-calculator', 'npv-calculator', 'break-even-calculator', 'business-valuation-calculator'],
+    title: 'Payback Period Calculator',
+    description: 'Find how long it takes an upfront investment to be recovered from annual cash inflow — a simple, non-discounted capital-budgeting metric. Solve for investment, cash inflow, or payback period.',
+    example: 'A $60,000 investment generating $15,000 a year in cash inflow has a 4-year payback period.',
+    solver: {
+      defaultTarget: 'paybackPeriod',
+      variables: [
+        { id: 'initialInvestment', label: 'Initial investment', symbol: 'I', dimension: 'currency', defaultValue: 60000, defaultUnit: 'currency' },
+        { id: 'annualCashInflow', label: 'Annual cash inflow', symbol: 'A', dimension: 'currency', defaultValue: 15000, defaultUnit: 'currency' },
+        { id: 'paybackPeriod', label: 'Payback period', symbol: 'P', dimension: 'term', defaultValue: 4, defaultUnit: 'yr' }
+      ],
+      // Every variable has a closed form. paybackPeriod's SI base is months (lib/units.ts 'term'
+      // dimension), so the formula multiplies by 12 to convert the years-based ratio into months.
+      solve: {
+        paybackPeriod: ({ initialInvestment, annualCashInflow }) => (annualCashInflow > 0 ? (initialInvestment / annualCashInflow) * 12 : NaN),
+        initialInvestment: ({ annualCashInflow, paybackPeriod }) => annualCashInflow * (paybackPeriod / 12),
+        annualCashInflow: ({ initialInvestment, paybackPeriod }) => (paybackPeriod > 0 ? initialInvestment / (paybackPeriod / 12) : NaN)
+      },
+      outputs: [
+        {
+          id: 'simpleReturnPercent',
+          label: 'Simple annual return (cash inflow ÷ investment)',
+          dimension: 'percent',
+          compute: (si) => (si.initialInvestment > 0 ? (si.annualCashInflow / si.initialInvestment) * 100 : NaN)
+        }
+      ],
+      visuals: [
+        {
+          type: 'compareBars',
+          bars: [
+            { from: 'initialInvestment', label: 'Initial investment' },
+            { from: 'annualCashInflow', label: 'Annual cash inflow' }
+          ],
+          title: 'Investment vs. one year of cash inflow'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What is the payback period method?',
+        paragraphs: [
+          'OpenStax\'s Principles of Finance describes the payback period as the calculation that "focuses on how long it will take for a company to make enough free cash flow from the investment to recover the initial cost of the investment." For a steady annual cash inflow, that reduces to one division: the initial investment divided by the annual cash inflow.',
+          'This is deliberately the simplest capital-budgeting metric on this site, and the same source is direct about its limits: payback "ignores the time value of money," there is "not a clearly defined acceptance or rejection criterion" the way there is for other methods, it is "shortsighted in that it favors projects that generate cash flows quickly while possibly rejecting projects that create much larger cash flows after" the payback point, and it "makes no risk adjustment for uncertain cash flows."',
+          'That is exactly why net present value (npv-calculator) and internal rate of return (irr-calculator) exist alongside it here: both discount future cash flows to account for the time value of money, which payback period does not do at all. Payback answers a narrower, faster question — "how long until I get my money back?" — not "is this a good investment at my required rate of return?"'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of initial investment, annual cash inflow and payback period. The third, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter the initial investment', text: 'The upfront cost being recovered — equipment, a project\'s startup cost, or a purchase price.' },
+          { name: 'Enter the annual cash inflow', text: 'The steady yearly cash the investment is expected to generate. This model assumes it stays constant.' },
+          { name: 'Read the payback period', text: 'How many years (or months, switch the unit) it takes for cumulative cash inflow to equal the initial investment.' },
+          { name: 'Or solve backward', text: 'Leave annual cash inflow alone instead to see what inflow a target payback period requires on a known investment.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'For a constant annual cash inflow, payback period is simply investment divided by that inflow.',
+        expression: 'paybackPeriod = initialInvestment ÷ annualCashInflow\nsimpleReturnPercent = annualCashInflow ÷ initialInvestment × 100',
+        terms: [
+          { symbol: 'initialInvestment', meaning: 'The upfront cost being recovered.' },
+          { symbol: 'annualCashInflow', meaning: 'Cash generated per year, held constant for this simple calculation — unlike IRR or NPV, no discount rate is applied.' }
+        ],
+        note: 'Estimates only, and ignores the time value of money entirely, by design — see npv-calculator or irr-calculator for a discounted view of the same kind of cash flows. This also assumes a level annual inflow; an uneven cash-flow schedule needs a year-by-year running total instead of one division.'
+      },
+      workedExample: {
+        intro: 'A $60,000 investment is expected to generate $15,000 a year in cash inflow. What is the payback period, and what inflow would be needed to pay it back in 3 years instead?',
+        rows: [
+          { label: 'Payback period (60,000 ÷ 15,000)', value: '4 years' },
+          { label: 'Simple annual return (15,000 ÷ 60,000 × 100)', value: '25%' },
+          { label: 'Cash inflow needed for a 3-year payback (60,000 ÷ 3)', value: '$20,000.00' }
+        ],
+        result: 'At $15,000 a year, payback takes 4 years; reaching a 3-year payback on the same $60,000 investment needs $20,000.00 a year instead.',
+        explanation: 'Shortening the payback period by 1 year (from 4 to 3) requires $5,000.00 more cash inflow a year (from $15,000.00 to $20,000.00) — a 33.3% increase in annual inflow to achieve a 25% reduction in payback time, because payback period is the reciprocal of the inflow-to-investment ratio, not a linear function of it.'
+      },
+      watchOut: [
+        { title: 'Ignores the time value of money completely', body: 'A dollar received in year 1 and a dollar received in year 4 count exactly the same toward payback. npv-calculator and irr-calculator both discount later cash flows, which payback period never does.' },
+        { title: 'Ignores everything after the payback point', body: 'Two investments with the same 4-year payback can have very different total value if one keeps generating cash for 10 more years and the other stops right after payback — this metric cannot tell them apart.' },
+        { title: 'No universal "good" payback period', body: 'There is no standard acceptance threshold the way there might be for an IRR compared against a required rate of return. Different companies and industries set their own maximum acceptable payback period.' },
+        { title: 'Assumes a level, certain annual cash inflow', body: 'This formula divides by one constant figure. A project with uneven year-to-year cash flows needs a running cumulative total instead — the single-division shortcut here does not apply once inflows vary by year.' },
+        { title: 'Not the same calculation as the solar-specific version', body: 'solar-payback-period-calculator models a solar system\'s net cost (after incentives) against estimated annual savings specifically. This page is the general-purpose version for any investment and annual cash inflow.' }
+      ],
+      references: [
+        { label: 'OpenStax, Principles of Finance, §16.1 Payback Period Method', url: 'https://openstax.org/books/principles-finance/pages/16-1-payback-period-method' },
+        { label: 'OpenStax, Principles of Finance, §16.2 Net Present Value (NPV) Method', url: 'https://openstax.org/books/principles-finance/pages/16-2-net-present-value-npv-method' }
+      ]
+    },
+    inputs: [
+      { id: 'initialInvestment', label: 'Initial investment', type: 'currency', placeholder: '60000', defaultValue: 60000, step: 1000, min: 0 },
+      { id: 'annualCashInflow', label: 'Annual cash inflow', type: 'currency', placeholder: '15000', defaultValue: 15000, step: 500, min: 0 }
+    ],
+    seo: {
+      title: 'Payback Period Calculator – Investment Recovery Time',
+      description: 'Calculate the payback period from an initial investment and annual cash inflow, or solve backward. Free, with the simple annual return alongside it.',
+      faq: [
+        { question: 'How do I calculate payback period?', answer: 'Divide the initial investment by the annual cash inflow. A $60,000 investment generating $15,000 a year pays back in 4 years.' },
+        { question: 'How is payback period different from IRR or NPV?', answer: 'Payback period ignores the time value of money entirely — it just counts years until the cash received equals the investment. IRR and NPV both discount future cash flows. See irr-calculator and npv-calculator for the discounted versions.' },
+        { question: 'What is a good payback period?', answer: 'There is no universal standard. OpenStax notes the method has "not a clearly defined acceptance or rejection criterion" — different companies and industries set their own maximum acceptable payback period.' },
+        { question: 'What cash inflow is needed for a specific payback period?', answer: 'Divide the investment by the target number of years. A $60,000 investment targeting a 3-year payback needs 60,000 ÷ 3 = $20,000.00 a year.' },
+        { question: 'Does this work for uneven annual cash flows?', answer: 'Not directly. This calculator divides by one constant annual figure. An investment with cash flows that change year to year needs a running cumulative total instead of a single division.' },
+        { question: 'Is this the same as the solar payback period calculator?', answer: 'No. solar-payback-period-calculator is specific to a solar system\'s net cost after incentives against estimated annual electricity savings. This page is the general-purpose version for any investment and cash inflow.' },
+        { question: 'What is the "simple annual return" shown here?', answer: 'Annual cash inflow divided by the initial investment, as a percentage — the reciprocal of the payback period in years, expressed as a rate. It is not a discounted return like IRR.' }
+      ]
+    },
+    compute(values) {
+      const paybackPeriod = values.annualCashInflow > 0 ? values.initialInvestment / values.annualCashInflow : NaN;
+      const simpleReturnPercent = values.initialInvestment > 0 ? (values.annualCashInflow / values.initialInvestment) * 100 : NaN;
+      return { paybackPeriod, simpleReturnPercent };
+    }
+  },
+  {
+    id: 'fte-calculator',
+    category: 'business',
+    glyph: 'FTE',
+    updatedAt: '2026-11-18',
+    aliases: ['full time equivalent calculator', 'fte headcount calculator', 'part time to fte calculator', 'aca fte calculator', 'applicable large employer calculator'],
+    related: ['burn-rate-calculator', 'break-even-calculator', 'work-hours-calculator', 'payback-period-calculator'],
+    title: 'Full-Time Equivalent (FTE) Calculator',
+    description: 'Find total full-time-equivalent headcount from a full-time employee count and part-time employees\' hours, using the IRS\'s own ACA formula for converting part-time hours into FTEs.',
+    example: '8 full-time employees plus 5 part-time employees averaging 80 hours a month each comes to about 11.33 FTEs.',
+    breakdown: {
+      headline: 'totalFTE',
+      headlineLabel: 'Total FTE',
+      outputs: [
+        { id: 'totalFTE', label: 'Total FTE', format: 'number' },
+        { id: 'partTimeFTE', label: 'Part-time employees, as FTE', format: 'number' }
+      ],
+      groups: [{ title: 'Workforce', inputs: ['fullTimeEmployeeCount', 'partTimeEmployeeCount', 'avgPartTimeHoursPerMonth'] }],
+      derive: (v) => ({ cappedHoursPerPartTimeEmployee: Math.min(v.avgPartTimeHoursPerMonth, 120) }),
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'fullTimeEmployeeCount', label: 'Full-time employees' },
+          { from: 'partTimeFTE', label: 'Part-time, as FTE' }
+        ],
+        center: 'totalFTE',
+        centerSub: 'total FTE'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What is a full-time equivalent (FTE)?',
+        paragraphs: [
+          'A full-time equivalent (FTE) count converts a mixed workforce of full-time and part-time employees into a single number of "equivalent" full-time positions, so a business can measure its real total staffing level without part-time hours disappearing from the count or being treated as a full head each.',
+          'The IRS uses exactly this kind of calculation to decide whether a business is an "applicable large employer" under the Affordable Care Act\'s employer shared responsibility provision. Its own guidance gives a two-step formula for the part-time side: "combine the number of hours of service of all non-full-time employees for the month but do not include more than 120 hours of service per employee," then "divide the total by 120." A full-time employee, in that same guidance, is "an employee who has on average at least 30 hours of service per week during the calendar month, or at least 130 hours of service during the calendar month."',
+          'This calculator applies that same 120-hour-per-employee, divide-by-120 logic to an average part-time hours figure rather than to each individual employee\'s own hours, since entering every employee separately is impractical for a quick estimate — see the watch-out below for exactly where that shortcut can diverge from the IRS\'s own employee-by-employee method.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the full-time employee count, the part-time employee count, and the average monthly hours each part-time employee works.',
+        steps: [
+          { name: 'Enter full-time employee count', text: 'Employees averaging at least 30 hours a week (130 hours a month) each count as 1 FTE on their own.' },
+          { name: 'Enter part-time employee count', text: 'Everyone working fewer hours than the full-time threshold.' },
+          { name: 'Enter average part-time hours per month', text: 'The typical monthly hours worked per part-time employee. Hours above 120 for any one employee do not add further FTE, per the IRS\'s own cap.' },
+          { name: 'Read total FTE', text: 'Full-time headcount plus the part-time group\'s hours converted to FTE.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Each part-time employee\'s monthly hours are capped at 120 before being converted to FTE, matching the IRS\'s own ACA formula.',
+        expression:
+          'cappedHoursPerPartTimeEmployee = min(avgPartTimeHoursPerMonth, 120)\npartTimeFTE = (partTimeEmployeeCount × cappedHoursPerPartTimeEmployee) ÷ 120\ntotalFTE = fullTimeEmployeeCount + partTimeFTE',
+        terms: [
+          { symbol: 'fullTimeEmployeeCount', meaning: 'Employees averaging at least 30 hours a week (130 hours a month), per the IRS\'s own threshold.' },
+          { symbol: 'partTimeFTE', meaning: 'Part-time employees\' combined, capped monthly hours expressed as a number of full-time-equivalent positions.' }
+        ],
+        note: 'Applies the IRS\'s 120-hour cap to an average hours figure, not to each employee individually — see the watch-out below. This is for a quick estimate, not a substitute for the IRS\'s own employee-by-employee ACA determination.'
+      },
+      workedExample: {
+        intro: 'A business has 8 full-time employees and 5 part-time employees, each averaging 80 hours a month. What is its total FTE?',
+        rows: [
+          { label: 'Capped hours per part-time employee (min(80, 120))', value: '80' },
+          { label: 'Part-time FTE ((5 × 80) ÷ 120)', value: '3.33' },
+          { label: 'Total FTE (8 + 3.33)', value: '11.33' }
+        ],
+        result: 'Total FTE is about 11.33 — 8 full-time positions plus the part-time group\'s 3.33 FTE-equivalent.',
+        explanation: 'Since 80 hours a month is already below the 120-hour cap, no individual employee\'s hours are being reduced here — the full 400 combined part-time hours (5 × 80) convert directly to 400 ÷ 120 ≈ 3.33 FTE. The cap only matters once an individual part-timer averages more than 120 hours a month.'
+      },
+      watchOut: [
+        { title: 'This averages hours, the IRS caps them per employee', body: 'The real ACA formula caps each individual non-full-time employee\'s hours at 120 before summing. If part-time hours vary a lot — say some part-timers average 150 hours and others average 40 — capping the average here understates total FTE compared to capping each employee\'s own hours, because this shortcut never gets a chance to apply the 120 cap to the ones who actually exceed it.' },
+        { title: 'The full-time threshold itself is not part of this formula', body: 'Whether a specific employee counts as "full-time" (30 hours a week or 130 hours a month) versus "part-time" is a separate determination this calculator assumes has already been made correctly for the headcounts entered.' },
+        { title: 'This is an estimate for planning, not a filing', body: 'The IRS\'s actual applicable-large-employer determination averages FTE count over every month of the prior calendar year, employee by employee. This calculator gives a single month\'s snapshot from aggregate figures.' },
+        { title: 'FTE is a staffing-level measure, not a headcount for every purpose', body: 'Legal thresholds for other laws (FMLA\'s 50-employee count, for example) may use a different definition of "employee" than the ACA\'s FTE calculation. Confirm which definition applies before using this figure for a compliance decision.' },
+        { title: 'Average hours above 120 mean the part-time group is under-counted here', body: 'If average part-time hours per month is entered above 120, this calculator still caps it at 120 per the IRS rule — so raising that input past 120 stops increasing partTimeFTE, which is the correct, intended behavior, not a bug.' }
+      ],
+      references: [
+        { label: 'Internal Revenue Service, Determining if an Employer is an Applicable Large Employer', url: 'https://www.irs.gov/affordable-care-act/employers/determining-if-an-employer-is-an-applicable-large-employer' },
+        { label: 'Internal Revenue Service, Identifying Full-time Employees', url: 'https://www.irs.gov/affordable-care-act/employers/identifying-full-time-employees' }
+      ]
+    },
+    inputs: [
+      { id: 'fullTimeEmployeeCount', label: 'Full-time employees', type: 'number', placeholder: '8', defaultValue: 8, step: 1, min: 0 },
+      { id: 'partTimeEmployeeCount', label: 'Part-time employees', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 0 },
+      { id: 'avgPartTimeHoursPerMonth', label: 'Average part-time hours per month', type: 'number', placeholder: '80', defaultValue: 80, step: 5, min: 0 }
+    ],
+    seo: {
+      title: 'Full-Time Equivalent (FTE) Calculator',
+      description: 'Calculate total FTE headcount from full-time employee count and part-time hours, using the IRS\'s own 120-hour ACA formula. Free.',
+      faq: [
+        { question: 'How do I calculate FTE?', answer: 'Add full-time employee count to part-time employees\' combined hours (each capped at 120 a month) divided by 120. 8 full-time plus 5 part-time averaging 80 hours a month each is 8 + (5 × 80 ÷ 120) ≈ 11.33 FTE.' },
+        { question: 'What is the IRS formula for FTE?', answer: 'Combine non-full-time employees\' monthly hours, capping each employee at 120 hours, then divide by 120. This calculator applies that cap to an average hours figure rather than per employee — see the watch-out section for when that differs from the IRS\'s own method.' },
+        { question: 'What counts as a full-time employee for FTE purposes?', answer: 'The IRS defines full-time, for ACA purposes, as averaging at least 30 hours of service a week, or at least 130 hours a month.' },
+        { question: 'Why is total FTE a fraction, not a whole number?', answer: 'Because part-time hours convert to a fractional FTE. 5 part-time employees averaging 80 hours a month each equal 3.33 FTE, not 5 or 3 — they are "equivalent" to 3.33 full-time positions, not an actual headcount.' },
+        { question: 'What happens if a part-time employee works more than 120 hours a month?', answer: 'The IRS caps each employee\'s contribution at 120 hours regardless of how many more they actually work. Entering an average above 120 here is capped the same way, which is intentional.' },
+        { question: 'Is FTE the same as headcount?', answer: 'No. Headcount counts every person as 1, regardless of hours. FTE instead weights part-time staff by their hours relative to a full-time schedule, giving a more accurate measure of total staffing capacity.' }
+      ]
+    },
+    compute(values) {
+      const cappedHours = Math.min(values.avgPartTimeHoursPerMonth, 120);
+      const partTimeFTE = (values.partTimeEmployeeCount * cappedHours) / 120;
+      const totalFTE = values.fullTimeEmployeeCount + partTimeFTE;
+      return { totalFTE, partTimeFTE };
     }
   }
 ];

@@ -2938,6 +2938,56 @@ exports[`compute() snapshots > co2-breathing-emission-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > cobra-cost-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "employeePremiumShare": 150,
+      "employerPremiumShare": 550,
+      "monthsOfCoverage": 18
+    },
+    "outputs": {
+      "totalCobraCost": 12852,
+      "cobraMonthlyPremium": 714,
+      "extraMonthlyCost": 564,
+      "extraTotalCost": 10152,
+      "employeePremiumShare": 150,
+      "employerPremiumShare": 550
+    }
+  },
+  "typical": {
+    "inputs": {
+      "employeePremiumShare": 230,
+      "employerPremiumShare": 830,
+      "monthsOfCoverage": 27
+    },
+    "outputs": {
+      "totalCobraCost": 29192.4,
+      "cobraMonthlyPremium": 1081.2,
+      "extraMonthlyCost": 851.2,
+      "extraTotalCost": 22982.4,
+      "employeePremiumShare": 230,
+      "employerPremiumShare": 830
+    }
+  },
+  "edge": {
+    "inputs": {
+      "employeePremiumShare": 0,
+      "employerPremiumShare": 0,
+      "monthsOfCoverage": 0
+    },
+    "outputs": {
+      "totalCobraCost": 0,
+      "cobraMonthlyPremium": 0,
+      "extraMonthlyCost": 0,
+      "extraTotalCost": 0,
+      "employeePremiumShare": 0,
+      "employerPremiumShare": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > codon-to-amino-acid-calculator 1`] = `
 {
   "default": {

@@ -611,5 +611,127 @@ export const insuranceCalculators: CalculatorConfig[] = [
         coinsurancePaid: values.coinsurancePaid
       };
     }
+  },
+  {
+    id: 'cobra-cost-calculator',
+    category: 'insurance',
+    glyph: 'CBRA',
+    updatedAt: '2026-11-18',
+    aliases: ['cobra insurance cost calculator', 'how much does cobra cost calculator', 'cobra premium calculator', 'continuation of health coverage cost calculator'],
+    related: ['out-of-pocket-maximum-calculator', 'disability-insurance-needs-calculator', 'emergency-fund-calculator', 'paycheck-calculator'],
+    title: 'COBRA Cost Calculator',
+    description: 'Estimate what COBRA continuation health coverage will cost after leaving a job: up to 102% of the combined employee-and-employer premium, under the federal rule the Department of Labor documents.',
+    example: 'With a $150 employee premium and $550 employer premium while working, COBRA at 102% of the combined $700 costs $714 a month — $12,852 total over an 18-month continuation period.',
+    breakdown: {
+      headline: 'totalCobraCost',
+      headlineLabel: 'Total COBRA premiums over the coverage period',
+      outputs: [
+        { id: 'totalCobraCost', format: 'currency' },
+        { id: 'cobraMonthlyPremium', label: 'COBRA premium per month (102% of the combined premium)', format: 'currency' },
+        { id: 'extraMonthlyCost', label: 'Extra per month vs. what you paid as an employee', format: 'currency' },
+        { id: 'extraTotalCost', label: 'Extra total vs. your old employee share', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your premium while employed', inputs: ['employeePremiumShare', 'employerPremiumShare'] },
+        { title: 'Coverage period', inputs: ['monthsOfCoverage'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'employeePremiumShare', label: 'Paid while employed (monthly)' },
+          { from: 'cobraMonthlyPremium', label: 'COBRA premium (monthly)' }
+        ],
+        title: 'Monthly cost before and after COBRA',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What is COBRA, and why does it cost so much more?',
+        paragraphs: [
+          'COBRA (the Consolidated Omnibus Budget Reconciliation Act) lets someone who loses job-based group health coverage — through job loss, reduced hours, or certain other qualifying events — keep the same plan temporarily by paying for it directly. The U.S. Department of Labor states that COBRA "provides temporary coverage to you and your dependents — usually up to 18 months," and that certain qualifying events can extend that to 36 months.',
+          'The sticker shock is structural, not a penalty: while employed, an employer typically pays most of the premium directly to the insurer, and the paycheck deduction only covers the employee\'s share. Leaving the job removes the employer\'s contribution entirely, and COBRA requires the person continuing coverage to pay for the whole thing themselves. The Department of Labor states that a qualified individual "may be required to pay the entire premium for coverage up to 102% of the cost to the plan" — the full combined premium the employer used to help cover, plus up to a 2% administrative fee.',
+          "That combination — losing the employer's share and absorbing a 2% fee on top of the full premium — is why a COBRA bill often looks several times larger than what came out of a paycheck. It is the same coverage, continued at the plan's real, un-subsidized cost."
+        ]
+      },
+      howTo: {
+        intro: 'Enter what you and your employer were each paying monthly toward the premium, and how many months of COBRA coverage you are estimating; the calculator applies the 102% rule.',
+        steps: [
+          { name: 'Enter your employee premium share', text: 'The amount that came out of your paycheck each month for this coverage — check a recent pay stub or your plan enrollment summary.' },
+          { name: 'Enter your employer\'s premium share', text: "The amount your employer paid directly to the insurer on your behalf each month. Your HR or benefits department can provide this if it isn't on your pay stub." },
+          { name: 'Enter the number of months', text: 'How many months of COBRA coverage you are estimating — up to 18 months for most qualifying events, or up to 36 months for certain other events, per the Department of Labor.' },
+          { name: 'Read the result', text: "The headline is the total COBRA premium cost over that period. The bars compare what you used to pay monthly as an employee against the full COBRA premium you'd pay monthly now." }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'COBRA premium is the combined former premium, grossed up by the 2% administrative fee the Department of Labor documents.',
+        expression: 'Combined = EmployeeShare + EmployerShare\nCOBRA premium = Combined × 1.02\nTotal cost = COBRA premium × Months',
+        terms: [
+          { symbol: 'EmployeeShare', meaning: 'What came out of your paycheck monthly for the premium while employed.' },
+          { symbol: 'EmployerShare', meaning: 'What your employer paid monthly on your behalf while employed.' },
+          { symbol: 'Combined', meaning: 'The full premium the plan actually costs, employee and employer shares added together.' },
+          { symbol: '1.02', meaning: 'The 102% figure the Department of Labor documents — full premium plus up to a 2% administrative fee.' },
+          { symbol: 'Months', meaning: 'The number of months of COBRA coverage being estimated.' }
+        ],
+        note: "This assumes the maximum permitted 2% administrative fee and a premium that doesn't change over the period. Confirm your plan's actual COBRA premium notice, which is the authoritative figure."
+      },
+      workedExample: {
+        intro: 'While employed, a worker paid $150 a month toward the premium and the employer paid $550 a month. They estimate 18 months of COBRA coverage.',
+        rows: [
+          { label: 'Combined monthly premium ($150 + $550)', value: '$700.00' },
+          { label: 'COBRA monthly premium ($700 × 1.02)', value: '$714.00' },
+          { label: 'Extra cost per month vs. employee share ($714 − $150)', value: '$564.00' },
+          { label: 'Total COBRA cost over 18 months ($714 × 18)', value: '$12,852.00' }
+        ],
+        result: 'COBRA costs $714.00 a month, $12,852.00 over 18 months',
+        explanation: "The monthly premium rises 376% ($564 ÷ $150) once the employer's $550 contribution disappears and the 2% fee is added — the same coverage, now billed at its full, un-subsidized cost plus the administrative fee."
+      },
+      watchOut: [
+        { title: 'This is an educational estimate, not a quote or an offer to sell insurance', body: 'This calculator estimates a COBRA premium for planning purposes. It does not sell, recommend or bind any coverage, and is not a substitute for the actual COBRA election notice your plan administrator sends you.' },
+        { title: 'Your actual notice has the real number', body: 'Your plan administrator is required to send a COBRA election notice stating the exact premium. Use this calculator to plan ahead, then confirm against that notice before budgeting around it.' },
+        { title: 'Coverage length depends on the qualifying event', body: 'The Department of Labor states COBRA usually runs "up to 18 months," with certain qualifying events extending it to 36 months. Confirm which applies to your situation rather than assuming 18 months.' },
+        { title: 'The marketplace may cost less for some households', body: "Because COBRA premiums are not subsidized, a comparable ACA marketplace plan — especially with a premium tax credit — is sometimes cheaper. It's worth comparing both before electing COBRA." },
+        { title: 'Missing the election deadline ends the option', body: 'COBRA must be elected within a strict window after the qualifying event and the notice. Once that window closes, continuing the same employer plan under COBRA is no longer available.' }
+      ],
+      references: [
+        { label: 'U.S. Department of Labor, "COBRA Continuation Coverage" overview (premium cost, up to 102% rule)', url: 'https://www.dol.gov/general/topic/health-plans/cobra' },
+        { label: 'U.S. Department of Labor, Employee Benefits Security Administration, COBRA continuation coverage laws and regulations (coverage duration)', url: 'https://www.dol.gov/agencies/ebsa/laws-and-regulations/laws/cobra' }
+      ]
+    },
+    inputs: [
+      { id: 'employeePremiumShare', label: 'Your premium share (monthly, while employed)', type: 'currency', placeholder: '150', defaultValue: 150, step: 10, min: 0 },
+      { id: 'employerPremiumShare', label: "Employer's premium share (monthly)", type: 'currency', placeholder: '550', defaultValue: 550, step: 10, min: 0 },
+      { id: 'monthsOfCoverage', label: 'Months of COBRA coverage', type: 'number', placeholder: '18', defaultValue: 18, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'COBRA Cost Calculator – Continuation Health Coverage Premium',
+      description: 'Estimate your COBRA premium: up to 102% of your combined employee-and-employer premium, per the Department of Labor rule, over your coverage period.',
+      faq: [
+        { question: 'How much does COBRA cost?', answer: 'The Department of Labor states a qualified individual "may be required to pay the entire premium for coverage up to 102% of the cost to the plan" — the full employee-plus-employer premium, plus up to a 2% administrative fee.' },
+        { question: 'Why is COBRA so much more expensive than my paycheck deduction?', answer: "While employed, your employer typically pays most of the premium directly and your paycheck deduction only covers your own share. COBRA removes the employer's contribution entirely, so you pay the full combined premium plus the administrative fee." },
+        { question: 'How long does COBRA coverage last?', answer: 'The Department of Labor states COBRA "provides temporary coverage to you and your dependents — usually up to 18 months," with certain qualifying events extending it to 36 months.' },
+        { question: 'What is a worked example of COBRA cost?', answer: 'An employee paying $100 a month with a $400 employer contribution faces a COBRA premium of $510 a month (102% of the combined $500) — $6,120 total over 12 months.' },
+        { question: 'Does the 2% COBRA administrative fee apply every month?', answer: 'Up to 2% is the maximum the Department of Labor permits on top of the full combined premium each month; it is not a one-time fee.' },
+        { question: 'Is COBRA cheaper than an ACA marketplace plan?', answer: "It depends on the specific premiums and whether you qualify for a marketplace premium tax credit, which COBRA premiums are not eligible for. Comparing both is worthwhile before electing COBRA." },
+        { question: 'What happens if I miss the COBRA election deadline?', answer: 'The election window is strict and defined by law. Once it closes without an election, continuing that specific employer plan under COBRA is no longer available.' }
+      ]
+    },
+    compute(values) {
+      const combinedMonthlyPremium = values.employeePremiumShare + values.employerPremiumShare;
+      const cobraMonthlyPremium = combinedMonthlyPremium * 1.02;
+      const totalCobraCost = cobraMonthlyPremium * values.monthsOfCoverage;
+      const extraMonthlyCost = cobraMonthlyPremium - values.employeePremiumShare;
+      const extraTotalCost = totalCobraCost - values.employeePremiumShare * values.monthsOfCoverage;
+      return {
+        totalCobraCost,
+        cobraMonthlyPremium,
+        extraMonthlyCost,
+        extraTotalCost,
+        employeePremiumShare: values.employeePremiumShare,
+        employerPremiumShare: values.employerPremiumShare
+      };
+    }
   }
 ];

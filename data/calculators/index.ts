@@ -556,7 +556,8 @@ export const calculatorOrder: string[] = [
   'dime-method-life-insurance-calculator',
   'term-life-coverage-calculator',
   'whole-life-vs-term-life-cost-calculator',
-  'out-of-pocket-maximum-calculator'
+  'out-of-pocket-maximum-calculator',
+  'cobra-cost-calculator'
 ];
 
 const rank = (id: string) => {

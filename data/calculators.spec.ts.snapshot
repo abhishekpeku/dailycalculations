@@ -8369,6 +8369,65 @@ exports[`compute() snapshots > ionic-strength-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > ip-subnet-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "ipOctet1": 10,
+      "ipOctet2": 20,
+      "ipOctet3": 30,
+      "ipOctet4": 40,
+      "prefixLength": 20
+    },
+    "outputs": {
+      "networkAddress": 169086976,
+      "broadcastAddress": 169091071,
+      "subnetMask": 4294963200,
+      "firstHostAddress": 169086977,
+      "lastHostAddress": 169091070,
+      "totalAddresses": 4096,
+      "usableHosts": 4094
+    }
+  },
+  "typical": {
+    "inputs": {
+      "ipOctet1": 15,
+      "ipOctet2": 30,
+      "ipOctet3": 45,
+      "ipOctet4": 60,
+      "prefixLength": 30
+    },
+    "outputs": {
+      "networkAddress": 253635900,
+      "broadcastAddress": 253635903,
+      "subnetMask": 4294967292,
+      "firstHostAddress": 253635901,
+      "lastHostAddress": 253635902,
+      "totalAddresses": 4,
+      "usableHosts": 2
+    }
+  },
+  "edge": {
+    "inputs": {
+      "ipOctet1": 0,
+      "ipOctet2": 0,
+      "ipOctet3": 0,
+      "ipOctet4": 0,
+      "prefixLength": 0
+    },
+    "outputs": {
+      "networkAddress": 0,
+      "broadcastAddress": 4294967295,
+      "subnetMask": 0,
+      "firstHostAddress": 1,
+      "lastHostAddress": 4294967294,
+      "totalAddresses": 4294967296,
+      "usableHosts": 4294967294
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > irr-calculator 1`] = `
 {
   "default": {

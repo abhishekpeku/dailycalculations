@@ -229,6 +229,18 @@ export function inputUnitLabel(input: CalculatorInput, unitId: string) {
   return input.type === 'percent' ? '%' : '';
 }
 
+/** A 32-bit unsigned integer as dotted-decimal, e.g. 3232235776 -> "192.168.1.0". Pure arithmetic
+ * (no bitwise ops), so it stays exact in a double for the full 0..2^32-1 range (lib/breakdown.ts's
+ * `ipAddress` format — see ip-subnet-calculator in data/calculators/tech.ts). */
+export function formatIpAddress(value: number): string {
+  const v = Math.round(value);
+  const o1 = Math.floor(v / 16777216) % 256;
+  const o2 = Math.floor(v / 65536) % 256;
+  const o3 = Math.floor(v / 256) % 256;
+  const o4 = v % 256;
+  return `${o1}.${o2}.${o3}.${o4}`;
+}
+
 /** One figure as text, with its unit. Currency goes through lib/calculator.ts (region-aware from step 18). */
 export function formatOutput(value: number, output: ResolvedOutput, unitId = output.unit): string {
   if (!Number.isFinite(value)) return '—';
@@ -239,6 +251,7 @@ export function formatOutput(value: number, output: ResolvedOutput, unitId = out
   if (output.format === 'currency') return formatFull(value, { currency: true });
   if (output.format === 'percent') return `${formatDecimal(value)}%`;
   if (output.format === 'date') return formatDate(value);
+  if (output.format === 'ipAddress') return formatIpAddress(value);
   const text =
     output.format === 'integer' ? formatDecimal(Math.round(value), 0) : output.format === 'significant' ? formatSignificant(value) : formatDecimal(value);
   if (!output.dimension || output.dimension === 'currency') return text;

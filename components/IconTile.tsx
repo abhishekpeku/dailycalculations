@@ -14,7 +14,10 @@ export const TILE_COLORS = {
   // Biology (step 48): a yellow-green distinct from finance/sports' pure `green` above.
   lime: ['#A3E635', '#65A30D'],
   // Ecology (step 49): a blue-green distinct from finance/sports' `green` and biology's `lime`.
-  emerald: ['#34D399', '#059669']
+  emerald: ['#34D399', '#059669'],
+  // Tech (step 25): a brighter, more saturated blue than auto/education's `blue` or physics/
+  // time's `indigo` — reads as a circuit-board/terminal glow for the new tech category.
+  cyan: ['#22D3EE', '#0891B2']
 } as const;
 
 export type TileColor = keyof typeof TILE_COLORS;
@@ -55,7 +58,10 @@ const ICONS = {
   leaf: 'M12 21c-4-2-7-6-7-11a7 7 0 1 1 14 0c0 5-3 9-7 11zM12 21V10',
   // A four-point sparkle with two small accent dots: the fun & other category (zodiac, love,
   // numerology, probability novelties, calendar/weather curiosities).
-  sparkle: 'M12 3l1.8 6.2L20 11l-6.2 1.8L12 19l-1.8-6.2L4 11l6.2-1.8L12 3zM19 3v3M17.5 4.5h3'
+  sparkle: 'M12 3l1.8 6.2L20 11l-6.2 1.8L12 19l-1.8-6.2L4 11l6.2-1.8L12 3zM19 3v3M17.5 4.5h3',
+  // A microchip (outer package + 8 pins + die): the tech category (subnetting, IBAN checksums,
+  // password strength).
+  chip: 'M7 7h10v10H7zM10 10h4v4h-4zM9 7V4M15 7V4M9 20v-3M15 20v-3M7 9H4M7 15H4M20 9h-3M20 15h-3'
 } as const;
 
 export type IconName = keyof typeof ICONS;

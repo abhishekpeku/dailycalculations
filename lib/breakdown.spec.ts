@@ -307,6 +307,14 @@ describe('formatting', () => {
     assert.equal(formatOutput(Infinity, output({ id: 'a', label: 'A', format: 'currency' })), '—');
   });
 
+  test('ipAddress: a 32-bit integer prints as dotted-decimal', () => {
+    // 192.168.1.0 = 192*2^24 + 168*2^16 + 1*2^8 + 0
+    assert.equal(formatOutput(3232235776, output({ id: 'a', label: 'A', format: 'ipAddress' })), '192.168.1.0');
+    assert.equal(formatOutput(0, output({ id: 'a', label: 'A', format: 'ipAddress' })), '0.0.0.0');
+    assert.equal(formatOutput(4294967295, output({ id: 'a', label: 'A', format: 'ipAddress' })), '255.255.255.255');
+    assert.equal(formatOutput(NaN, output({ id: 'a', label: 'A', format: 'ipAddress' })), '—');
+  });
+
   test('labels override numeric formatting (e.g. a ring-size letter) — see mdFiles/steps/42-wave-1-conversion.md, "Run 8"', () => {
     const uk = output({
       id: 'ukIndex',

@@ -305,6 +305,37 @@ function weekdayWeekendCount(startMs: number, endMs: number): { weekdays: number
   return { weekdays, weekendDays };
 }
 
+// Common display/image aspect ratios, width:height (Wikipedia, "Aspect ratio (image)", cited
+// below). Shared by screen-size-calculator's diagonal -> width/height split (a preset menu) and
+// quoted as guidance in aspect-ratio-calculator's content (that one takes the two ratio numbers
+// as free entry, since a SolverVariable has no `options` menu field).
+const ASPECT_RATIOS: { value: number; label: string; w: number; h: number }[] = [
+  { value: 0, label: '16:9 (most TVs, laptops and monitors)', w: 16, h: 9 },
+  { value: 1, label: '16:10 (some laptops and monitors)', w: 16, h: 10 },
+  { value: 2, label: '4:3 (older TVs and monitors)', w: 4, h: 3 },
+  { value: 3, label: '21:9 (ultrawide monitors)', w: 21, h: 9 },
+  { value: 4, label: '3:2 (many tablets and some laptops)', w: 3, h: 2 },
+  { value: 5, label: '1:1 (square)', w: 1, h: 1 }
+];
+
+// Uptime "nines" table: downtime per year/month/day as a function of the uptime percentage, by
+// plain arithmetic over a calendar-average year (Wikipedia, "High availability", "Percentage
+// calculation", cited below) -- shared by the reference table and the live calculator so neither
+// one types a result by hand. 365.25 is the same Julian-year average measurements.ts and time.ts
+// already use elsewhere on this site.
+const UPTIME_YEAR_DAYS = 365.25;
+const UPTIME_MONTH_DAYS = UPTIME_YEAR_DAYS / 12;
+function uptimeDowntime(uptimePercent: number) {
+  const downFraction = 1 - uptimePercent / 100;
+  return {
+    perYearHours: downFraction * UPTIME_YEAR_DAYS * 24,
+    perMonthMinutes: downFraction * UPTIME_MONTH_DAYS * 24 * 60,
+    perDaySeconds: downFraction * 24 * 3600
+  };
+}
+// The four "nines" the step asked for, used to build the reference table below.
+const STANDARD_NINES = [99, 99.9, 99.99, 99.999];
+
 export const funCalculators: CalculatorConfig[] = [
   {
     id: 'zodiac-sign-calculator',
@@ -1963,5 +1994,131 @@ export const funCalculators: CalculatorConfig[] = [
       const hoursBehindKiribati = 14 - utcOffsetHours;
       return { daysLeft, hoursLeft, minutesLeft, hoursBehindKiribati };
     }
-  }
+  },
+  {
+    id: 'screen-size-calculator',
+    category: 'fun',
+    glyph: 'TV',
+    updatedAt: '2026-11-18',
+    aliases: ['screen size calculator', 'tv size calculator', 'monitor size calculator', 'screen dimensions calculator', 'pixel density calculator', 'ppi calculator'],
+    related: ['aspect-ratio-calculator', 'length-converter', 'area-converter', 'centimeters-to-inches-converter'],
+    title: 'Screen Size Calculator',
+    description: 'Turn a TV or monitor\'s advertised diagonal size and aspect ratio into its actual width, height, screen area, and pixel density (PPI) for a given resolution.',
+    example: 'A 55-inch 16:9 TV at 3840×2160 (4K UHD) is about 47.9 in wide by 27.0 in tall, with a pixel density of roughly 80 PPI.',
+    breakdown: {
+      headline: 'widthIn',
+      headlineLabel: 'Screen width',
+      outputs: [
+        { id: 'widthIn', label: 'Width', dimension: 'length', unit: 'in' },
+        { id: 'heightIn', label: 'Height', dimension: 'length', unit: 'in' },
+        { id: 'areaSqIn', label: 'Screen area', dimension: 'area', unit: 'in2' },
+        { id: 'ppi', label: 'Pixel density (PPI)', format: 'number' }
+      ],
+      groups: [
+        { title: 'Screen size', inputs: ['diagonalIn', 'aspectRatio'] },
+        { title: 'Resolution', inputs: ['resWidth', 'resHeight'] }
+      ],
+      visual: { type: 'compareBars', bars: [{ from: 'widthIn', label: 'Width' }, { from: 'heightIn', label: 'Height' }], title: 'Width vs. height', highlight: 0 }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What a diagonal screen size actually measures',
+        paragraphs: [
+          'A TV or monitor\'s advertised size -- "55-inch", "27-inch" -- is always the diagonal of the viewable screen, corner to corner, never the width or the height on its own. Two screens with the same diagonal can still look different sizes side by side, because the diagonal alone does not fix the width and height individually -- that also depends on the aspect ratio, the proportion between width and height (expressed as two numbers, like 16:9).',
+          "Width and height come from the diagonal and the aspect ratio through the Pythagorean theorem: a rectangle's diagonal is the hypotenuse of a right triangle whose legs are its width and height, so diagonal² = width² + height². Knowing the ratio between width and height turns that one equation into two -- it fixes a single width and height, not just their relationship.",
+          "Pixel density -- pixels per inch, PPI -- is a separate figure: how tightly packed the screen's pixels are, found the same Pythagorean way but with pixels instead of inches. A phone screen with a modest diagonal but a huge resolution packs far more pixels into each inch than a TV with the same resolution stretched over a much bigger diagonal, which is why PPI, not resolution alone, is what determines how sharp text and images look up close."
+        ]
+      },
+      howTo: {
+        intro: 'Enter the diagonal size, pick the aspect ratio, and enter the resolution to get the actual width, height, area, and pixel density.',
+        steps: [
+          { name: 'Enter the diagonal size', text: 'The size printed on the box or spec sheet -- always the corner-to-corner diagonal, in inches.' },
+          { name: 'Pick the aspect ratio', text: 'Most TVs, laptops, and monitors today are 16:9. Pick the one that matches your screen, or the closest available option.' },
+          { name: 'Enter the resolution', text: 'The horizontal and vertical pixel counts from the spec sheet, e.g. 3840 × 2160 for 4K UHD.' },
+          { name: 'Read the results', text: 'Width, height, and screen area come from the diagonal and aspect ratio; pixel density (PPI) comes from the resolution and diagonal together.' }
+        ],
+        outro: 'Everything is calculated in your browser from the Pythagorean formulas below. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Width and height split a known diagonal using the aspect ratio; PPI applies the same Pythagorean idea to pixels instead of inches.',
+        expression:
+          'hyp = √(ratioW² + ratioH²)\nwidth = diagonal × ratioW ÷ hyp\nheight = diagonal × ratioH ÷ hyp\narea = width × height\nPPI = √(resW² + resH²) ÷ diagonal',
+        terms: [
+          { symbol: 'diagonal', meaning: "The screen's advertised corner-to-corner size, in inches." },
+          { symbol: 'ratioW : ratioH', meaning: 'The aspect ratio\'s two numbers, e.g. 16 and 9 for a 16:9 screen.' },
+          { symbol: 'resW, resH', meaning: 'The horizontal and vertical resolution, in pixels, from the spec sheet.' },
+          { symbol: 'PPI', meaning: "Pixels per inch -- the diagonal pixel count (found the same Pythagorean way, from the resolution) divided by the diagonal size in inches." }
+        ],
+        note: 'This gives the viewable screen\'s own dimensions. It does not include the bezel (frame) around the screen, so a monitor\'s total footprint is slightly larger on every side.'
+      },
+      workedExample: {
+        intro: 'A 55-inch TV with a 16:9 aspect ratio and a 3840×2160 (4K UHD) resolution.',
+        rows: [
+          { label: 'hyp = √(16² + 9²)', value: '√337 ≈ 18.3576' },
+          { label: 'width = 55 × 16 ÷ 18.3576', value: '≈ 47.94 in' },
+          { label: 'height = 55 × 9 ÷ 18.3576', value: '≈ 26.96 in' },
+          { label: 'area = 47.94 × 26.96', value: '≈ 1,293 in²' },
+          { label: 'diagonal pixels = √(3840² + 2160²)', value: '≈ 4,405.8 px' },
+          { label: 'PPI = 4,405.8 ÷ 55', value: '≈ 80.1' }
+        ],
+        result: '≈ 47.9 in × 27.0 in, 1,293 in² of screen, about 80.1 PPI',
+        explanation: 'The 16:9 ratio splits the 55-inch diagonal into a width and height whose ratio is exactly 16:9 and whose Pythagorean sum matches 55 inches. The resolution is fixed by the panel regardless of screen size, so dividing the (much larger) diagonal pixel count by the (much smaller) diagonal in inches gives a PPI far lower than, say, a phone\'s.'
+      },
+      watchOut: [
+        { title: 'The diagonal is the viewable screen only', body: 'It does not include the bezel around the panel, so the physical product -- and the wall space or desk space it needs -- is a little larger on every side than the width and height calculated here.' },
+        { title: 'The aspect ratio must match the real screen', body: 'Picking the wrong ratio (e.g. 16:9 for an older 4:3 monitor) gives a width and height that are both wrong, even though the diagonal you entered was correct -- the diagonal alone does not determine the ratio.' },
+        { title: 'PPI is not the same as DPI', body: 'PPI (pixels per inch) describes a display\'s pixel density. DPI (dots per inch) describes a printer\'s dot density. The two measure physically different things and are not interchangeable, even though both are sometimes used loosely in casual conversation.' },
+        { title: 'Advertised sizes are sometimes rounded', body: 'A screen advertised as "27-inch" is occasionally closer to 27.0 or 27.3 inches once actually measured, depending on the manufacturer\'s rounding convention -- small enough to rarely matter, but it means these results are only as accurate as the diagonal you enter.' }
+      ],
+      references: [
+        { label: 'Wikipedia, Pixel density (PPI formula: diagonal resolution via the Pythagorean theorem, divided by diagonal size)', url: 'https://en.wikipedia.org/wiki/Pixel_density' },
+        { label: 'Wikipedia, Aspect ratio (image) (common display and image aspect ratios)', url: 'https://en.wikipedia.org/wiki/Aspect_ratio_(image)' }
+      ]
+    },
+    inputs: [
+      { id: 'diagonalIn', label: 'Screen diagonal size (in)', type: 'number', placeholder: '55', defaultValue: 55, step: 0.1, min: 1 },
+      {
+        id: 'aspectRatio',
+        label: 'Aspect ratio',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: ASPECT_RATIOS.map((r) => ({ value: r.value, label: r.label }))
+      },
+      { id: 'resWidth', label: 'Horizontal resolution (px)', type: 'number', placeholder: '3840', defaultValue: 3840, step: 1, min: 1 },
+      { id: 'resHeight', label: 'Vertical resolution (px)', type: 'number', placeholder: '2160', defaultValue: 2160, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Screen Size Calculator – TV/Monitor Width, Height & PPI',
+      description: 'Convert a TV or monitor\'s diagonal size and aspect ratio into its actual width, height, and screen area, plus pixel density (PPI) for any resolution.',
+      faq: [
+        { question: 'How do I calculate screen width and height from the diagonal?', answer: 'Split the diagonal using the aspect ratio and the Pythagorean theorem: width = diagonal × ratioW ÷ √(ratioW² + ratioH²), and height the same way with ratioH. A 55-inch 16:9 screen works out to about 47.9 in wide by 27.0 in tall.' },
+        { question: 'What does PPI mean?', answer: 'Pixels per inch -- how densely packed a screen\'s pixels are. It is the diagonal pixel count (√(horizontal² + vertical²)) divided by the diagonal size in inches. A 55-inch 4K (3840×2160) TV works out to about 80.1 PPI.' },
+        { question: 'Why do a 24-inch and a 27-inch monitor at the same resolution look different?', answer: 'Spreading the same pixel count over a larger diagonal lowers the pixel density. A 24-inch 1920×1080 monitor is about 91.8 PPI, while a 27-inch monitor at the sharper 2560×1440 resolution is about 108.8 PPI -- denser despite the larger screen, because the resolution increased more than the size did.' },
+        { question: 'Is the diagonal size the same as the screen\'s actual width or height?', answer: 'No. The diagonal is the corner-to-corner measurement, always longer than either the width or the height on its own. A 55-inch 16:9 screen is about 47.9 inches wide and 27.0 inches tall -- neither one is 55 inches.' },
+        { question: 'Does the diagonal measurement include the bezel?', answer: 'No -- it is the viewable screen only, not the frame (bezel) around it. The physical product is slightly larger on every side than the width and height this calculator gives.' },
+        { question: 'What aspect ratio do most TVs and monitors use?', answer: '16:9 is standard for the large majority of TVs, laptops, and monitors sold today. Older TVs and monitors used 4:3, and some ultrawide monitors use 21:9.' },
+        { question: 'Is PPI the same as DPI?', answer: 'No. PPI (pixels per inch) describes a screen\'s pixel density; DPI (dots per inch) describes a printer\'s dot density. They measure different things, even though the terms are sometimes used loosely as if interchangeable.' }
+      ]
+    },
+    compute(values) {
+      const diagonalIn = values.diagonalIn;
+      const resWidth = values.resWidth;
+      const resHeight = values.resHeight;
+      const ratio = ASPECT_RATIOS.find((r) => r.value === Math.round(values.aspectRatio)) ?? ASPECT_RATIOS[0];
+      if (!Number.isFinite(diagonalIn) || diagonalIn <= 0 || !Number.isFinite(resWidth) || !Number.isFinite(resHeight)) {
+        return { widthIn: NaN, heightIn: NaN, areaSqIn: NaN, ppi: NaN };
+      }
+      const hyp = Math.sqrt(ratio.w * ratio.w + ratio.h * ratio.h);
+      const widthIn = (diagonalIn * ratio.w) / hyp;
+      const heightIn = (diagonalIn * ratio.h) / hyp;
+      const areaSqIn = widthIn * heightIn;
+      const diagPx = Math.sqrt(resWidth * resWidth + resHeight * resHeight);
+      const ppi = diagPx / diagonalIn;
+      return { widthIn, heightIn, areaSqIn, ppi };
+    }
+  },
 ];

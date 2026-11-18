@@ -33,8 +33,10 @@ export type CalculatorInput = {
   listMax?: number;
 };
 
-/** `date`: the value is epoch ms of a local calendar date, printed as a long date. */
-export type BreakdownFormat = 'currency' | 'percent' | 'integer' | 'number' | 'significant' | 'date';
+/** `date`: the value is epoch ms of a local calendar date, printed as a long date. `ipAddress`: the
+ * value is a 32-bit unsigned integer (0 to 2^32-1), printed as dotted-decimal (e.g. "192.168.1.0") —
+ * see ip-subnet-calculator in data/calculators/tech.ts. */
+export type BreakdownFormat = 'currency' | 'percent' | 'integer' | 'number' | 'significant' | 'date' | 'ipAddress';
 
 /** One figure in the type-B result card: a compute() key or a `derive` key. */
 export type BreakdownOutput = {

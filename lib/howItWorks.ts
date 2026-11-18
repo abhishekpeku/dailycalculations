@@ -17,7 +17,9 @@ const SPECIAL_WIDGETS = new Set([
   'pomodoro-timer',
   'timezone-meeting-planner',
   'scientific-calculator',
-  'love-calculator'
+  'love-calculator',
+  'iban-calculator',
+  'password-strength-checker'
 ]);
 
 export function buildFlow(calculator: Pick<CalculatorConfig, 'id' | 'solver' | 'inputs' | 'breakdown' | 'compute'>): Flow | null {

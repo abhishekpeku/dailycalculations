@@ -22,6 +22,7 @@ import { chemistryCalculators } from './chemistry.ts';
 import { biologyCalculators } from './biology.ts';
 import { ecologyCalculators } from './ecology.ts';
 import { funCalculators } from './fun.ts';
+import { techCalculators } from './tech.ts';
 
 export type * from './types.ts';
 
@@ -46,7 +47,8 @@ export const categories: CalculatorCategory[] = [
   { id: 'chemistry', title: 'Chemistry', description: 'Molar mass, molarity, dilution, and other solution-chemistry calculators.' },
   { id: 'biology', title: 'Biology', description: 'Cell dilution, genetics, and molecular-biology lab calculators.' },
   { id: 'ecology', title: 'Ecology', description: 'Carbon footprint, biodiversity, and sustainability calculators.' },
-  { id: 'fun', title: 'Fun & Other', description: 'Zodiac, numerology, probability novelties, and other just-for-fun calculators.' }
+  { id: 'fun', title: 'Fun & Other', description: 'Zodiac, numerology, probability novelties, and other just-for-fun calculators.' },
+  { id: 'tech', title: 'Tech', description: 'Subnetting, IBAN checksums, and password strength tools.' }
 ];
 
 // Display order for listings, the sitemap and search; the old single array's order, kept exactly.
@@ -520,7 +522,10 @@ export const calculatorOrder: string[] = [
   'mayan-calendar-converter',
   'friday-the-13th-calculator',
   'christmas-countdown-calculator',
-  'new-years-countdown-calculator'
+  'new-years-countdown-calculator',
+  'ip-subnet-calculator',
+  'iban-calculator',
+  'password-strength-checker'
 ];
 
 const rank = (id: string) => {
@@ -549,7 +554,8 @@ export const calculators: CalculatorConfig[] = [
   ...chemistryCalculators,
   ...biologyCalculators,
   ...ecologyCalculators,
-  ...funCalculators
+  ...funCalculators,
+  ...techCalculators
 ].sort((a, b) => rank(a.id) - rank(b.id));
 
 export function findCalculator(slug: string) {

@@ -13,7 +13,9 @@ const CUSTOM_TOOLS = [
   'pomodoro-timer',
   'timezone-meeting-planner',
   'scientific-calculator',
-  'love-calculator'
+  'love-calculator',
+  'iban-calculator',
+  'password-strength-checker'
 ];
 
 // Current behavior at the edge set (calculator id -> output keys that are not finite). Asserted exactly.

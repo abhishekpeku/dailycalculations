@@ -52,7 +52,10 @@ const ICONS = {
   // dilution, genetics, molecular-biology lab calculators).
   dna: 'M7 2c0 3 10 3 10 6s-10 3-10 6 10 3 10 6M7.5 5h9M7.5 11h9M7.5 17h9',
   // A leaf with a center vein: the ecology category (carbon/water/plastic footprint, biodiversity).
-  leaf: 'M12 21c-4-2-7-6-7-11a7 7 0 1 1 14 0c0 5-3 9-7 11zM12 21V10'
+  leaf: 'M12 21c-4-2-7-6-7-11a7 7 0 1 1 14 0c0 5-3 9-7 11zM12 21V10',
+  // A four-point sparkle with two small accent dots: the fun & other category (zodiac, love,
+  // numerology, probability novelties, calendar/weather curiosities).
+  sparkle: 'M12 3l1.8 6.2L20 11l-6.2 1.8L12 19l-1.8-6.2L4 11l6.2-1.8L12 3zM19 3v3M17.5 4.5h3'
 } as const;
 
 export type IconName = keyof typeof ICONS;

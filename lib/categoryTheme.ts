@@ -21,7 +21,10 @@ export const CATEGORY_THEME: Record<string, { color: TileColor; icon: IconName }
   sports: { color: 'green', icon: 'trophy' },
   chemistry: { color: 'teal', icon: 'flask' },
   biology: { color: 'lime', icon: 'dna' },
-  ecology: { color: 'emerald', icon: 'leaf' }
+  ecology: { color: 'emerald', icon: 'leaf' },
+  // Fun & Other (step 50): reuses pink (already health/creator) — playful, Valentine-adjacent hue
+  // fits astrology/love/numerology better than any unclaimed color would.
+  fun: { color: 'pink', icon: 'sparkle' }
 };
 
 export function categoryTheme(categoryId: string) {

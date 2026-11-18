@@ -16,7 +16,8 @@ const SPECIAL_WIDGETS = new Set([
   'syllable-counter-calculator',
   'pomodoro-timer',
   'timezone-meeting-planner',
-  'scientific-calculator'
+  'scientific-calculator',
+  'love-calculator'
 ]);
 
 export function buildFlow(calculator: Pick<CalculatorConfig, 'id' | 'solver' | 'inputs' | 'breakdown' | 'compute'>): Flow | null {

@@ -8,6 +8,7 @@ import TextToolsCalculator from '@/components/TextToolsCalculator';
 import PomodoroTimer from '@/components/PomodoroTimer';
 import TimeZonePlanner from '@/components/TimeZonePlanner';
 import ScientificCalculator from '@/components/ScientificCalculator';
+import FlamesCalculator from '@/components/FlamesCalculator';
 import FaqSection from '@/components/FaqSection';
 import Breadcrumb from '@/components/Breadcrumb';
 import FormulaSection from '@/components/FormulaSection';
@@ -100,7 +101,7 @@ export default async function CalculatorPage({
   // The hand-built (type C) widgets render as one box, not the inputs/result split — "How it
   // works"/contents go in a plain row below them (see the tocItems render below), not into the
   // belowInputs/belowResult slots SolverCalculator/BreakdownCalculator accept.
-  const isCustomWidget = ['currency-converter', 'character-counter', 'hashtag-counter', 'word-counter-calculator', 'syllable-counter-calculator', 'pomodoro-timer', 'timezone-meeting-planner', 'scientific-calculator'].includes(slug);
+  const isCustomWidget = ['currency-converter', 'character-counter', 'hashtag-counter', 'word-counter-calculator', 'syllable-counter-calculator', 'pomodoro-timer', 'timezone-meeting-planner', 'scientific-calculator', 'love-calculator'].includes(slug);
 
   const howItWorksCard = (
     <HowItWorksCard
@@ -131,6 +132,7 @@ export default async function CalculatorPage({
     slug === 'pomodoro-timer' ? <PomodoroTimer /> :
     slug === 'timezone-meeting-planner' ? <TimeZonePlanner /> :
     slug === 'scientific-calculator' ? <ScientificCalculator /> :
+    slug === 'love-calculator' ? <FlamesCalculator /> :
     <BreakdownCalculator calculatorId={calculator.id} belowInputs={tocItems ? howItWorksCard : undefined} belowResult={tocItems ? tableOfContents : undefined} />;
   const categoryTitle = categories.find((category) => category.id === calculator.category)?.title ?? '';
   const related = (

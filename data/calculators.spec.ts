@@ -12,7 +12,8 @@ const CUSTOM_TOOLS = [
   'syllable-counter-calculator',
   'pomodoro-timer',
   'timezone-meeting-planner',
-  'scientific-calculator'
+  'scientific-calculator',
+  'love-calculator'
 ];
 
 // Current behavior at the edge set (calculator id -> output keys that are not finite). Asserted exactly.
@@ -148,7 +149,10 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'protein-molecular-weight-calculator': ['molecularWeight', 'kiloDaltons'], // every amino acid count 0 (their min) -> 0 residues, undefined molecular weight
   'surface-area-to-volume-ratio-calculator': ['ratio'], // size 0 (its min) -> volume 0 -> divide by zero
   'dog-age-calculator': ['humanAge'], // dog age 0 (its min) -> ln(0), undefined (compute()'s own guard)
-  'water-fixture-calculator': ['savingsPct'] // all three daily-usage inputs 0 (their min) -> standardGalPerYear 0 -> 0/0
+  'water-fixture-calculator': ['savingsPct'], // all three daily-usage inputs 0 (their min) -> standardGalPerYear 0 -> 0/0
+  // birthYear's min (1924) is the lunar-new-year table's first entry date (Feb 5, 1924); edge's
+  // birthMonth/birthDay mins (1, 1) land on Jan 1, 1924, which is before that -> no table match.
+  'chinese-zodiac-calculator': ['animalCode', 'zodiacYearStartCode']
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

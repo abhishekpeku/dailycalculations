@@ -169,5 +169,103 @@ export const textCalculators: CalculatorConfig[] = [
       ]
     },
     compute() { return {}; }
+  },
+  {
+    id: 'keyword-density-calculator',
+    group: 'Writing & Productivity',
+    category: 'text',
+    glyph: 'kw%',
+    updatedAt: '2026-11-18',
+    aliases: ['keyword density tool', 'seo keyword density calculator', 'keyword frequency calculator', 'keyword percentage calculator', 'keyword repetition calculator'],
+    related: ['character-counter', 'hashtag-counter', 'blog-ad-revenue-calculator'],
+    title: 'Keyword Density Calculator',
+    description: 'Find what percentage of your text a keyword or phrase makes up, or work backward to see how many times to use it for a target density. Fill in any two of the three fields.',
+    example: 'Using "running shoes" 18 times in a 1,200-word article is a 1.5% keyword density (18 ÷ 1,200 × 100).',
+    solver: {
+      defaultTarget: 'density',
+      variables: [
+        { id: 'density', label: 'Keyword density', symbol: 'd', dimension: 'percent', defaultValue: 1.5, defaultUnit: '%' },
+        { id: 'occurrences', label: 'Keyword occurrences', symbol: 'k', dimension: 'count', defaultValue: 15, defaultUnit: 'count' },
+        { id: 'totalWords', label: 'Total word count', symbol: 'W', dimension: 'count', defaultValue: 1000, defaultUnit: 'count' }
+      ],
+      solve: {
+        density: ({ occurrences, totalWords }) => (totalWords > 0 ? (occurrences / totalWords) * 100 : NaN),
+        occurrences: ({ density, totalWords }) => (density / 100) * totalWords,
+        totalWords: ({ occurrences, density }) => (density > 0 ? occurrences / (density / 100) : NaN)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What is keyword density, and does it still matter for SEO?',
+        paragraphs: [
+          'Keyword density is simply how many times a word or phrase appears in a piece of text, divided by the total word count, shown as a percentage. It is one of the oldest on-page SEO metrics, from an era when search engines leaned heavily on how often a term appeared on a page to judge what the page was about.',
+          'Modern search engines read language far more contextually than a raw repetition count, so there is no single "correct" density to hit. Google\'s own Search Essentials spam policies describe keyword stuffing as filling a page with keywords "unnaturally, or out of context," and its own example of the problem is repetitive phrasing that "sounds unnatural" — not a percentage threshold being crossed. In other words, Google\'s own guidance is about how the text reads, not a number from a formula like this one.',
+          'That makes this calculator most useful as a sanity check rather than a target to chase: run an existing draft through it, and if the density is unexpectedly high, read the passage out loud — awkward, repetitive phrasing is usually obvious before the math confirms it. The reverse direction is useful while planning: given a word count, it shows how many natural mentions of a term would produce roughly the density you have seen work well in your own content before.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of the three fields below. The third, marked auto, is calculated as you type.',
+        steps: [
+          { name: 'Find a density', text: 'Enter how many times the keyword appears and the total word count. The density is calculated.' },
+          { name: 'Plan for a density', text: 'Enter a target density and the total word count to see how many mentions that works out to.' },
+          { name: 'Check the total words needed', text: 'Enter the occurrences and a target density to see how long the piece would need to be.' },
+          { name: 'Count your own text first', text: 'Use the character counter or word counter on this site to get an exact word count before typing it in here.' },
+          { name: 'Read the result in context', text: 'Treat the percentage as a sanity check on natural-sounding repetition, not a pass/fail SEO score.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Density is the keyword\'s share of the total word count, as a percentage. Each field has a direct rearrangement.',
+        expression: 'd = (k ÷ W) × 100\nk = (d ÷ 100) × W\nW = k ÷ (d ÷ 100)',
+        terms: [
+          { symbol: 'd', meaning: 'Keyword density, as a percentage of the total word count.' },
+          { symbol: 'k', meaning: 'Number of times the keyword or phrase appears in the text.' },
+          { symbol: 'W', meaning: 'Total word count of the text (count a multi-word phrase\'s occurrences the same way, not each word separately).' }
+        ],
+        note: 'This is arithmetic on the counts you provide. It does not read your text, judge relevance, or tell you whether Google will rank it — see the watch-outs below.'
+      },
+      workedExample: {
+        intro: 'A 1,200-word blog post uses the phrase "running shoes" 18 times. What is the keyword density, and how many times would it take to reach 2% on a 1,500-word rewrite?',
+        rows: [
+          { label: 'Density (18 ÷ 1,200 × 100)', value: '1.5%' },
+          { label: 'Rewrite target density', value: '2%' },
+          { label: 'Rewrite word count', value: '1,500 words' },
+          { label: 'Occurrences needed (2 ÷ 100 × 1,500)', value: '30' }
+        ],
+        result: '1.5% in the original · 30 mentions needed for 2% on the 1,500-word rewrite',
+        explanation: 'Going from 18 mentions in 1,200 words to a comparable 2% density in a longer, 1,500-word piece takes 30 mentions, not 22 or 23 — the word count grew by 25%, and the mention count has to grow faster than that because the target density itself went up too.'
+      },
+      watchOut: [
+        { title: 'There is no official "ideal" density', body: 'Google does not publish or endorse a target keyword density. Its spam policies describe the problem as unnatural-sounding repetition, not a specific percentage, so treat any "ideal range" you read elsewhere as an unofficial rule of thumb at best.' },
+        { title: 'A high density can trigger keyword stuffing', body: 'Google\'s Search Essentials spam policies list keyword stuffing — filling a page with keywords or phrases unnaturally or out of context — as behavior that can get a page ranked lower or removed from results entirely.' },
+        { title: 'Count the phrase, not its individual words', body: 'For a multi-word phrase like "running shoes," count each occurrence of the whole phrase once. Counting "running" and "shoes" separately would roughly double the apparent density.' },
+        { title: 'Synonyms and variations are not counted', body: 'This only counts exact repetitions of the term you measured. Search engines also read synonyms, plurals and related phrasing, which this simple ratio cannot capture.' },
+        { title: 'Get an exact word count first', body: 'This calculator does arithmetic on the numbers you type in; it does not scan your text. Use the character counter or word counter on this site first if you do not already know your exact word count.' }
+      ],
+      references: [
+        { label: 'Google Search Central, Spam policies for Google web search — Keyword stuffing', url: 'https://developers.google.com/search/docs/essentials/spam-policies' }
+      ]
+    },
+    inputs: [
+      { id: 'occurrences', label: 'Keyword occurrences', type: 'number', placeholder: '18', defaultValue: 18, step: 1, min: 0 },
+      { id: 'totalWords', label: 'Total word count', type: 'number', placeholder: '1200', defaultValue: 1200, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Keyword Density Calculator – Find Keyword % in Text',
+      description: 'Calculate keyword density (occurrences ÷ total words), or work out how many mentions you need for a target density. Free, instant, no sign-up.',
+      faq: [
+        { question: 'How do you calculate keyword density?', answer: 'Divide how many times the keyword appears by the total word count, then multiply by 100. A keyword used 18 times in a 1,200-word article has a density of (18 ÷ 1,200) × 100 = 1.5%.' },
+        { question: 'What is a good keyword density for SEO?', answer: 'Google does not define or endorse an ideal keyword density. Its own Search Essentials spam policies focus on whether repetition sounds natural, not on hitting a percentage, so there is no single correct number to target.' },
+        { question: 'What counts as keyword stuffing?', answer: 'Google\'s spam policies describe keyword stuffing as filling a page with keywords or phrases unnaturally or out of context, in a way that disrupts natural reading, rather than defining it as crossing a specific density threshold.' },
+        { question: 'How many times should I use my keyword in a 1,500-word article?', answer: 'There is no required number. As a reference point, matching the 1.5% density from the worked example above would take about 23 mentions (1.5 ÷ 100 × 1,500 = 22.5, rounded up) — but natural, readable phrasing matters more than hitting any specific count.' },
+        { question: 'Does this calculator read my actual text?', answer: 'No. It only does arithmetic on the occurrence count and word count you type in. Count your keyword occurrences and total words yourself, or with the character counter or word counter on this site, first.' },
+        { question: 'Should I count a keyword phrase\'s individual words separately?', answer: 'No — count each appearance of the full phrase once. Counting a two-word phrase as two separate keyword hits roughly doubles the density you calculate, which overstates how often the actual phrase appears.' }
+      ]
+    },
+    compute(values) {
+      const density = values.totalWords > 0 ? (values.occurrences / values.totalWords) * 100 : NaN;
+      return { keywordDensity: density };
+    }
   }
 ];

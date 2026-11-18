@@ -7967,6 +7967,38 @@ exports[`compute() snapshots > job-offer-comparison-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > keyword-density-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "occurrences": 18,
+      "totalWords": 1200
+    },
+    "outputs": {
+      "keywordDensity": 1.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "occurrences": 27,
+      "totalWords": 1800
+    },
+    "outputs": {
+      "keywordDensity": 1.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "occurrences": 0,
+      "totalWords": 1
+    },
+    "outputs": {
+      "keywordDensity": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > kids-shoe-size-chart 1`] = `
 {
   "default": {

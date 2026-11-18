@@ -134,6 +134,7 @@ export const calculatorOrder: string[] = [
   'currency-converter',
   'character-counter',
   'hashtag-counter',
+  'keyword-density-calculator',
   'pomodoro-timer',
   'timezone-meeting-planner',
   'force-calculator',

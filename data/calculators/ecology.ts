@@ -254,10 +254,94 @@ function oshaTwaFromDose(dosePct: number) {
 // those published figures) -- OpenStax states the producer-to-primary-consumer TLTE itself as
 // "approximately 14.48 percent."
 
+// --- Step 49 batch 5 (fish mercury, overshoot day, water fixtures, species extinction, food
+// waste composting) constants ---
+
+// fish-mercury-calculator: U.S. FDA, "Mercury Levels in Commercial Fish and Shellfish
+// (1990-2012)" (fda.gov/food/environmental-contaminants-food/mercury-levels-commercial-fish-and-
+// shellfish-1990-2012), fetched directly. Mean total-mercury concentration, in ppm (= mg/kg =
+// ug/g wet weight).
+const FISH_MERCURY_PPM = [
+  { label: 'Scallop', ppm: 0.003 },
+  { label: 'Shrimp', ppm: 0.009 },
+  { label: 'Clam', ppm: 0.009 },
+  { label: 'Tilapia', ppm: 0.013 },
+  { label: 'Salmon, canned', ppm: 0.014 },
+  { label: 'Salmon, fresh or frozen', ppm: 0.022 },
+  { label: 'Cod', ppm: 0.111 },
+  { label: 'Tuna, canned light', ppm: 0.126 },
+  { label: 'Tuna, canned albacore/white', ppm: 0.35 },
+  { label: 'Tuna, fresh or frozen, yellowfin', ppm: 0.354 },
+  { label: 'Swordfish', ppm: 0.995 }
+];
+const FISH_MERCURY_DEFAULT_CODE = 7; // canned light tuna, this calculator's own worked example
+
+// EPA IRIS, "Methylmercury (MeHg)" (CASRN 22967-92-6, iris.epa.gov), fetched directly: oral
+// reference dose (RfD) of 1 x 10^-4 mg/kg-day, i.e. 0.1 ug/kg body weight per day, for chronic
+// exposure (critical effect: developmental neuropsychological impairment).
+const METHYLMERCURY_RFD_UG_PER_KG_DAY = 0.1;
+
+// FDA/EPA, "Advice about Eating Fish" (fda.gov/food/consumers/advice-about-eating-fish), fetched
+// directly: "1 serving is 4 ounces" for an adult. 4 oz x 28.349523125 g/oz (NIST SP 811 Appendix
+// B exact ounce, same constant as lib/units.ts's own mass dimension).
+const FISH_SERVING_DEFAULT_G = 4 * 28.349523125;
+
+// earth-overshoot-day-calculator: Global Footprint Network, "Earth Overshoot Day"
+// (footprintnetwork.org/our-work/earth-overshoot-day/), fetched directly: "based on the National
+// Footprint and Biocapacity Accounts," 2025 falls on July 24. World Ecological Footprint
+// (~2.51 global hectares/person) and World biocapacity (~1.48 gha/person) are the National
+// Footprint and Biocapacity Accounts' 2025-edition World figures (produced by York University,
+// Footprint Data Foundation and GFN), cross-checked against Wikipedia's "List of countries by
+// ecological footprint" table, which names that same 2025-edition source. Overshoot Day's own
+// public formula -- Overshoot Day = (World biocapacity / World footprint) x 365 -- is
+// independently well documented and reproduces GFN's own "more than 1.7 Earths" figure almost
+// exactly (2.51 / 1.48 = ~1.696).
+const WORLD_FOOTPRINT_GHA_2025 = 2.51;
+const WORLD_BIOCAPACITY_GHA_2025 = 1.48;
+
+// water-fixture-calculator: U.S. EPA WaterSense, each pair fetched directly from its own page.
+// Showerheads (epa.gov/watersense/showerheads): "standard showerheads use 2.5 gallons of water
+// per minute"; WaterSense-labeled models "use no more than 2.0 gpm." The same page: "for the
+// average family, that adds up to nearly 40 gallons per day" of shower use at the standard rate
+// -- used only to size this calculator's own default total household shower-minutes input
+// (40 / 2.5 = 16 minutes/day).
+const SHOWER_GPM_STANDARD = 2.5;
+const SHOWER_GPM_WATERSENSE = 2.0;
+const WATER_FIXTURE_SHOWER_MIN_DEFAULT = 40 / SHOWER_GPM_STANDARD;
+// Toilets (epa.gov/watersense/residential-toilets): federal standard (Energy Policy Act) maximum
+// 1.6 gallons per flush; WaterSense specification maximum 1.28 gpf.
+const TOILET_GPF_STANDARD = 1.6;
+const TOILET_GPF_WATERSENSE = 1.28;
+// Bathroom faucets (epa.gov/watersense/bathroom-faucets): "2.2 gallons per minute" standard
+// baseline; WaterSense specification maximum 1.5 gpm.
+const FAUCET_GPM_STANDARD = 2.2;
+const FAUCET_GPM_WATERSENSE = 1.5;
+
+// species-extinction-rate-calculator: Ceballos, G. et al. (2015), "Accelerated modern
+// human-induced species losses: Entering the sixth mass extinction," Science Advances 1(5),
+// e1400253 (fetched directly, PMC4640606). E/MSY ("extinctions per million species-years") is
+// defined by the paper as (extinctions / (species x years)) x 1,000,000. The paper's own
+// conservative background/natural rate, rounded up from an estimate of 1.8 E/MSY for mammals
+// (citing Barnosky et al. 2011, Nature 471), is "2 extinctions per 100 years per 10,000 species"
+// -- i.e. 2 E/MSY.
+const BACKGROUND_EXTINCTION_RATE_E_MSY = 2;
+
+// food-waste-composting-calculator: U.S. EPA, "2019 Wasted Food Report"
+// (epa.gov/land-research/2019-wasted-food-report), fetched directly. 2019 figures for the
+// combined food retail, food service, and residential sectors (66 million tons of wasted food
+// generated that year): 39,621,902 tons (59.84%) landfilled, 3,304,764 tons (4.99%) composted.
+// The remainder went to other management pathways (animal feed, land application, sewer/
+// wastewater treatment, etc.) -- EPA's page does not publish a sector-by-sector tonnage split
+// alongside these rates, so this calculator applies the blended national rate rather than
+// guessing a per-sector breakdown.
+const FOOD_WASTE_LANDFILLED_PCT_2019 = 59.84;
+const FOOD_WASTE_COMPOSTED_PCT_2019 = 4.99;
+
 export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'carbon-footprint-calculator',
     category: 'ecology',
+    group: 'Carbon & Footprint Tracking',
     glyph: 'CO2',
     updatedAt: '2026-11-17',
     aliases: [
@@ -425,6 +509,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'flight-carbon-footprint-calculator',
     category: 'ecology',
+    group: 'Carbon & Footprint Tracking',
     glyph: 'km',
     updatedAt: '2026-11-17',
     aliases: [
@@ -603,6 +688,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'water-footprint-calculator',
     category: 'ecology',
+    group: 'Carbon & Footprint Tracking',
     glyph: 'H2O',
     updatedAt: '2026-11-17',
     aliases: [
@@ -776,6 +862,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'plastic-footprint-calculator',
     category: 'ecology',
+    group: 'Carbon & Footprint Tracking',
     glyph: 'kg',
     updatedAt: '2026-11-17',
     aliases: [
@@ -924,6 +1011,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'meat-footprint-calculator',
     category: 'ecology',
+    group: 'Carbon & Footprint Tracking',
     glyph: 'diet',
     updatedAt: '2026-11-17',
     aliases: ['meat footprint calculator', 'diet carbon footprint calculator', 'food carbon footprint calculator', 'vegan footprint calculator', 'vegetarian footprint calculator'],
@@ -1092,6 +1180,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'car-vs-bike-calculator',
     category: 'ecology',
+    group: 'Sustainable Living',
     glyph: 'vs',
     updatedAt: '2026-11-17',
     aliases: [
@@ -1242,6 +1331,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'tree-benefits-calculator',
     category: 'ecology',
+    group: 'Sustainable Living',
     glyph: 'tree',
     updatedAt: '2026-11-17',
     aliases: [
@@ -1382,6 +1472,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'books-vs-ebooks-calculator',
     category: 'ecology',
+    group: 'Sustainable Living',
     glyph: 'book',
     updatedAt: '2026-11-17',
     aliases: [
@@ -1526,6 +1617,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'drip-faucet-waste-calculator',
     category: 'ecology',
+    group: 'Sustainable Living',
     glyph: 'gal',
     updatedAt: '2026-11-17',
     aliases: [
@@ -1668,6 +1760,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'recycling-rate-calculator',
     category: 'ecology',
+    group: 'Sustainable Living',
     glyph: '%',
     updatedAt: '2026-11-17',
     aliases: [
@@ -1809,6 +1902,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'carrying-capacity-calculator',
     category: 'ecology',
+    group: 'Population & Biodiversity',
     glyph: 'K',
     updatedAt: '2026-11-17',
     aliases: [
@@ -1978,6 +2072,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'shannon-diversity-index-calculator',
     category: 'ecology',
+    group: 'Population & Biodiversity',
     glyph: "H'",
     updatedAt: '2026-11-17',
     aliases: [
@@ -2151,6 +2246,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'population-density-calculator',
     category: 'ecology',
+    group: 'Population & Biodiversity',
     glyph: '/km²',
     updatedAt: '2026-11-17',
     aliases: [
@@ -2282,6 +2378,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'simpson-diversity-index-calculator',
     category: 'ecology',
+    group: 'Population & Biodiversity',
     glyph: 'D',
     updatedAt: '2026-11-17',
     aliases: [
@@ -2443,6 +2540,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'lotka-volterra-calculator',
     category: 'ecology',
+    group: 'Population & Biodiversity',
     glyph: 'x·y',
     updatedAt: '2026-11-17',
     aliases: [
@@ -2594,6 +2692,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'air-quality-index-calculator',
     category: 'ecology',
+    group: 'Environmental Health',
     glyph: 'AQI',
     updatedAt: '2026-11-17',
     aliases: [
@@ -2787,6 +2886,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'co2-breathing-emission-calculator',
     category: 'ecology',
+    group: 'Environmental Health',
     glyph: 'VCO2',
     updatedAt: '2026-11-17',
     aliases: [
@@ -2963,6 +3063,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'mark-recapture-population-estimate-calculator',
     category: 'ecology',
+    group: 'Population & Biodiversity',
     glyph: 'N',
     updatedAt: '2026-11-17',
     aliases: [
@@ -3129,6 +3230,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'noise-exposure-calculator',
     category: 'ecology',
+    group: 'Environmental Health',
     glyph: 'dB',
     updatedAt: '2026-11-17',
     aliases: [
@@ -3279,6 +3381,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'trophic-level-energy-calculator',
     category: 'ecology',
+    group: 'Population & Biodiversity',
     glyph: 'η',
     updatedAt: '2026-11-17',
     aliases: [
@@ -3412,6 +3515,749 @@ export const ecologyCalculators: CalculatorConfig[] = [
     },
     compute(values) {
       return { energyNext: values.energyThis * (values.efficiencyPercent / 100) };
+    }
+  },
+  {
+    id: 'fish-mercury-calculator',
+    category: 'ecology',
+    group: 'Environmental Health',
+    glyph: 'Hg',
+    updatedAt: '2026-11-18',
+    aliases: [
+      'fish mercury calculator',
+      'mercury in fish calculator',
+      'seafood mercury calculator',
+      'tuna mercury calculator',
+      'how much mercury is in fish calculator',
+      'mercury reference dose calculator'
+    ],
+    related: ['meat-footprint-calculator', 'water-footprint-calculator', 'air-quality-index-calculator', 'co2-breathing-emission-calculator'],
+    title: 'Fish Mercury Calculator',
+    description:
+      'Estimate your weekly methylmercury intake from a chosen fish and compare it to the EPA’s reference dose, using the FDA’s published mercury-in-fish table.',
+    example:
+      'Eating 2 servings (4 oz each) of canned light tuna a week works out to about 58.32% of the EPA’s safe weekly methylmercury intake for a 70 kg adult; swordfish at the same amount is about 460.54%.',
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'How is fish mercury exposure actually measured?',
+        paragraphs: [
+          'Mercury occurs naturally and from pollution, and it accumulates up the food chain as methylmercury — the longer-lived, higher-on-the-food-chain a fish is, the more it tends to carry. The FDA has tested thousands of samples across dozens of commercial species since 1990 and publishes the mean concentration for each one in parts per million (ppm), where 1 ppm is equal to 1 milligram of mercury per kilogram of fish (1 microgram per gram).',
+          'The EPA sets an oral reference dose (RfD) for methylmercury of 0.1 micrograms per kilogram of body weight per day — an estimated daily intake, scaled to a person’s own weight, that its risk assessment concludes is unlikely to cause appreciable harm even over a lifetime of exposure. It was set to protect the most sensitive known effect, developmental neuropsychological impairment, with a built-in uncertainty margin.',
+          'This calculator multiplies a chosen fish’s published mean ppm by how much of it you eat each week, then compares that weekly intake to the weekly amount the RfD allows for a given body weight — a way to see how one dietary habit stacks up against the EPA’s own guidance, not a verdict on any single meal.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick a fish, set your weekly servings and serving size, and enter a body weight; the comparison to the EPA’s reference dose fills in instantly.',
+        steps: [
+          { name: 'Choose a fish', text: 'Pick from the FDA’s own published mean mercury levels, from scallops and shrimp (lowest) to swordfish (highest).' },
+          { name: 'Set servings per week', text: 'How many servings of that fish you eat in a typical week.' },
+          { name: 'Set the serving size', text: 'Defaults to the FDA/EPA’s own 4-ounce adult serving (about 113.4 g).' },
+          { name: 'Enter a body weight', text: 'The EPA’s reference dose scales with body weight — a smaller body weight lowers the weekly amount it allows.' },
+          { name: 'Read the result', text: 'The headline is this habit’s weekly methylmercury intake as a percentage of the EPA’s own weekly reference dose for that body weight.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Weekly intake comes from the fish’s own mean mercury level; the weekly allowance comes from the EPA’s reference dose and a body weight.',
+        expression:
+          'weeklyIntake (µg) = servings/week × serving size (g) × mercury level (ppm)\nweeklyAllowed (µg) = 0.1 µg/kg-day × body weight (kg) × 7\n% of RfD = weeklyIntake ÷ weeklyAllowed × 100',
+        terms: [
+          { symbol: 'ppm', meaning: 'The FDA’s published mean total-mercury concentration for that fish (mg/kg, numerically equal to µg/g).' },
+          { symbol: '0.1 µg/kg-day', meaning: 'The EPA’s oral reference dose (RfD) for methylmercury.' }
+        ],
+        note: 'A screening-level estimate from each fish type’s published average, not a measurement of the specific fish you ate — real concentrations vary by catch, size, and origin. The EPA reference dose is a long-term, lifetime-average guideline, not a single-meal cutoff.'
+      },
+      workedExample: {
+        intro: 'Canned light tuna, 2 servings (4 oz / 113.4 g each) a week, for a 70 kg adult.',
+        rows: [
+          { label: 'Mercury level (FDA mean, canned light tuna)', value: '0.126 ppm' },
+          { label: 'Weekly intake (2 × 113.4 g × 0.126 ppm)', value: '28.58 µg/week' },
+          { label: 'Weekly allowed (0.1 µg/kg-day × 70 kg × 7)', value: '49.00 µg/week' },
+          { label: 'Share of the EPA reference dose (28.58 ÷ 49.00)', value: '≈58.32%' }
+        ],
+        result: 'About 58.32% of the EPA’s safe weekly methylmercury intake',
+        explanation:
+          'Swapping to swordfish instead (0.995 ppm, same 2 servings/week) pushes weekly intake to about 225.67 µg — roughly 460.54% of the same person’s weekly reference dose, about 7.9 times canned light tuna’s share.'
+      },
+      watchOut: [
+        {
+          title: 'This uses each fish’s published average, not your specific catch',
+          body: 'Mean mercury levels vary by region, the individual fish’s size and age, and testing year. The FDA’s own table reflects sampling from 1990 to 2012.'
+        },
+        {
+          title: 'The reference dose is a lifetime-average guideline',
+          body: 'An occasional higher-mercury meal does not, on its own, breach a lifetime RfD. This calculator models a steady weekly habit’s share of that long-term guidance, not a single-meal limit.'
+        },
+        {
+          title: 'Body weight changes the allowance a lot',
+          body: 'A smaller body weight sharply lowers the weekly amount the RfD allows. The FDA and EPA publish separate, more conservative advice specifically for people who are or may become pregnant, breastfeeding, and young children — this general calculator does not replace it.'
+        },
+        {
+          title: 'Mercury levels differ by preparation and cut, too',
+          body: 'The FDA’s table reports species-level averages (e.g. "canned light" versus "canned albacore" tuna); it does not distinguish by cut, preparation, or individual fish beyond that.'
+        }
+      ],
+      references: [
+        { label: 'U.S. FDA, "Mercury Levels in Commercial Fish and Shellfish (1990-2012)"', url: 'https://www.fda.gov/food/environmental-contaminants-food/mercury-levels-commercial-fish-and-shellfish-1990-2012' },
+        { label: 'U.S. EPA IRIS, "Methylmercury (MeHg)"', url: 'https://iris.epa.gov/ChemicalLanding/&substance_nmbr=73' },
+        { label: 'U.S. FDA/EPA, "Advice about Eating Fish"', url: 'https://www.fda.gov/food/consumers/advice-about-eating-fish' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'species',
+        label: 'Fish or shellfish',
+        type: 'number',
+        placeholder: String(FISH_MERCURY_DEFAULT_CODE),
+        defaultValue: FISH_MERCURY_DEFAULT_CODE,
+        step: 1,
+        min: 0,
+        options: FISH_MERCURY_PPM.map((f, i) => ({ value: i, label: `${f.label} (${f.ppm} ppm)` }))
+      },
+      { id: 'servingsPerWeek', label: 'Servings per week', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0 },
+      { id: 'servingSizeG', label: 'Serving size', type: 'number', placeholder: '113.4', defaultValue: FISH_SERVING_DEFAULT_G, step: 1, min: 0, dimension: 'mass', unit: 'g' },
+      { id: 'bodyWeightKg', label: 'Body weight', type: 'number', placeholder: '70', defaultValue: 70, step: 1, min: 1, dimension: 'mass', unit: 'kg' }
+    ],
+    breakdown: {
+      headline: 'percentOfRfd',
+      headlineLabel: 'Share of the EPA’s weekly reference dose',
+      outputs: [
+        { id: 'percentOfRfd', label: 'Share of weekly reference dose', format: 'percent' },
+        { id: 'weeklyIntakeUg', label: 'Methylmercury intake (per week)', dimension: 'mass', unit: 'ug' },
+        { id: 'weeklyAllowedUg', label: 'EPA weekly reference dose (this body weight)', dimension: 'mass', unit: 'ug' }
+      ],
+      groups: [{ title: 'Fish and habit', inputs: ['species', 'servingsPerWeek', 'servingSizeG', 'bodyWeightKg'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'weeklyIntakeUg', label: 'Your weekly intake' },
+          { from: 'weeklyAllowedUg', label: 'EPA weekly reference dose' }
+        ],
+        title: 'Weekly methylmercury, µg',
+        highlight: 0
+      }
+    },
+    seo: {
+      title: 'Fish Mercury Calculator – % of EPA Safe Intake',
+      description: 'Free fish mercury calculator. Estimate weekly methylmercury intake from a chosen fish and compare it to the EPA’s reference dose, using the FDA’s mercury table.',
+      faq: [
+        {
+          question: 'What does "ppm" mean for mercury in fish?',
+          answer: 'Parts per million by mass: 1 ppm equals 1 milligram of mercury per kilogram of fish (1 microgram per gram). The FDA publishes each species’ mean ppm from its own sampling program.'
+        },
+        {
+          question: 'What is the EPA’s reference dose for methylmercury?',
+          answer: 'The EPA IRIS program sets it at 0.1 micrograms per kilogram of body weight per day (1 × 10⁻⁴ mg/kg-day), an estimated daily intake unlikely to cause appreciable harm over a lifetime of exposure.'
+        },
+        {
+          question: 'Is canned light tuna safe to eat?',
+          answer: 'At 2 servings (4 oz each) a week for a 70 kg adult, canned light tuna’s mercury works out to about 58.32% of the EPA’s weekly reference dose — below the full guideline, but not negligible. Lower-mercury choices like salmon or shrimp leave much more room.'
+        },
+        {
+          question: 'Why is swordfish so much higher in mercury than tuna?',
+          answer: 'The FDA’s mean for swordfish (0.995 ppm) is about 7.9 times canned light tuna’s (0.126 ppm). Swordfish are long-lived, high-trophic-level predators, consistent with mercury biomagnifying up the food chain.'
+        },
+        {
+          question: 'Does this apply to pregnant or breastfeeding women specifically?',
+          answer: 'No — this is a general adult screening tool. The FDA and EPA publish joint advice with its own, more conservative serving guidance for people who are or may become pregnant, are breastfeeding, or are feeding young children.'
+        },
+        {
+          question: 'Does one high-mercury meal push me over the limit?',
+          answer: 'Not by itself. The EPA’s reference dose is a long-term, lifetime-average guideline, not a single-meal cutoff — this calculator models a steady weekly habit, not one occasional higher-mercury meal.'
+        }
+      ]
+    },
+    compute(values) {
+      const code = normalizeOptionCode(values.species, FISH_MERCURY_PPM.length);
+      const ppm = FISH_MERCURY_PPM[code].ppm;
+      const weeklyIntakeUg = values.servingsPerWeek * values.servingSizeG * ppm;
+      const weeklyAllowedUg = METHYLMERCURY_RFD_UG_PER_KG_DAY * values.bodyWeightKg * 7;
+      const percentOfRfd = (weeklyIntakeUg / weeklyAllowedUg) * 100;
+      return { percentOfRfd, weeklyIntakeUg, weeklyAllowedUg };
+    }
+  },
+  {
+    id: 'earth-overshoot-day-calculator',
+    category: 'ecology',
+    group: 'Carbon & Footprint Tracking',
+    glyph: 'gha',
+    updatedAt: '2026-11-18',
+    aliases: [
+      'earth overshoot day calculator',
+      'how many earths do we need calculator',
+      'ecological footprint vs biocapacity calculator',
+      'overshoot day calculator',
+      'number of earths calculator',
+      'earths needed calculator'
+    ],
+    related: ['carbon-footprint-calculator', 'water-footprint-calculator', 'meat-footprint-calculator', 'plastic-footprint-calculator'],
+    title: 'Earth Overshoot Day Calculator',
+    description:
+      'See how many "Earths" a given ecological footprint implies against the world’s biocapacity, using the Global Footprint Network’s own Earth Overshoot Day formula.',
+    example:
+      'At the World’s own 2025-edition figures (2.51 vs. 1.48 global hectares/person), humanity’s footprint implies needing about 1.70 Earths — in the same neighborhood as Global Footprint Network’s own "more than 1.7 Earths" figure for 2025.',
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What is Earth Overshoot Day?',
+        paragraphs: [
+          'Global Footprint Network (GFN) tracks two numbers for the world, every country, and every year: the "ecological footprint" (how much biologically productive land and sea humanity’s consumption demands) and "biocapacity" (how much the planet can actually regenerate in a year). Both are measured in global hectares (gha) — a hectare of world-average biological productivity, not a literal hectare of land. Earth Overshoot Day, per GFN’s own description, "is based on the National Footprint and Biocapacity Accounts": the calendar date each year by which humanity’s footprint for the full year would have exceeded what Earth regenerates in that same year.',
+          'GFN’s 2025 National Footprint and Biocapacity Accounts give a World footprint of about 2.51 gha per person and a World biocapacity of about 1.48 gha per person — a footprint roughly 1.70 times the available biocapacity. GFN’s own 2025 Earth Overshoot Day fell on July 24.',
+          'This calculator applies the same public formula GFN uses — Overshoot Day (day of the year) = (biocapacity ÷ footprint) × 365 — to any footprint/biocapacity pair: the World defaults shown here, a specific country’s own published figures, or a personal footprint estimated elsewhere (this site’s own Carbon Footprint Calculator, for example) compared against the World’s biocapacity per person.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter a footprint and a biocapacity, both in global hectares per person per year; the "Earths needed" and simplified overshoot day fill in instantly.',
+        steps: [
+          { name: 'Enter an ecological footprint', text: 'Defaults to the World’s own 2025-edition average, 2.51 gha/person. Swap in a country’s or your own estimated figure to compare.' },
+          { name: 'Enter a biocapacity', text: 'Defaults to the World’s own 2025-edition average, 1.48 gha/person.' },
+          { name: 'Read "Earths needed"', text: 'How many planets’ worth of biocapacity that footprint would require if everyone on Earth shared it.' },
+          { name: 'Read the simplified overshoot day', text: 'The day of the year this pair’s own budget would run out, by GFN’s basic public formula.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Earths needed is a straight ratio; the overshoot day comes from spreading a year’s biocapacity across the footprint’s own faster rate of use.',
+        expression: 'Earths needed = footprint ÷ biocapacity\novershoot day (day of year) = (biocapacity ÷ footprint) × 365',
+        terms: [
+          { symbol: 'footprint', meaning: 'Global Footprint Network’s measure of demand on nature, in global hectares per person per year.' },
+          { symbol: 'biocapacity', meaning: 'GFN’s measure of how much biologically productive area is available to regenerate what’s used, in the same global-hectare units.' }
+        ],
+        note: 'A simplified reconstruction of GFN’s own public formula, using the latest full-year World figures from its National Footprint and Biocapacity Accounts. GFN’s own officially announced date each year can differ by some days, since its full calculation also folds in shorter-term UN data updates and projections beyond this basic yearly ratio.'
+      },
+      workedExample: {
+        intro: 'The World’s own 2025-edition figures.',
+        rows: [
+          { label: 'World footprint (2025 edition)', value: '2.51 gha/person' },
+          { label: 'World biocapacity (2025 edition)', value: '1.48 gha/person' },
+          { label: 'Earths needed (2.51 ÷ 1.48)', value: '≈1.70' },
+          { label: 'Simplified overshoot day ((1.48 ÷ 2.51) × 365)', value: '≈day 215 (early August)' }
+        ],
+        result: 'Humanity’s footprint implies needing about 1.70 Earths',
+        explanation:
+          'GFN’s own officially announced Earth Overshoot Day for 2025 was July 24 — day 205 of the year, about 10 days earlier than this simplified ratio’s day 215. That gap (and the slightly higher ≈1.78 Earths the July 24 date alone implies, 365 ÷ 205) reflects refinements in GFN’s full methodology beyond the basic formula shown here.'
+      },
+      watchOut: [
+        {
+          title: 'This is a simplified reconstruction, not GFN’s full published date',
+          body: 'GFN’s own annual Earth Overshoot Day calculation folds in additional short-term UN data updates and projections beyond the basic (biocapacity ÷ footprint) × 365 formula shown here, so this tool’s day-of-year figure can land a week or more away from GFN’s own officially announced date.'
+        },
+        {
+          title: 'A global hectare isn’t a literal hectare of land',
+          body: 'It’s a biocapacity-weighted area unit — a hectare of world-average biological productivity — so these figures can’t be compared directly to a country’s physical land area.'
+        },
+        {
+          title: 'The World average hides huge country-to-country variation',
+          body: 'Some countries’ per-person footprints run several multiples of others’. Plug in a specific country’s own published footprint for a country-level estimate instead of the World default.'
+        },
+        {
+          title: 'Biocapacity itself changes year to year',
+          body: 'Land degradation, agricultural yield changes, and population growth all shift the biocapacity side of the ratio, not just how much is consumed.'
+        }
+      ],
+      references: [{ label: 'Global Footprint Network, "Earth Overshoot Day"', url: 'https://www.footprintnetwork.org/our-work/earth-overshoot-day/' }]
+    },
+    inputs: [
+      { id: 'footprintGha', label: 'Ecological footprint', type: 'number', placeholder: '2.51', defaultValue: WORLD_FOOTPRINT_GHA_2025, step: 0.01, min: 0.01 },
+      { id: 'biocapacityGha', label: 'Biocapacity', type: 'number', placeholder: '1.48', defaultValue: WORLD_BIOCAPACITY_GHA_2025, step: 0.01, min: 0.01 }
+    ],
+    breakdown: {
+      headline: 'earthsNeeded',
+      headlineLabel: 'Earths needed',
+      outputs: [
+        { id: 'earthsNeeded', label: 'Earths needed', format: 'significant' },
+        { id: 'percentOverBudget', label: 'Over budget by', format: 'percent' },
+        { id: 'dayOfYear', label: 'Simplified overshoot day (day of year)', format: 'number' }
+      ],
+      groups: [{ title: 'Footprint vs. biocapacity (global hectares/person/year)', inputs: ['footprintGha', 'biocapacityGha'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'footprintGha', label: 'Footprint' },
+          { from: 'biocapacityGha', label: 'Biocapacity' }
+        ],
+        title: 'Global hectares per person, per year',
+        highlight: 0
+      }
+    },
+    seo: {
+      title: 'Earth Overshoot Day Calculator – Earths Needed',
+      description: 'Free Earth Overshoot Day calculator. See how many Earths a footprint implies against world biocapacity, using Global Footprint Network’s own formula.',
+      faq: [
+        {
+          question: 'What is Earth Overshoot Day?',
+          answer: 'The date each year, per Global Footprint Network, by which humanity’s ecological footprint for the full year would have exceeded what Earth can regenerate in that same year. GFN’s 2025 Earth Overshoot Day fell on July 24.'
+        },
+        {
+          question: 'What is a "global hectare"?',
+          answer: 'Global Footprint Network’s unit for both footprint and biocapacity: one hectare of world-average biological productivity, not a literal hectare of land.'
+        },
+        {
+          question: 'How many Earths does humanity currently use?',
+          answer: 'Using the World’s own 2025-edition figures (2.51 vs. 1.48 gha/person), about 1.70. GFN’s own officially announced July 24, 2025 date alone implies a slightly higher ≈1.78 Earths (365 ÷ 205) once its fuller methodology is applied.'
+        },
+        {
+          question: 'Why doesn’t the 2.51 ÷ 1.48 math exactly land on July 24?',
+          answer: 'This calculator reconstructs GFN’s basic public formula from its latest full-year figures; GFN’s own annual announcement also incorporates shorter-term UN data updates and projections, which can shift the exact date by roughly a week or more.'
+        },
+        {
+          question: 'What’s the difference between footprint and biocapacity?',
+          answer: 'Footprint is how much biologically productive area humanity’s consumption demands; biocapacity is how much the planet can actually regenerate in a year. When footprint exceeds biocapacity, that’s ecological overshoot.'
+        },
+        {
+          question: 'Can I compute a specific country’s or my own overshoot day?',
+          answer: 'Yes — enter that country’s own published footprint (or a personal estimate, such as from this site’s Carbon Footprint Calculator) in place of the World default, against the World’s biocapacity per person.'
+        }
+      ]
+    },
+    compute(values) {
+      const earthsNeeded = values.footprintGha / values.biocapacityGha;
+      const percentOverBudget = (earthsNeeded - 1) * 100;
+      const dayOfYear = (values.biocapacityGha / values.footprintGha) * 365;
+      return { earthsNeeded, percentOverBudget, dayOfYear };
+    }
+  },
+  {
+    id: 'water-fixture-calculator',
+    category: 'ecology',
+    group: 'Sustainable Living',
+    glyph: 'gpm',
+    updatedAt: '2026-11-18',
+    aliases: [
+      'watersense savings calculator',
+      'water fixture savings calculator',
+      'low flow fixture calculator',
+      'showerhead toilet faucet water savings calculator',
+      'water efficient fixture calculator',
+      'watersense calculator'
+    ],
+    related: ['drip-faucet-waste-calculator', 'water-footprint-calculator', 'recycling-rate-calculator', 'carbon-footprint-calculator'],
+    title: 'Water Fixture Calculator',
+    description:
+      'Compare a household’s yearly water use with standard showerheads, toilets, and faucets against WaterSense-certified fixtures, using EPA WaterSense’s own published flow rates.',
+    example:
+      'A household running 16 shower-minutes, 20 flushes, and 20 faucet-minutes a day uses about 42,340 gal/year with standard fixtures versus about 31,974 gal/year with WaterSense-certified ones — a 24.48% saving.',
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What makes a fixture "WaterSense-certified"?',
+        paragraphs: [
+          'The U.S. EPA’s WaterSense program sets a maximum flow rate or flush volume that a fixture must meet or beat, while still performing well, to carry the WaterSense label. For showerheads, that’s 2.0 gallons per minute (gpm) or less, versus a standard showerhead’s 2.5 gpm. For toilets, it’s 1.28 gallons per flush (gpf) or less, versus the current federal standard of 1.6 gpf. For bathroom faucets, it’s 1.5 gpm or less, versus a standard 2.2 gpm baseline.',
+          'Each of those cuts — 20%, 20%, and about 32% per use — looks modest on its own, but a household runs all three fixtures many times every single day, all year. This calculator lets you enter your own household’s daily usage across the three fixture types and see the standard-fixture total next to the WaterSense-fixture total, side by side.',
+          'It covers only these three fixture types. EPA’s WaterSense program also certifies clothes washers, irrigation controllers, and other products, and this estimate does not include those — see the watch-outs below for what is and is not covered.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your household’s total daily usage across all three fixture types; the standard-vs-WaterSense comparison fills in instantly.',
+        steps: [
+          { name: 'Enter shower minutes per day', text: 'Total minutes of shower running time across your whole household, per day.' },
+          { name: 'Enter flushes per day', text: 'Total toilet flushes across your whole household, per day.' },
+          { name: 'Enter faucet minutes per day', text: 'Total bathroom faucet running time across your whole household, per day.' },
+          { name: 'Read the totals', text: 'The headline is the yearly water saved by switching all three fixture types to WaterSense-certified models.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Each scenario’s yearly total is 365 days times the sum of each fixture’s own usage times its flow rate; the saving is the difference.',
+        expression:
+          'standard (gal/yr) = 365 × (showerMin × 2.5 + flushes × 1.6 + faucetMin × 2.2)\nWaterSense (gal/yr) = 365 × (showerMin × 2.0 + flushes × 1.28 + faucetMin × 1.5)\nsaving = standard − WaterSense',
+        terms: [
+          { symbol: '2.5 / 2.0 gpm', meaning: 'EPA WaterSense’s standard vs. certified showerhead flow rate.' },
+          { symbol: '1.6 / 1.28 gpf', meaning: 'EPA WaterSense’s federal-standard vs. certified toilet flush volume.' },
+          { symbol: '2.2 / 1.5 gpm', meaning: 'EPA WaterSense’s standard vs. certified bathroom faucet flow rate.' }
+        ],
+        note: 'The daily-usage figures are your own estimate of how your household actually uses these three fixtures — only the six flow-rate numbers themselves come from EPA’s WaterSense program.'
+      },
+      workedExample: {
+        intro: 'A household using 16 shower-minutes, 20 flushes, and 20 faucet-minutes a day (the defaults above).',
+        rows: [
+          { label: 'Standard (365 × (16×2.5 + 20×1.6 + 20×2.2))', value: '42,340.00 gal/year' },
+          { label: 'WaterSense (365 × (16×2.0 + 20×1.28 + 20×1.5))', value: '31,974.00 gal/year' },
+          { label: 'Saving (42,340.00 − 31,974.00)', value: '10,366.00 gal/year' },
+          { label: 'Saving as a share of standard use', value: '≈24.48%' }
+        ],
+        result: 'About 10,366 gal a year saved, a 24.48% cut',
+        explanation:
+          'The 16-minute default shower figure comes from EPA’s own statement that "for the average family, that adds up to nearly 40 gallons per day" of shower use at the standard 2.5 gpm rate (40 ÷ 2.5 = 16); the flush and faucet defaults are illustrative starting points to edit to your own household.'
+      },
+      watchOut: [
+        {
+          title: 'Only three fixture types, not your whole water bill',
+          body: 'This covers showerheads, toilets, and bathroom faucets only — not clothes washers, dishwashers, kitchen faucets, or outdoor irrigation, all of which EPA WaterSense also addresses separately.'
+        },
+        {
+          title: 'The shower default is a real EPA anchor; the others are starting points',
+          body: 'Only the 16-minute shower default is derived from an EPA-published figure (40 gal/day ÷ 2.5 gpm). The flush and faucet defaults are illustrative, editable starting points, not EPA-published averages — replace them with your own household’s real usage.'
+        },
+        {
+          title: 'WaterSense sets a maximum, not a typical figure',
+          body: 'WaterSense-labeled products must meet or beat these flow-rate ceilings; a specific certified model could do somewhat better, which would make real savings somewhat larger than this estimate.'
+        },
+        {
+          title: 'Older, pre-1994 toilets use far more than 1.6 gallons per flush',
+          body: 'This comparison uses today’s federal standard (1.6 gpf, set by the Energy Policy Act) as the "standard" baseline. A toilet older than that could use 3.5 to 7 gallons per flush, meaning its real savings from switching would be considerably larger than this estimate shows.'
+        }
+      ],
+      references: [
+        { label: 'U.S. EPA WaterSense, "Showerheads"', url: 'https://www.epa.gov/watersense/showerheads' },
+        { label: 'U.S. EPA WaterSense, "Residential Toilets"', url: 'https://www.epa.gov/watersense/residential-toilets' },
+        { label: 'U.S. EPA WaterSense, "Bathroom Faucets"', url: 'https://www.epa.gov/watersense/bathroom-faucets' }
+      ]
+    },
+    inputs: [
+      { id: 'showerMinutesPerDay', label: 'Shower time (whole household, per day)', type: 'number', placeholder: '16', defaultValue: WATER_FIXTURE_SHOWER_MIN_DEFAULT, step: 1, min: 0 },
+      { id: 'flushesPerDay', label: 'Toilet flushes (whole household, per day)', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 0 },
+      { id: 'faucetMinutesPerDay', label: 'Faucet running time (whole household, per day)', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'savingsGalPerYear',
+      headlineLabel: 'Water saved with WaterSense fixtures (per year)',
+      outputs: [
+        { id: 'savingsGalPerYear', label: 'Saved per year', dimension: 'volume', unit: 'gal', alsoIn: ['L'] },
+        { id: 'standardGalPerYear', label: 'Standard fixtures (per year)', dimension: 'volume', unit: 'gal' },
+        { id: 'waterSenseGalPerYear', label: 'WaterSense fixtures (per year)', dimension: 'volume', unit: 'gal' },
+        { id: 'savingsPct', label: 'Saving (% of standard use)', format: 'percent' }
+      ],
+      groups: [{ title: 'Household daily usage', inputs: ['showerMinutesPerDay', 'flushesPerDay', 'faucetMinutesPerDay'] }],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'waterSenseGalPerYear', label: 'Used with WaterSense fixtures' },
+          { from: 'savingsGalPerYear', label: 'Saved vs. standard fixtures' }
+        ],
+        center: 'standardGalPerYear',
+        centerSub: 'gal/year, standard fixtures'
+      }
+    },
+    seo: {
+      title: 'Water Fixture Calculator – WaterSense Savings',
+      description: 'Free water fixture calculator. Compare standard vs. WaterSense-certified showerhead, toilet, and faucet use with EPA WaterSense’s own published flow rates.',
+      faq: [
+        {
+          question: 'What is EPA WaterSense?',
+          answer: 'A U.S. EPA program that certifies water-efficient fixtures meeting a published maximum flow rate or flush volume while still performing well, so shoppers can identify them by the WaterSense label.'
+        },
+        {
+          question: 'How much less water does a WaterSense showerhead use?',
+          answer: '2.0 gallons per minute or less, versus a standard showerhead’s 2.5 gpm — a 20% cut per minute of shower time.'
+        },
+        {
+          question: 'How much less water does a WaterSense toilet use?',
+          answer: '1.28 gallons per flush or less, versus the current federal standard of 1.6 gpf — a 20% cut per flush.'
+        },
+        {
+          question: 'How much less water does a WaterSense faucet use?',
+          answer: '1.5 gallons per minute or less, versus a standard 2.2 gpm baseline — about a 31.82% cut per minute of faucet use.'
+        },
+        {
+          question: 'How much could my household save in a year?',
+          answer: 'At this calculator’s own defaults (16 shower-minutes, 20 flushes, and 20 faucet-minutes a day), switching all three fixture types to WaterSense-certified models saves about 10,366 gallons a year, a 24.48% cut — enter your own household’s usage for a figure that fits your home.'
+        },
+        {
+          question: 'Does this cover my whole water bill?',
+          answer: 'No — only showerheads, toilets, and bathroom faucets. Clothes washers, dishwashers, kitchen faucets, and outdoor irrigation aren’t included, even though EPA WaterSense addresses some of those separately too.'
+        }
+      ]
+    },
+    compute(values) {
+      const standardGalPerYear =
+        365 * (values.showerMinutesPerDay * SHOWER_GPM_STANDARD + values.flushesPerDay * TOILET_GPF_STANDARD + values.faucetMinutesPerDay * FAUCET_GPM_STANDARD);
+      const waterSenseGalPerYear =
+        365 * (values.showerMinutesPerDay * SHOWER_GPM_WATERSENSE + values.flushesPerDay * TOILET_GPF_WATERSENSE + values.faucetMinutesPerDay * FAUCET_GPM_WATERSENSE);
+      const savingsGalPerYear = standardGalPerYear - waterSenseGalPerYear;
+      const savingsPct = (savingsGalPerYear / standardGalPerYear) * 100;
+      return { savingsGalPerYear, standardGalPerYear, waterSenseGalPerYear, savingsPct };
+    }
+  },
+  {
+    id: 'species-extinction-rate-calculator',
+    category: 'ecology',
+    group: 'Population & Biodiversity',
+    glyph: 'ext',
+    updatedAt: '2026-11-18',
+    aliases: [
+      'species extinction rate calculator',
+      'e/msy calculator',
+      'extinctions per million species years calculator',
+      'background extinction rate calculator',
+      'sixth mass extinction calculator',
+      'extinction rate calculator'
+    ],
+    related: ['carrying-capacity-calculator', 'population-density-calculator', 'shannon-diversity-index-calculator', 'trophic-level-energy-calculator'],
+    title: 'Species Extinction Rate Calculator',
+    description:
+      'Compute an extinction rate in E/MSY (extinctions per million species-years) and compare it to the natural background rate, using Ceballos et al. (2015)’s own published method.',
+    example:
+      '5 documented extinctions among 10,000 species tracked over 100 years works out to 5.0 E/MSY — 2.5 times Ceballos et al.’s 2 E/MSY natural background rate.',
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What is E/MSY, and what counts as a "normal" extinction rate?',
+        paragraphs: [
+          'Species go extinct even without any human impact — paleontologists estimate this "background rate" from the fossil record. Ceballos et al. (2015), in Science Advances, cite an estimated background rate for mammals of about 1.8 extinctions per million species-years, which they round up conservatively to 2 E/MSY: "2 extinctions per 100 years per 10,000 species."',
+          'E/MSY (extinctions per million species-years) is just a common scale for comparing rates: however many extinctions occurred, over however many species and years they were tracked, converted to "per million species-years" so studies covering different group sizes and time spans can be compared on one number.',
+          'Ceballos et al.’s own headline finding, using this method: documented vertebrate extinctions since 1900 run far above the background rate. Compared with the roughly 9 vertebrate extinctions the 2 E/MSY background rate would predict since 1900, the paper counts 477 actual vertebrate extinctions over that same period — about 53 times the background rate — concluding that Earth has entered a sixth mass extinction.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the number of documented extinctions, the number of species in that group, and the span of years they were tracked over.',
+        steps: [
+          { name: 'Enter extinctions', text: 'The number of documented extinctions in the group and period you’re studying.' },
+          { name: 'Enter species count', text: 'The number of species in that group being tracked (e.g. all evaluated species in a taxon).' },
+          { name: 'Enter years', text: 'The span of time those extinctions were counted over.' },
+          { name: 'Read the result', text: 'The headline is the resulting E/MSY rate, with how many times the 2 E/MSY natural background rate it represents.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'E/MSY scales a raw extinction count to a common "per million species-years" basis; dividing by 2 compares it to the background rate.',
+        expression: 'E/MSY = (extinctions ÷ (species × years)) × 1,000,000\n× background rate = E/MSY ÷ 2',
+        terms: [
+          { symbol: 'extinctions', meaning: 'The number of documented extinctions in the group and period being studied.' },
+          { symbol: 'species', meaning: 'The number of species in that group being tracked.' },
+          { symbol: 'years', meaning: 'The span of time those extinctions were counted over.' },
+          { symbol: '2 E/MSY', meaning: 'Ceballos et al.’s (2015) conservative natural background rate, from the mammalian fossil record.' }
+        ],
+        note: 'E/MSY is a rate, not a raw headcount — a small number of extinctions in a small or short-lived group can still work out to a high E/MSY, and a large number in a huge, long-tracked group can work out to a low one.'
+      },
+      workedExample: {
+        intro: 'A hypothetical group: 5 documented extinctions among 10,000 species tracked over 100 years.',
+        rows: [
+          { label: 'Species-years tracked (10,000 × 100)', value: '1,000,000 species-years' },
+          { label: 'E/MSY (5 ÷ 1,000,000 × 1,000,000)', value: '5.0 E/MSY' },
+          { label: '× the 2 E/MSY background rate (5.0 ÷ 2)', value: '2.5×' }
+        ],
+        result: '5.0 E/MSY — 2.5 times the natural background rate',
+        explanation:
+          'Ceballos et al.’s own real-world figure is far higher: 477 documented vertebrate extinctions since 1900 against a background-rate expectation of only about 9 over that same 114 years — 477 ÷ 9 ≈ 53 times the 2 E/MSY background rate, one of this 2015 paper’s central findings.'
+      },
+      watchOut: [
+        {
+          title: 'This is the paper’s core ratio, not its full statistical method',
+          body: 'Ceballos et al. use several scenarios ("highly conservative" and "conservative") and multiple data sources; this calculator applies just the core E/MSY definition to whatever three numbers you enter.'
+        },
+        {
+          title: 'Small samples swing wildly',
+          body: 'A handful of extinctions in a small or recently observed group can produce an extreme E/MSY that does not reflect a true long-run rate.'
+        },
+        {
+          title: '2 E/MSY is specifically the mammalian background rate',
+          body: 'Ceballos et al. cite this figure for mammals, from fossil-record estimates. Other groups (e.g. marine invertebrates) have their own, separately estimated background rates, which can differ.'
+        },
+        {
+          title: 'Not every extinction gets documented',
+          body: 'Real extinction counts, especially for less-studied groups, are likely underestimates — meaning a true E/MSY is probably higher than what’s calculated from confirmed, documented counts alone.'
+        }
+      ],
+      references: [
+        {
+          label: 'Ceballos, G. et al. (2015), "Accelerated modern human-induced species losses: Entering the sixth mass extinction," Science Advances 1(5), e1400253',
+          url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC4640606/'
+        }
+      ]
+    },
+    inputs: [
+      { id: 'extinctions', label: 'Documented extinctions', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 0 },
+      { id: 'speciesCount', label: 'Species tracked', type: 'number', placeholder: '10000', defaultValue: 10000, step: 100, min: 1 },
+      { id: 'years', label: 'Years tracked', type: 'number', placeholder: '100', defaultValue: 100, step: 1, min: 1 }
+    ],
+    breakdown: {
+      headline: 'emsy',
+      headlineLabel: 'Extinction rate (E/MSY)',
+      outputs: [
+        { id: 'emsy', label: 'Extinction rate (E/MSY)', format: 'significant' },
+        { id: 'ratioToBackground', label: '× the natural background rate', format: 'number' }
+      ],
+      groups: [{ title: 'Observed extinctions', inputs: ['extinctions', 'speciesCount', 'years'] }],
+      derive: () => ({ backgroundRate: BACKGROUND_EXTINCTION_RATE_E_MSY }),
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'emsy', label: 'This group’s rate' },
+          { from: 'backgroundRate', label: 'Natural background rate' }
+        ],
+        title: 'Extinctions per million species-years',
+        highlight: 0
+      }
+    },
+    seo: {
+      title: 'Species Extinction Rate Calculator – E/MSY',
+      description: 'Free species extinction rate calculator. Compute E/MSY and compare it to the natural background rate, using Ceballos et al. (2015)’s own method.',
+      faq: [
+        {
+          question: 'What does E/MSY stand for?',
+          answer: 'Extinctions per million species-years — a common scale (extinctions ÷ (species × years) × 1,000,000) for comparing extinction rates across different group sizes and time spans.'
+        },
+        {
+          question: 'What is considered a "normal" extinction rate?',
+          answer: 'Ceballos et al. (2015) use 2 E/MSY as a conservative natural background rate for mammals, rounded up from an estimated 1.8 E/MSY from the fossil record.'
+        },
+        {
+          question: 'How much higher is the real extinction rate today?',
+          answer: 'Ceballos et al. count 477 documented vertebrate extinctions since 1900, against a background-rate expectation of only about 9 over that same period — roughly 53 times the 2 E/MSY background rate.'
+        },
+        {
+          question: 'Can I use this for any group of species, not just vertebrates?',
+          answer: 'Yes — it’s a general formula. It just needs a documented extinction count, the number of species in that group, and the number of years those extinctions were tracked over.'
+        },
+        {
+          question: 'Why does the background rate differ by group?',
+          answer: 'Different taxa have their own fossil-record-derived background rates. The 2 E/MSY figure is specifically Ceballos et al.’s estimate for mammals.'
+        },
+        {
+          question: 'Does a low E/MSY mean extinction isn’t a concern?',
+          answer: 'Not necessarily — a short time span or a small group can understate (or overstate) a true long-run rate, and documented counts likely undercount real extinctions in less-studied groups.'
+        }
+      ]
+    },
+    compute(values) {
+      const emsy = (values.extinctions / (values.speciesCount * values.years)) * 1e6;
+      const ratioToBackground = emsy / BACKGROUND_EXTINCTION_RATE_E_MSY;
+      return { emsy, ratioToBackground };
+    }
+  },
+  {
+    id: 'food-waste-composting-calculator',
+    category: 'ecology',
+    group: 'Sustainable Living',
+    glyph: 'lb',
+    updatedAt: '2026-11-18',
+    aliases: [
+      'food waste composting calculator',
+      'food waste diversion calculator',
+      'how much food waste is composted calculator',
+      'food waste landfill calculator',
+      'composting impact calculator',
+      'wasted food calculator'
+    ],
+    related: ['recycling-rate-calculator', 'plastic-footprint-calculator', 'drip-faucet-waste-calculator', 'meat-footprint-calculator'],
+    title: 'Food Waste Composting Calculator',
+    description:
+      'See how much of your yearly food waste would be landfilled, composted, or sent elsewhere at the EPA’s 2019 national rates for wasted food.',
+    example:
+      '300 lb of food waste a year, at the EPA’s 2019 national rates, works out to about 179.52 lb landfilled and only 14.97 lb composted — the rest goes to other pathways like animal feed and land application.',
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'How much wasted food actually gets composted?',
+        paragraphs: [
+          'The U.S. EPA’s 2019 Wasted Food Report tracks what happens to food that never gets eaten across the combined food retail, food service, and residential sectors — about 66 million tons that year. Of that total, EPA’s own published figures show 59.84% was landfilled and only 4.99% was composted. The remainder went to other management pathways: animal feed, land application, sewer/wastewater treatment, and similar routes.',
+          'The landfill share matters beyond just the lost food itself: food waste breaking down anaerobically in a landfill is one of the largest contributors to U.S. methane emissions from the waste sector. Diverting it to composting instead avoids that specific pathway, though this calculator does not attempt to put a number on the avoided emissions.',
+          'This calculator applies EPA’s own blended national rates to whatever amount of food waste you enter — a household’s own estimate, or a business’s — splitting it into a likely-landfilled share, a likely-composted share, and an "other pathways" share. EPA’s own page does not publish a further breakdown by sector, so this estimate doesn’t need to know whether your food waste is residential, retail, or food-service in origin — it just applies the national blended rate to your total.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your yearly food waste amount; the landfill, compost, and other-pathway rates default to EPA’s 2019 national figures, and can be edited.',
+        steps: [
+          { name: 'Enter yearly food waste', text: 'Your own estimate, in pounds a year — a household’s or a business’s.' },
+          { name: 'Set a landfill rate', text: 'Leave it at the EPA’s 2019 national average, 59.84%, or enter your own municipality’s figure if you know it.' },
+          { name: 'Set a composting rate', text: 'Leave it at the EPA’s 2019 national average, 4.99%, or raise it to model a more ambitious composting program.' },
+          { name: 'Read the split', text: 'The headline is how much would be composted at the rate you set, with the landfilled and other-pathway amounts below it.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Each pathway is the total times its own rate; the "other pathways" share is whatever rate is left over.',
+        expression: 'landfilled = total × landfillRate%\ncomposted = total × compostRate%\nother = total × (100% − landfillRate% − compostRate%)',
+        terms: [
+          { symbol: 'landfillRate', meaning: 'EPA’s 2019 national share of wasted food sent to landfill, 59.84%.' },
+          { symbol: 'compostRate', meaning: 'EPA’s 2019 national share composted, 4.99%.' }
+        ],
+        note: 'A national average for the combined food retail, food service, and residential sectors, not a measurement of your own specific food waste stream.'
+      },
+      workedExample: {
+        intro: '300 lb of food waste a year, at the EPA’s 2019 national rates.',
+        rows: [
+          { label: 'Landfilled (300 × 59.84%)', value: '179.52 lb' },
+          { label: 'Composted (300 × 4.99%)', value: '14.97 lb' },
+          { label: 'Other pathways (300 × 35.17%)', value: '105.51 lb' }
+        ],
+        result: 'About 179.52 lb landfilled and only 14.97 lb composted',
+        explanation:
+          'Raising just the composting-rate field to a more ambitious 20% would divert about 60 lb to composting instead of 14.97 lb — more than 4 times as much. A realistic scenario would also lower the landfill-rate field by a similar amount, since diverted waste mostly comes out of the landfill share rather than the other-pathways share.'
+      },
+      watchOut: [
+        {
+          title: 'This is a national average across three combined sectors',
+          body: 'EPA’s 2019 figures blend food retail, food service, and residential waste together; its page does not publish a further sector-by-sector split alongside these two rates.'
+        },
+        {
+          title: 'The "other pathways" share isn’t nothing',
+          body: 'At the 2019 national rates, more wasted food goes to other pathways (animal feed, land application, etc.) than gets composted. Raising the composting-rate field models diverting from landfill specifically, not from those other pathways.'
+        },
+        {
+          title: '2019 is the most recent year with this complete published breakdown',
+          body: 'EPA publishes its national wasted-food data with a lag; 2019 is the most recent year with a complete rate breakdown available at the time this calculator was built.'
+        },
+        {
+          title: 'This covers food waste only',
+          body: 'Not the broader municipal solid waste stream — see this site’s Recycling Rate Calculator for a whole-waste-stream estimate.'
+        }
+      ],
+      references: [{ label: 'U.S. EPA, "2019 Wasted Food Report"', url: 'https://www.epa.gov/land-research/2019-wasted-food-report' }]
+    },
+    inputs: [
+      { id: 'annualFoodWasteLb', label: 'Food waste per year', type: 'number', placeholder: '300', defaultValue: 300, step: 10, min: 0, dimension: 'mass', unit: 'lb' },
+      { id: 'landfillRatePct', label: 'Landfill rate', type: 'percent', placeholder: '59.84', defaultValue: FOOD_WASTE_LANDFILLED_PCT_2019, step: 0.01, min: 0 },
+      { id: 'compostRatePct', label: 'Composting rate', type: 'percent', placeholder: '4.99', defaultValue: FOOD_WASTE_COMPOSTED_PCT_2019, step: 0.01, min: 0 }
+    ],
+    breakdown: {
+      headline: 'compostedLb',
+      headlineLabel: 'Composted at this rate (per year)',
+      outputs: [
+        { id: 'compostedLb', label: 'Composted', dimension: 'mass', unit: 'lb' },
+        { id: 'landfilledLb', label: 'Landfilled', dimension: 'mass', unit: 'lb' },
+        { id: 'otherLb', label: 'Other pathways', dimension: 'mass', unit: 'lb' }
+      ],
+      groups: [{ title: 'Food waste and rates', inputs: ['annualFoodWasteLb', 'landfillRatePct', 'compostRatePct'] }],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'landfilledLb', label: 'Landfilled' },
+          { from: 'compostedLb', label: 'Composted' },
+          { from: 'otherLb', label: 'Other pathways' }
+        ],
+        center: 'annualFoodWasteLb',
+        centerSub: 'lb/year total'
+      }
+    },
+    seo: {
+      title: 'Food Waste Composting Calculator – EPA Rates',
+      description: 'Free food waste composting calculator. See how much of your food waste is landfilled, composted, or sent elsewhere using EPA’s 2019 national rates.',
+      faq: [
+        {
+          question: 'How much of America’s wasted food is composted?',
+          answer: 'About 4.99%, per the EPA’s 2019 Wasted Food Report, across the combined food retail, food service, and residential sectors.'
+        },
+        {
+          question: 'How much is landfilled?',
+          answer: '59.84%, per the same 2019 EPA report — more than 12 times the composted share.'
+        },
+        {
+          question: 'What happens to the rest?',
+          answer: 'About 35.17% goes to other management pathways: animal feed, land application, sewer/wastewater treatment, and similar routes.'
+        },
+        {
+          question: 'How much food waste does the US generate a year?',
+          answer: 'About 66 million tons in 2019, across the combined food retail, food service, and residential sectors, per the EPA.'
+        },
+        {
+          question: 'Does raising my composting rate automatically lower my landfill rate?',
+          answer: 'No — they’re independent inputs in this calculator. Adjust both together if you want to model diverting waste specifically from landfill to composting.'
+        },
+        {
+          question: 'Is this just about households?',
+          answer: 'No — EPA’s 2019 figures cover food retail, food service, and residential waste combined at the national level. Apply this calculator to any food-waste total, household or business.'
+        }
+      ]
+    },
+    compute(values) {
+      const landfilledLb = values.annualFoodWasteLb * (values.landfillRatePct / 100);
+      const compostedLb = values.annualFoodWasteLb * (values.compostRatePct / 100);
+      const otherPct = 100 - values.landfillRatePct - values.compostRatePct;
+      const otherLb = values.annualFoodWasteLb * (otherPct / 100);
+      return { compostedLb, landfilledLb, otherLb };
     }
   }
 ];

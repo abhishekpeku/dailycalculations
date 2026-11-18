@@ -1,5 +1,33 @@
 # Step 63 — Wave 5: Insurance (new category)
 
+## Progress — batch 2 (this branch: `step/63-insurance-batch2`)
+
+- [x] `out-of-pocket-maximum-calculator` — cites HealthCare.gov's glossary definition and the
+      2026/2027 ACA marketplace out-of-pocket limits.
+- [x] `cobra-cost-calculator` — cites the DOL's "up to 102% of the cost to the plan" rule and the
+      usual 18-month (up to 36-month) coverage window.
+- [x] `disability-insurance-needs-calculator` — cites the Council for Disability Insurance
+      Awareness's 60-80% typical LTD income-replacement range, "1 in 4" disability-likelihood
+      statistic, and average SSDI benefit figure.
+- [x] `long-term-care-insurance-needs-calculator` — cites CareScout's (Genworth's successor) 2025
+      Cost of Care Survey national median costs by care type.
+- [x] npm test / lint / build all green, snapshot regenerated (additive only)
+- [x] Draft PR opened early (#143) and kept current
+
+**Research note:** WebSearch's quota was exhausted partway through research (0 of the 4
+calculators' sourcing needed it after the first couple of queries). Fell back to direct WebFetch
+on known/guessed primary-source URLs per the task's instruction — this worked for every citation
+used (HealthCare.gov, DOL, thecdia.org/Council for Disability Insurance Awareness, CareScout),
+though several guessed insurer URLs (Guardian, MassMutual, Principal, Unum, NAIC, III.org specific
+pages) 404'd and were abandoned in favor of the ones that resolved. No citation in the shipped copy
+is unverified — every fetch quoted above was read directly, not from memory.
+
+**Decision on COBRA's disability-extension premium (up to 150% for months 19-29):** a real,
+commonly cited COBRA detail, but it could not be verified via a direct fetch (the DOL FAQ URL
+guessed for it 404'd) in the time available. Left out of the calculator and copy entirely rather
+than stating an unverified figure — the 102%/18-month figures actually used are both DOL-confirmed
+direct quotes.
+
 ## Progress — batch 1 (this branch: `step/63-insurance-batch1`)
 
 - [x] Category scaffold: `data/calculators/insurance.ts`, `categories` entry, `calculatorOrder`,
@@ -118,8 +146,8 @@ precedent as biology/ecology/fun), once the real final count is known.
 
 ## Progress checklist
 
-- [ ] Batch 1 — Life insurance need (4), opens the category
-- [ ] Batch 2 — Health & disability insurance (4)
+- [x] Batch 1 — Life insurance need (4), opens the category
+- [x] Batch 2 — Health & disability insurance (4)
 - [ ] Batch 3 — Auto & property insurance (4)
 - [ ] Batch 4 — Everyday insurance novelties (4-6)
 - [ ] Sub-grouping retrofit

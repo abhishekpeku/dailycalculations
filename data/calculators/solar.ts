@@ -909,7 +909,7 @@ export const solarCalculators: CalculatorConfig[] = [
     category: 'solar',
     glyph: '$/d',
     updatedAt: '2026-11-18',
-    aliases: ['appliance running cost calculator', 'how much does it cost to run this appliance', 'cost to run an appliance calculator', 'electricity cost per appliance calculator', 'appliance operating cost calculator'],
+    aliases: ['single appliance cost calculator', 'how much does it cost to run this appliance', 'cost to run an appliance calculator', 'electricity cost per appliance calculator', 'appliance operating cost calculator'],
     related: ['home-electricity-consumption-calculator', 'electricity-bill-calculator', 'solar-savings-calculator', 'solar-panel-system-size-calculator'],
     title: 'Appliance Energy Cost Calculator',
     description: 'Find what a single appliance costs to run per day, month and year, from its wattage, hours used per day and your electricity rate.',

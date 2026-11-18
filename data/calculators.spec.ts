@@ -8,6 +8,7 @@ const CUSTOM_TOOLS = [
   'currency-converter',
   'character-counter',
   'hashtag-counter',
+  'word-counter-calculator',
   'pomodoro-timer',
   'timezone-meeting-planner',
   'scientific-calculator'

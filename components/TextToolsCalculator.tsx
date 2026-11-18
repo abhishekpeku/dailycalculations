@@ -6,7 +6,7 @@ import { findCalculator } from '@/data/calculators';
 import type { ExportPayload } from '@/lib/export';
 import { PLATFORM_LIMITS } from '@/lib/platformLimits';
 
-type Mode = 'character' | 'hashtag';
+type Mode = 'character' | 'hashtag' | 'word';
 
 function countWords(text: string) {
   return text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
@@ -31,6 +31,18 @@ function readingTime(words: number) {
   return `${Math.ceil(minutes)} min`;
 }
 
+const MODE_LABELS: Record<Mode, string> = {
+  character: 'Character Counter',
+  hashtag: 'Hashtag Counter',
+  word: 'Word Counter'
+};
+
+const MODE_CALCULATOR_IDS: Record<Mode, string> = {
+  character: 'character-counter',
+  hashtag: 'hashtag-counter',
+  word: 'word-counter-calculator'
+};
+
 export default function TextToolsCalculator({ mode }: { mode?: Mode }) {
   const [text, setText] = useState('');
   const [activeMode, setActiveMode] = useState<Mode>(mode ?? 'character');
@@ -50,51 +62,67 @@ export default function TextToolsCalculator({ mode }: { mode?: Mode }) {
 
   const accent = widgetAccent('text');
 
-  // Shared by two different calculator pages -- derive the id/title from the already-known mode
+  // Shared by three different calculator pages -- derive the id/title from the already-known mode
   // rather than hardcoding one slug or adding a prop page.tsx doesn't need to pass.
-  const calculatorId = activeMode === 'hashtag' ? 'hashtag-counter' : 'character-counter';
-  const calculatorTitle = findCalculator(calculatorId)?.title ?? (activeMode === 'hashtag' ? 'Hashtag Counter' : 'Character Counter');
+  const calculatorId = MODE_CALCULATOR_IDS[activeMode];
+  const calculatorTitle = findCalculator(calculatorId)?.title ?? MODE_LABELS[activeMode];
 
-  const exportData: ExportPayload | null = text.trim() === '' ? null : activeMode === 'character' ? {
-    title: calculatorTitle,
-    url: typeof window === 'undefined' ? '' : window.location.href,
-    inputs: [],
-    result: { label: 'Characters', value: stats.chars.toLocaleString('en-US'), raw: stats.chars, kind: 'integer' },
-    outputs: [
-      { label: 'Characters (no spaces)', value: stats.charsNoSpaces.toLocaleString('en-US'), raw: stats.charsNoSpaces, kind: 'integer' },
-      { label: 'Words', value: stats.words.toLocaleString('en-US'), raw: stats.words, kind: 'integer' },
-      { label: 'Sentences', value: stats.sentences.toLocaleString('en-US'), raw: stats.sentences, kind: 'integer' },
-      { label: 'Paragraphs', value: stats.paragraphs.toLocaleString('en-US'), raw: stats.paragraphs, kind: 'integer' },
-      { label: 'Lines', value: stats.lines.toLocaleString('en-US'), raw: stats.lines, kind: 'integer' },
-      { label: 'Reading time', value: readingTime(stats.words), kind: 'text' }
-    ]
-  } : {
-    title: calculatorTitle,
-    url: typeof window === 'undefined' ? '' : window.location.href,
-    inputs: [],
-    result: { label: 'Unique hashtags', value: stats.uniqueHashtags.toLocaleString('en-US'), raw: stats.uniqueHashtags, kind: 'integer' },
-    outputs: [
-      { label: 'Characters', value: stats.chars.toLocaleString('en-US'), raw: stats.chars, kind: 'integer' },
-      { label: 'Words', value: stats.words.toLocaleString('en-US'), raw: stats.words, kind: 'integer' },
-      {
-        label: 'Instagram limit (30)',
-        value: stats.instagramHashtagOk ? `OK — ${stats.uniqueHashtags}/30` : `Exceeded — ${stats.uniqueHashtags}/30`,
-        kind: 'text'
-      }
-    ]
+  const exportDataByMode: Record<Mode, ExportPayload> = {
+    character: {
+      title: calculatorTitle,
+      url: typeof window === 'undefined' ? '' : window.location.href,
+      inputs: [],
+      result: { label: 'Characters', value: stats.chars.toLocaleString('en-US'), raw: stats.chars, kind: 'integer' },
+      outputs: [
+        { label: 'Characters (no spaces)', value: stats.charsNoSpaces.toLocaleString('en-US'), raw: stats.charsNoSpaces, kind: 'integer' },
+        { label: 'Words', value: stats.words.toLocaleString('en-US'), raw: stats.words, kind: 'integer' },
+        { label: 'Sentences', value: stats.sentences.toLocaleString('en-US'), raw: stats.sentences, kind: 'integer' },
+        { label: 'Paragraphs', value: stats.paragraphs.toLocaleString('en-US'), raw: stats.paragraphs, kind: 'integer' },
+        { label: 'Lines', value: stats.lines.toLocaleString('en-US'), raw: stats.lines, kind: 'integer' },
+        { label: 'Reading time', value: readingTime(stats.words), kind: 'text' }
+      ]
+    },
+    hashtag: {
+      title: calculatorTitle,
+      url: typeof window === 'undefined' ? '' : window.location.href,
+      inputs: [],
+      result: { label: 'Unique hashtags', value: stats.uniqueHashtags.toLocaleString('en-US'), raw: stats.uniqueHashtags, kind: 'integer' },
+      outputs: [
+        { label: 'Characters', value: stats.chars.toLocaleString('en-US'), raw: stats.chars, kind: 'integer' },
+        { label: 'Words', value: stats.words.toLocaleString('en-US'), raw: stats.words, kind: 'integer' },
+        {
+          label: 'Instagram limit (30)',
+          value: stats.instagramHashtagOk ? `OK — ${stats.uniqueHashtags}/30` : `Exceeded — ${stats.uniqueHashtags}/30`,
+          kind: 'text'
+        }
+      ]
+    },
+    word: {
+      title: calculatorTitle,
+      url: typeof window === 'undefined' ? '' : window.location.href,
+      inputs: [],
+      result: { label: 'Words', value: stats.words.toLocaleString('en-US'), raw: stats.words, kind: 'integer' },
+      outputs: [
+        { label: 'Characters', value: stats.chars.toLocaleString('en-US'), raw: stats.chars, kind: 'integer' },
+        { label: 'Sentences', value: stats.sentences.toLocaleString('en-US'), raw: stats.sentences, kind: 'integer' },
+        { label: 'Paragraphs', value: stats.paragraphs.toLocaleString('en-US'), raw: stats.paragraphs, kind: 'integer' },
+        { label: 'Reading time', value: readingTime(stats.words), kind: 'text' }
+      ]
+    }
   };
+  const exportData: ExportPayload | null = text.trim() === '' ? null : exportDataByMode[activeMode];
 
   return (
     <WidgetCard>
-      <div className="flex gap-2">
-        {(['character', 'hashtag'] as Mode[]).map((m) => (
+      <div className="flex flex-wrap gap-2">
+        {(['character', 'hashtag', 'word'] as Mode[]).map((m) => (
           <button
             key={m}
             onClick={() => setActiveMode(m)}
             style={activeMode === m ? { borderColor: accent, backgroundColor: `${accent}1A`, color: accent } : undefined}
             className={`rounded-2xl border px-4 py-1.5 text-sm font-medium capitalize transition ${activeMode === m ? '' : 'border-slate-300 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400'}`}
           >
-            {m === 'character' ? 'Character Counter' : 'Hashtag Counter'}
+            {MODE_LABELS[m]}
           </button>
         ))}
       </div>
@@ -160,7 +188,7 @@ export default function TextToolsCalculator({ mode }: { mode?: Mode }) {
             </p>
           </div>
         </>
-      ) : (
+      ) : activeMode === 'hashtag' ? (
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[
@@ -192,6 +220,33 @@ export default function TextToolsCalculator({ mode }: { mode?: Mode }) {
             </div>
           )}
         </div>
+      ) : (
+        <>
+          <div className="rounded-2xl border p-4 text-center" style={{ borderColor: `${accent}55`, backgroundColor: `${accent}0F` }}>
+            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: accent }}>Words</p>
+            <p className="mt-1 text-4xl font-bold" style={{ color: accent }}>{stats.words.toLocaleString('en-US')}</p>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: 'Characters', value: stats.chars },
+              { label: 'Sentences', value: stats.sentences },
+              { label: 'Paragraphs', value: stats.paragraphs },
+            ].map(({ label, value }) => (
+              <div key={label} className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-center dark:border-slate-700 dark:bg-slate-900">
+                <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
+                <p className="mt-1 text-2xl font-bold text-slate-800 dark:text-slate-200">{value}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Reading time: <strong style={{ color: accent }}>{readingTime(stats.words)}</strong>
+              {' '}at 200 words/min
+            </p>
+          </div>
+        </>
       )}
 
       <div className="flex justify-end">

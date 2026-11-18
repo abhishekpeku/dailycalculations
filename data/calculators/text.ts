@@ -792,5 +792,87 @@ export const textCalculators: CalculatorConfig[] = [
       const otherSpacingPages = values.words / otherWordsPerPage;
       return { pages, otherSpacingPages };
     }
-  }
+  },
+  // Custom-component stub: rendered by a special component in page.tsx (TextToolsCalculator, mode="word").
+  {
+    id: 'word-counter-calculator',
+    category: 'text',
+    group: 'Word Count & Readability',
+    glyph: 'Wd',
+    updatedAt: '2026-11-18',
+    aliases: ['word count tool', 'essay word counter', 'online word counter', 'blog post word counter', 'word counting tool'],
+    related: ['character-counter', 'readability-score-calculator', 'word-to-page-count-calculator'],
+    title: 'Word Counter',
+    description: 'Count words first, plus characters, sentences and paragraphs, with an estimated reading time — built around hitting a word-count target, not a character limit.',
+    example: 'A 320-word blog intro takes about 1.6 minutes to read at 200 words per minute, shown here rounded up to "2 min."',
+    inputs: [],
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Word counter vs. character counter: what is actually different',
+        paragraphs: [
+          'This page counts words, characters, sentences and paragraphs with exactly the same counting rules as the character counter on this site, so the figures will always match for the same text. What is different is which number leads and what the page is built around: a word-count target — a 500-word assignment, a 1,000-word article brief, a freelance word-count minimum — rather than a character limit.',
+          'Word counts, not character counts, are how most writing is actually assigned and measured: school essays, journalism and content briefs are set in words far more often than characters. This page skips the character counter\'s social-platform limit bars entirely and puts the word count front and center instead, since a character limit is rarely the thing you are writing toward when a word count is the target.',
+          'Once you have a word count, it is a useful starting point elsewhere on this site: the readability score calculator turns a word, sentence and syllable count into a difficulty score, and the word-to-page-count calculator turns it into an estimated page count.'
+        ]
+      },
+      howTo: {
+        intro: 'Type or paste your text into the box.',
+        steps: [
+          { name: 'Enter your text', text: 'Type directly or paste from anywhere — a draft essay, an article, a caption.' },
+          { name: 'Read your word count', text: 'The word count is shown first and largest. Characters, sentences and paragraphs follow below it.' },
+          { name: 'Check the reading time', text: 'A rough estimate at 200 words per minute, the same commonly used average this site\'s character counter uses for silent reading of online text.' },
+          { name: 'Write toward your target', text: 'Keep the box open while you draft, and watch the word count move toward your assignment or brief\'s target.' },
+          { name: 'Switch tools if you need more', text: 'Use the mode toggle to switch to the character counter\'s platform-limit bars, the hashtag counter, or the syllable counter.' }
+        ],
+        outro: 'Everything runs in your browser as you type. Nothing is uploaded, sent, or stored.'
+      },
+      formula: {
+        intro: 'Each count is the same simple, well-defined rule the character counter uses.',
+        expression:
+          'words = the text split on runs of whitespace\ncharacters = length of the text, spaces included\nsentences = the number of . ! or ? runs\nparagraphs = the text split on blank lines',
+        terms: [
+          { symbol: 'words', meaning: 'Counted by splitting on whitespace, so "well-known" is one word and multiple spaces between words do not create extra ones.' },
+          { symbol: 'sentences', meaning: 'Counted by runs of sentence-ending punctuation (., !, ?) — an approximation, not true grammatical parsing.' },
+          { symbol: 'paragraphs', meaning: 'Counted by blank lines, so a single line break alone does not start a new paragraph.' }
+        ],
+        note: 'A word-count target set by an assignment, brief or publication is usually an approximate guide, not an exact figure you must hit precisely — check the specific instructions you were given.'
+      },
+      workedExample: {
+        intro: 'A short two-paragraph sample: "Daily Calculations helps you plan budgets, track fitness, and convert units. Try it today! It is free and works entirely in your browser." followed by a blank line and "Use this word counter whenever you need an exact count instead of a character limit."',
+        rows: [
+          { label: 'Words', value: '38' },
+          { label: 'Characters (with spaces)', value: '223' },
+          { label: 'Sentences', value: '4' },
+          { label: 'Paragraphs', value: '2' },
+          { label: 'Reading time (38 words ÷ 200/min)', value: '11 seconds' }
+        ],
+        result: '38 words · 223 characters · 11-second read',
+        explanation: 'At 38 words and 223 characters, this short sample is already a useful size check: a word-count-based brief would judge it by the 38, while a character-limited field (like a meta description or a social caption) would judge the same text by the 223 — two different numbers from the same text, which is exactly why this page leads with words instead.'
+      },
+      watchOut: [
+        { title: 'Same counts as the character counter, different emphasis', body: 'The word, character, sentence and paragraph counts are identical to the character counter\'s — this page does not count differently, it just leads with words and drops the platform character-limit bars.' },
+        { title: 'Sentence counting is approximate', body: 'Counting runs of . ! and ? misses sentences that do not end in standard punctuation and can over- or under-count abbreviations ("Dr. Smith") or ellipses ("wait...") compared to true grammatical sentence parsing.' },
+        { title: 'A word-count target is usually a guide, not an exact figure', body: 'Most assignments, briefs and style guides treat a stated word count as approximate ("around 500 words" or "500-600 words") rather than a number you must match exactly — check your specific instructions.' },
+        { title: 'Reading time is a rough average', body: 'The 200-words-per-minute estimate is a commonly used average for silent reading of online text, not a prediction for any individual reader\'s actual speed.' },
+        { title: 'Hyphenated and compound words count once', body: 'Splitting on whitespace means "well-known" or "twenty-one" each count as a single word, matching how most word-count tools and word processors count them.' }
+      ],
+      references: [
+        { label: 'Wikipedia, Word count', url: 'https://en.wikipedia.org/wiki/Word_count' }
+      ]
+    },
+    seo: {
+      title: 'Word Counter – Free Online Word Count Tool',
+      description: 'Count words first, plus characters, sentences and paragraphs, with an estimated reading time. Built for hitting a word-count target. Free, instant.',
+      faq: [
+        { question: 'How many words should my essay or article be?', answer: 'That depends entirely on your specific assignment, brief or publication — there is no universal word-count rule. Most state a target as approximate ("around 500 words"), so check your own instructions.' },
+        { question: 'Does this count words the same way as Microsoft Word or Google Docs?', answer: 'Very closely. Like most word processors, this counts runs of whitespace-separated text as words, so hyphenated words like "well-known" count once. Minor differences can occur around footnotes, headers or special characters.' },
+        { question: 'Why does a hyphenated word only count as one word?', answer: 'Because it contains no whitespace to split on — "twenty-one" is one unbroken run of characters, the same way most word counters and word processors treat it.' },
+        { question: 'How is reading time calculated?', answer: 'Reading time is estimated at 200 words per minute, a commonly used average for silent reading of online text, shown as a rough guide rather than a precise prediction.' },
+        { question: 'What is the difference between this and the character counter?', answer: 'The underlying counts are identical. This page leads with the word count and drops the character counter\'s social-platform character-limit bars, since a word-count target rather than a character limit is usually what you are writing toward here.' },
+        { question: 'Can I count words in a document I paste from elsewhere?', answer: 'Yes — paste text from any source. Everything runs in your browser, and nothing you paste is uploaded, sent, or stored.' }
+      ]
+    },
+    compute() { return {}; }
+  },
 ];

@@ -140,6 +140,7 @@ export const calculatorOrder: string[] = [
   'tweet-thread-length-calculator',
   'readability-score-calculator',
   'word-to-page-count-calculator',
+  'word-counter-calculator',
   'pomodoro-timer',
   'timezone-meeting-planner',
   'force-calculator',

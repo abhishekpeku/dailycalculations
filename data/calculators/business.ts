@@ -28,6 +28,7 @@ const depreciationScheduleRows = () => {
 export const businessCalculators: CalculatorConfig[] = [
   {
     id: 'profit-margin-calculator',
+    group: 'Pricing & Margin',
     category: 'business',
     glyph: 'M%',
     updatedAt: '2026-11-18',
@@ -150,6 +151,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'markup-calculator',
+    group: 'Pricing & Margin',
     category: 'business',
     glyph: 'MU%',
     updatedAt: '2026-11-18',
@@ -272,6 +274,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'break-even-calculator',
+    group: 'Pricing & Margin',
     category: 'business',
     glyph: 'BE',
     updatedAt: '2026-11-18',
@@ -403,6 +406,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'contribution-margin-calculator',
+    group: 'Pricing & Margin',
     category: 'business',
     glyph: 'CM',
     updatedAt: '2026-11-18',
@@ -520,6 +524,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'cost-of-goods-sold-calculator',
+    group: 'Pricing & Margin',
     category: 'business',
     glyph: 'COGS',
     updatedAt: '2026-11-18',
@@ -633,6 +638,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'depreciation-calculator',
+    group: 'Business Finance',
     category: 'business',
     glyph: 'DEP',
     updatedAt: '2026-11-18',
@@ -763,6 +769,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'burn-rate-calculator',
+    group: 'Business Finance',
     category: 'business',
     glyph: 'BURN',
     updatedAt: '2026-11-18',
@@ -872,6 +879,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'business-valuation-calculator',
+    group: 'Business Finance',
     category: 'business',
     glyph: 'VAL',
     updatedAt: '2026-11-18',
@@ -979,6 +987,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'payback-period-calculator',
+    group: 'Business Finance',
     category: 'business',
     glyph: 'PBP',
     updatedAt: '2026-11-18',
@@ -1096,6 +1105,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'fte-calculator',
+    group: 'Business Finance',
     category: 'business',
     glyph: 'FTE',
     updatedAt: '2026-11-18',
@@ -1201,6 +1211,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'gst-calculator',
+    group: 'Tax',
     category: 'business',
     glyph: 'GST',
     updatedAt: '2026-11-19',
@@ -1313,6 +1324,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'vat-calculator',
+    group: 'Tax',
     category: 'business',
     glyph: 'VAT',
     updatedAt: '2026-11-19',
@@ -1425,6 +1437,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'self-employment-tax-estimator',
+    group: 'Tax',
     category: 'business',
     glyph: 'SE%',
     updatedAt: '2026-11-19',
@@ -1545,6 +1558,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: '1099-contractor-rate-calculator',
+    group: 'Tax',
     category: 'business',
     glyph: '1099',
     updatedAt: '2026-11-19',
@@ -1701,6 +1715,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'accounts-receivable-days-calculator',
+    group: 'Everyday & Operations',
     category: 'business',
     glyph: 'A/R',
     updatedAt: '2026-11-19',
@@ -1802,6 +1817,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'invoice-late-payment-interest-calculator',
+    group: 'Everyday & Operations',
     category: 'business',
     glyph: 'LPI',
     updatedAt: '2026-11-19',
@@ -1905,6 +1921,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'project-profitability-calculator',
+    group: 'Everyday & Operations',
     category: 'business',
     glyph: 'PP',
     updatedAt: '2026-11-19',

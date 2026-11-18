@@ -26,7 +26,10 @@ export const TILE_COLORS = {
   yellow: ['#FFE066', '#F2B600'],
   // Insurance (step 63): a protective blue-violet, distinct from finance's `green` (loans/savings/
   // investing) and from `purple`/`indigo` (statistics/physics/time already claim those hues).
-  violet: ['#8B5CF6', '#6D28D9']
+  violet: ['#8B5CF6', '#6D28D9'],
+  // Business & Tax (step 64): a cool slate blue-gray, distinct from `gray` (work)'s neutral tone
+  // and from `blue`/`indigo` — reads as ledger paper/professional rather than warm or playful.
+  slate: ['#94A3B8', '#475569']
 } as const;
 
 export type TileColor = keyof typeof TILE_COLORS;
@@ -78,7 +81,11 @@ const ICONS = {
   // payback, financing and net-metering tools).
   sun: 'M12 8a4 4 0 1 0 0 8 4 4 0 1 0 0-8zM12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4l1.4-1.4M17 7l1.4-1.4',
   // A shield with a checkmark: the insurance category (coverage, protection, policy estimates).
-  shield: 'M12 3l7 3v5c0 5-3.5 8.6-7 10-3.5-1.4-7-5-7-10V6l7-3zM9 12l2 2 4-4.5'
+  shield: 'M12 3l7 3v5c0 5-3.5 8.6-7 10-3.5-1.4-7-5-7-10V6l7-3zM9 12l2 2 4-4.5',
+  // An invoice/ledger sheet with a folded corner and rule lines: the business & tax category
+  // (margin, break-even, depreciation, GST/VAT and other business-operations math) — distinct
+  // from work's briefcase and from book/text's plainer page shapes.
+  invoice: 'M6 2h8l4 4v16H6V2zM14 2v4h4M9 10h6M9 13h6M9 16h4'
 } as const;
 
 export type IconName = keyof typeof ICONS;

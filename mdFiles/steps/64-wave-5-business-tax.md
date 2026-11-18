@@ -113,6 +113,12 @@ Target ~18 calculators across 4 batches. Sub-grouping deferred to a final retrof
 ## Progress checklist
 
 - [ ] Batch 1 — Pricing & margin (5), opens the category
+  - [ ] Category scaffolding: `data/calculators/business.ts`, `index.ts` entry, `categoryTheme.ts`/`IconTile.tsx` color+icon
+  - [ ] `profit-margin-calculator`
+  - [ ] `markup-calculator`
+  - [ ] `break-even-calculator`
+  - [ ] `contribution-margin-calculator`
+  - [ ] `cost-of-goods-sold-calculator`
 - [ ] Batch 2 — Business finance (5)
 - [ ] Batch 3 — Tax (4)
 - [ ] Batch 4 — Everyday business novelties (4)
